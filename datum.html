@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;datum - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="datum.html#proc">Proc Details</a></header>
+<main>
+<h1>/<a href="datum.html">datum</a>
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;datums&#x2F;datum.dm 1"/></h1>
+
+<table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="datum.html#proc/ui_act">ui_act</a></th><td>public</td></tr>
+            <tr><th><a href="datum.html#proc/ui_base_html">ui_base_html</a></th><td>public</td></tr>
+            <tr><th><a href="datum.html#proc/ui_close">ui_close</a></th><td>public</td></tr>
+            <tr><th><a href="datum.html#proc/ui_data">ui_data</a></th><td>public</td></tr>
+            <tr><th><a href="datum.html#proc/ui_host">ui_host</a></th><td>private</td></tr>
+            <tr><th><a href="datum.html#proc/ui_interact">ui_interact</a></th><td>tgui external</td></tr>
+            <tr><th><a href="datum.html#proc/ui_status">ui_status</a></th><td>tgui states</td></tr></table><h2><a name="proc">Proc Details</a></h2><h3><aside class="declaration">proc </aside><a name="proc/ui_act">ui_act</a><aside>(action, /list/params, /<a href="datum.html">datum</a>/<a href="datum/tgui.html">tgui</a>/ui, /<a href="datum.html">datum</a>/<a href="datum/ui_state.html">ui_state</a>/state) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 48"/></aside>
+        </h3>
+        <p>public</p>
+<p>Called on a UI when the UI receieves a href.
+Think of this as Topic().</p>
+<p>required action string The action/button that has been invoked by the user.
+required params list A list of parameters attached to the button.</p>
+<p>return bool If the UI should be updated or not.</p><h3><aside class="declaration">proc </aside><a name="proc/ui_base_html">ui_base_html</a><aside>(html) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 64"/></aside>
+        </h3>
+        <p>public</p>
+<p>Called on an object when a tgui object is being created, allowing you to customise the html
+For example: inserting a custom stylesheet that you need in the head</p>
+<p>For this purpose, some tags are available in the html, to be parsed out with replacetext
+(customheadhtml) - Additions to the head tag</p>
+<p>required html the html base text</p><h3><aside class="declaration">proc </aside><a name="proc/ui_close">ui_close</a><aside>() 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 90"/></aside>
+        </h3>
+        <p>public</p>
+<p>Called on a UI's object when the UI is closed, not to be confused with client/verb/uiclose(), which closes the ui window</p><h3><aside class="declaration">proc </aside><a name="proc/ui_data">ui_data</a><aside>(/<a href="mob.html">mob</a>/user) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 33"/></aside>
+        </h3>
+        <p>public</p>
+<p>Data to be sent to the UI.
+This must be implemented for a UI to work.</p>
+<p>required user mob The mob interacting with the UI.</p>
+<p>return list Data to be sent to the UI.</p><h3><aside class="declaration">proc </aside><a name="proc/ui_host">ui_host</a><aside>(/<a href="mob.html">mob</a>/user) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 74"/></aside>
+        </h3>
+        <p>private</p>
+<p>The UI's host object (usually src_object).
+This allows modules/datums to have the UI attached to them,
+and be a part of another object.</p><h3><aside class="declaration">proc </aside><a name="proc/ui_interact">ui_interact</a><aside>(/<a href="mob.html">mob</a>/user, ui_key, /<a href="datum.html">datum</a>/<a href="datum/tgui.html">tgui</a>/ui, force_open, /<a href="datum.html">datum</a>/<a href="datum/tgui.html">tgui</a>/master_ui, /<a href="datum.html">datum</a>/<a href="datum/ui_state.html">ui_state</a>/state) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;external.dm 20"/></aside>
+        </h3>
+        <p>tgui external</p>
+<p>Contains all external tgui declarations.</p>
+<p>public</p>
+<p>Used to open and update UIs.
+If this proc is not implemented properly, the UI will not update correctly.</p>
+<p>required user mob The mob who opened/is using the UI.
+optional ui_key string The ui_key of the UI.
+optional ui datum/tgui The UI to be updated, if it exists.
+optional force_open bool If the UI should be re-opened instead of updated.
+optional master_ui datum/tgui The parent UI.
+optional state datum/ui_state The state used to determine status.</p><h3><aside class="declaration">proc </aside><a name="proc/ui_status">ui_status</a><aside>(/<a href="mob.html">mob</a>/user, /<a href="datum.html">datum</a>/<a href="datum/ui_state.html">ui_state</a>/state) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;states.dm 17"/></aside>
+        </h3>
+        <p>tgui states</p>
+<p>Base state and helpers for states. Just does some sanity checks, implement a state for in-depth checks.</p>
+<p>public</p>
+<p>Checks the UI state for a mob.</p>
+<p>required user mob The mob who opened/is using the UI.
+required state datum/ui_state The state to check.</p>
+<p>return UI_state The state of the UI.</p></main>
+<footer>
+    tgstation.dme
+    ceeff661a0852c53ada919d4967a033aa3328f01 &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/src/dmdoc/README.md">dmdoc 1.0.0</a></footer>
+</body>
+</html>

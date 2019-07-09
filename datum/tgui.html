@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;datum&#x2F;tgui - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="datum/tgui.html#proc">Proc Details</a></header>
+<main>
+<h1>/<a href="datum.html">datum</a>/<a href="datum/tgui.html">tgui</a>
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 10"/></h1>
+
+<p>tgui</p>
+<p>/tg/station user interface library</p>
+<p>tgui datum (represents a UI).</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="datum/tgui.html#proc/New">New</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/Topic">Topic</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/close">close</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/get_config_data">get_config_data</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/get_html">get_html</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/get_json">get_json</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/open">open</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/process">process</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/push_data">push_data</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/reinitialize">reinitialize</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_autoupdate">set_autoupdate</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_initial_data">set_initial_data</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_interface">set_interface</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_status">set_status</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_style">set_style</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/set_window_options">set_window_options</a></th><td>public</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/update">update</a></th><td>private</td></tr>
+            <tr><th><a href="datum/tgui.html#proc/update_status">update_status</a></th><td>private</td></tr></table><h2><a name="proc">Proc Details</a></h2><h3><a name="proc/New">New</a><aside>(/<a href="mob.html">mob</a>/user, /<a href="datum.html">datum</a>/src_object, ui_key, interface, title, width, height, /<a href="datum.html">datum</a>/<a href="datum/tgui.html">tgui</a>/master_ui, /<a href="datum.html">datum</a>/<a href="datum/ui_state.html">ui_state</a>/state, browser_id) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 57"/></aside>
+        </h3>
+        <p>public</p>
+<p>Create a new UI.</p>
+<p>required user mob The mob who opened/is using the UI.
+required src_object datum The object or datum which owns the UI.
+required ui_key string The ui_key of the UI.
+required interface string The interface used to render the UI.
+optional title string The title of the UI.
+optional width int The window width.
+optional height int The window height.
+optional master_ui datum/tgui The parent UI.
+optional state datum/ui_state The state used to determine status.</p>
+<p>return datum/tgui The requested UI.</p><h3><a name="proc/Topic">Topic</a><aside>(href, href_list) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 277"/></aside>
+        </h3>
+        <p>private</p>
+<p>Handle clicks from the UI.
+Call the src_object's ui_act() if status is UI_INTERACTIVE.
+If the src_object's ui_act() returns 1, update all UIs attacked to it.</p><h3><aside class="declaration">proc </aside><a name="proc/close">close</a><aside>() 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 128"/></aside>
+        </h3>
+        <p>public</p>
+<p>Close the UI, and all its children.</p><h3><aside class="declaration">proc </aside><a name="proc/get_config_data">get_config_data</a><aside>() 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 225"/></aside>
+        </h3>
+        <p>private</p>
+<p>Get the config data/datastructure to initialize the UI with.</p>
+<p>return list The config data.</p><h3><aside class="declaration">proc </aside><a name="proc/get_html">get_html</a><aside>(inline) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 199"/></aside>
+        </h3>
+        <p>private</p>
+<p>Generate HTML for this UI.</p>
+<p>optional bool inline If the JSON should be inlined into the HTML (for debugging).</p>
+<p>return string UI HTML output.</p><h3><aside class="declaration">proc </aside><a name="proc/get_json">get_json</a><aside>(/list/data) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 256"/></aside>
+        </h3>
+        <p>private</p>
+<p>Package the data to send to the UI, as JSON.
+This includes the UI data and config_data.</p>
+<p>return string The packaged JSON.</p><h3><aside class="declaration">proc </aside><a name="proc/open">open</a><aside>() 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 86"/></aside>
+        </h3>
+        <p>public</p>
+<p>Open this UI (and initialize it with data).</p><h3><a name="proc/process">process</a><aside>(force) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 311"/></aside>
+        </h3>
+        <p>private</p>
+<p>Update the UI.
+Only updates the data if update is true, otherwise only updates the status.</p>
+<p>optional force bool If the UI should be forced to update.</p><h3><aside class="declaration">proc </aside><a name="proc/push_data">push_data</a><aside>(data, force) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 330"/></aside>
+        </h3>
+        <p>private</p>
+<p>Push data to an already open UI.</p>
+<p>required data list The data to send.
+optional force bool If the update should be sent regardless of state.</p><h3><aside class="declaration">proc </aside><a name="proc/reinitialize">reinitialize</a><aside>(interface, /list/data) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 116"/></aside>
+        </h3>
+        <p>public</p>
+<p>Reinitialize the UI.
+(Possibly with a new interface and/or data).</p>
+<p>optional template string The name of the new interface.
+optional data list The new initial data.</p><h3><aside class="declaration">proc </aside><a name="proc/set_autoupdate">set_autoupdate</a><aside>(state) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 176"/></aside>
+        </h3>
+        <p>public</p>
+<p>Enable/disable auto-updating of the UI.</p>
+<p>required state bool Enable/disable auto-updating.</p><h3><aside class="declaration">proc </aside><a name="proc/set_initial_data">set_initial_data</a><aside>(/list/data) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 187"/></aside>
+        </h3>
+        <p>private</p>
+<p>Set the data to initialize the UI with.
+The datastructure cannot be changed by subsequent updates.</p>
+<p>optional data list The data/datastructure to initialize the UI with.</p><h3><aside class="declaration">proc </aside><a name="proc/set_interface">set_interface</a><aside>(interface) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 166"/></aside>
+        </h3>
+        <p>public</p>
+<p>Set the interface (template) for this UI.</p>
+<p>required interface string The new UI interface.</p><h3><aside class="declaration">proc </aside><a name="proc/set_status">set_status</a><aside>(status, push) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 375"/></aside>
+        </h3>
+        <p>private</p>
+<p>Set the status/visibility of the UI.</p>
+<p>required status int The status to set (UI_CLOSE/UI_DISABLED/UI_UPDATE/UI_INTERACTIVE).
+optional push bool Push an update to the UI (an update is always sent for UI_DISABLED).</p><h3><aside class="declaration">proc </aside><a name="proc/set_style">set_style</a><aside>(style) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 156"/></aside>
+        </h3>
+        <p>public</p>
+<p>Set the style for this UI.</p>
+<p>required style string The new UI style.</p><h3><aside class="declaration">proc </aside><a name="proc/set_window_options">set_window_options</a><aside>(/list/window_options) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 146"/></aside>
+        </h3>
+        <p>public</p>
+<p>Sets the browse() window options for this UI.</p>
+<p>required window_options list The window options to set.</p><h3><aside class="declaration">proc </aside><a name="proc/update">update</a><aside>(force_open) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 348"/></aside>
+        </h3>
+        <p>private</p>
+<p>Updates the UI by interacting with the src_object again, which will hopefully
+call try_ui_update on it.</p>
+<p>optional force_open bool If force_open should be passed to ui_interact.</p><h3><aside class="declaration">proc </aside><a name="proc/update_status">update_status</a><aside>(push) 
+        
+    
+        <img src="git.png" width="16" height="16" title="code&#x2F;modules&#x2F;tgui&#x2F;tgui.dm 358"/></aside>
+        </h3>
+        <p>private</p>
+<p>Update the status/visibility of the UI for its user.</p>
+<p>optional push bool Push an update to the UI (an update is always sent for UI_DISABLED).</p></main>
+<footer>
+    tgstation.dme
+    ceeff661a0852c53ada919d4967a033aa3328f01 &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/src/dmdoc/README.md">dmdoc 1.0.0</a></footer>
+</body>
+</html>
