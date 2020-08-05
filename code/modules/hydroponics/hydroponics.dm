@@ -256,7 +256,8 @@
 
 //This is where stability mutations exist now.
 			if(myseed.instability >= 80)
-				mutate(0, 0, 0, 0, 0, 0, 0, 5, 0) //Exceedingly low odds of gaining a trait.
+				var/mutation_chance = myseed.instability - 75
+				mutate(0, 0, 0, 0, 0, 0, 0, mutation_chance, 0) //Scaling odds of a random trait or chemical
 			if(myseed.instability >= 60)
 				if(prob((myseed.instability)/2) && !self_sustaining && length(myseed.mutatelist)) //Minimum 30%, Maximum 50% chance of mutating every age tick when not on autogrow.
 					mutatespecie()
@@ -525,7 +526,8 @@
 					possible_reagents += reag
 				var/datum/plant_gene/reagent/reagent_gene = pick(possible_reagents) //Let this serve as a lession to delete your WIP comments before merge.
 				if(reagent_gene.can_add(myseed))
-					myseed.genes += reagent_gene.Copy()
+					if(!reagent_gene.try_upgrade_gene(myseed))
+						myseed.genes += reagent_gene.Copy()
 					myseed.reagents_from_genes()
 					continue
 
