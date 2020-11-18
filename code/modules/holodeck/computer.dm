@@ -20,7 +20,7 @@
 */
 
 #define HOLODECK_CD 25
-#define HOLODECK_DMG_CD 500
+#define HOLODECK_DMG_CD 50
 
 
 /obj/machinery/computer/holodeck
@@ -144,7 +144,7 @@
 			obj_flags ^= EMAGGED
 			say("Safeties restored. Restarting...")
 
-///this is what makes the holodeck not spawn anything on broken tiles (space and non engine plating)
+///this is what makes the holodeck not spawn anything on broken tiles (space and non engine non holographic plating)
 /datum/map_template/holodeck/update_blacklist(turf/placement)
 	turf_blacklist.Cut()
 	for (var/_turf in get_affected_turfs(placement))
@@ -176,15 +176,13 @@
 	program = map_id
 
 	//clear the items from the previous program
-	if (spawned)
-		for (var/_item in spawned)
-			var/obj/holo_item = _item
-			derez(holo_item)
-	if (effects)
-		for (var/_effect in effects)
-			var/obj/effect/holodeck_effect/holo_effect = _effect
-			effects -= holo_effect
-			holo_effect.deactivate(src)
+	for (var/_item in spawned)
+		var/obj/holo_item = _item
+		derez(holo_item)
+	for (var/_effect in effects)
+		var/obj/effect/holodeck_effect/holo_effect = _effect
+		effects -= holo_effect
+		holo_effect.deactivate(src)
 
 	//makes sure that any time a holoturf is inside a baseturf list (if someone put a wall over it) its set to the OFFLINE turf
 	//so that you cant bring turfs from previous programs into other ones (like putting the plasma burn turf into lounge for example)
@@ -202,7 +200,8 @@
 	nerf(!(obj_flags & EMAGGED))
 	finish_spawn()
 
-/obj/machinery/computer/holodeck/proc/finish_spawn()//this is used for holodeck effects (like spawners). otherwise they dont do shit
+///performs final modifications to objects in the spawned list that needs to be done
+/obj/machinery/computer/holodeck/proc/finish_spawn()
 	for (var/_atom in spawned)
 		var/atom/atoms = _atom
 
@@ -236,18 +235,11 @@
 			if (isstructure(holo_object))
 				holo_object.flags_1 |= NODECONSTRUCT_1
 
-///this qdels holoitems that should no longer exist for whatever reason
+///qdels the holoitem and removes it from the spawned list
 /obj/machinery/computer/holodeck/proc/derez(obj/object, silent = TRUE, forced = FALSE)
 	if(!object)
 		return
-
 	spawned -= object
-	//var/turf/target_turf = get_turf(object)
-	//for(var/atom/movable/object_contents in object) // these should be derezed if they were generated
-	//	object_contents.forceMove(target_turf)
-	//	if(ismob(object_contents))
-		//	silent = FALSE // otherwise make sure they are dropped
-
 	if(!silent)
 		visible_message("<span class='notice'>[object] fades away!</span>")
 
@@ -301,11 +293,12 @@
 	. = ..()
 	INVOKE_ASYNC(src, .proc/toggle_power, !machine_stat)
 
+///force loads offline program because something about the holodeck fucked up
 /obj/machinery/computer/holodeck/proc/emergency_shutdown()
 	last_program = program
-	active = FALSE
 	load_program(offline_program, TRUE)
 
+///returns true if any of the tiles in the holodeck loading area are broken
 /obj/machinery/computer/holodeck/proc/floorcheck()
 	for(var/turf/holo_floor in linked)
 		if(isspaceturf(holo_floor))

@@ -307,11 +307,10 @@
 	////////////////
 
 	//we dont want to do ANYTHING with blacklisted turfs
-	if (turf_blacklist)
-		for (var/_turf in turf_blacklist)
-			var/turf/turf_in_blacklist = _turf
-			if (crds == turf_in_blacklist)
-				return
+	for (var/_turf in turf_blacklist)
+		var/turf/turf_in_blacklist = _turf
+		if (crds == turf_in_blacklist)
+			return
 	//The next part of the code assumes there's ALWAYS an /area AND a /turf on a given tile
 	//first instance the /area and remove it from the members list
 	index = members.len
