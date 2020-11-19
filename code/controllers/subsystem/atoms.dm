@@ -17,6 +17,7 @@ SUBSYSTEM_DEF(atoms)
 	initialized = INITIALIZATION_INSSATOMS
 
 	var/list/created_atoms = null
+	var/is_returning_atom_list = FALSE
 
 /datum/controller/subsystem/atoms/Initialize(timeofday)
 	GLOB.fire_overlay.appearance_flags = RESET_COLOR
@@ -34,8 +35,8 @@ SUBSYSTEM_DEF(atoms)
 	old_initialized = initialized
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 
-	created_atoms = null
 	if (atoms_to_return)
+		is_returning_atom_list = TRUE
 		created_atoms = atoms_to_return
 	var/count
 	var/list/mapload_arg = list(TRUE)
@@ -69,6 +70,7 @@ SUBSYSTEM_DEF(atoms)
 	if (atoms_to_return)
 		atoms_to_return = created_atoms.Copy()
 		created_atoms = null
+		is_returning_atom_list = FALSE
 
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)
@@ -106,7 +108,7 @@ SUBSYSTEM_DEF(atoms)
 	else
 		SEND_SIGNAL(A,COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZE)
 
-	if (created_atoms)//if created_atoms isnt null, then ssatoms must currently be initializing a template that requested a list of atoms
+	if (is_returning_atom_list)//if created_atoms isnt null, then ssatoms must currently be initializing a template that requested a list of atoms
 		created_atoms += A
 
 	return qdeleted || QDELING(A)
