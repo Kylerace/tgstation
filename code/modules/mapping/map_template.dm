@@ -29,12 +29,11 @@
 			cached_map = parsed
 	return bounds
 
-/datum/map_template/proc/initTemplateBounds()
+/datum/map_template/proc/initTemplateBounds(list/bounds)
 	var/list/obj/machinery/atmospherics/atmos_machines = list()
 	var/list/obj/structure/cable/cables = list()
 	var/list/atom/atoms = list()
 	var/list/area/areas = list()
-	var/bounds = cached_map?.bounds
 	if (!bounds)
 		return
 	var/list/turfs = block(
@@ -53,6 +52,7 @@
 		var/turf/B = L
 		areas |= B.loc
 		for(var/A in B)
+			//created_atoms += returns_created ? A : null
 			atoms += A
 			if(istype(A, /obj/structure/cable))
 				cables += A
@@ -61,7 +61,7 @@
 				atmos_machines += A
 
 	SSmapping.reg_in_areas_in_z(areas)
-	SSatoms.InitializeAtoms(areas + turfs + atoms, returns_created)
+	SSatoms.InitializeAtoms(areas + turfs + atoms, returns_created ? created_atoms : null)
 	// NOTE, now that Initialize and LateInitialize run correctly, do we really
 	// need these two below?
 	SSmachines.setup_template_powernets(cables)
@@ -102,7 +102,7 @@
 	repopulate_sorted_areas()
 
 	//initialize things that are normally initialized after map load
-	initTemplateBounds()
+	initTemplateBounds(bounds)
 	smooth_zlevel(world.maxz)
 	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
 
@@ -144,7 +144,7 @@
 		repopulate_sorted_areas()
 
 	//initialize things that are normally initialized after map load
-	initTemplateBounds()
+	initTemplateBounds(bounds)
 	//created_atoms = parsed.created_atoms //this has to be done after initTemplateBounds because thats when the template is initialized
 
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")

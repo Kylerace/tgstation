@@ -16,7 +16,8 @@ SUBSYSTEM_DEF(atoms)
 
 	initialized = INITIALIZATION_INSSATOMS
 
-	var/list/created_atoms = null
+	var/list/created_atoms = list()
+	var/creating_atoms_list = FALSE
 
 /datum/controller/subsystem/atoms/Initialize(timeofday)
 	GLOB.fire_overlay.appearance_flags = RESET_COLOR
@@ -34,11 +35,12 @@ SUBSYSTEM_DEF(atoms)
 	old_initialized = initialized
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 
-	created_atoms = null
+
 	if (atoms_to_return)
-		created_atoms = atoms_to_return
+		creating_atoms_list = TRUE
 	var/count
-	var/list/mapload_arg = list(TRUE)
+	var/mapload_type = atoms ? MAPLOAD_AFTER : MAPLOAD_START
+	var/list/mapload_arg = list(mapload_type)
 	if(atoms)
 		count = atoms.len
 		for(var/I in atoms)
@@ -66,8 +68,10 @@ SUBSYSTEM_DEF(atoms)
 		testing("Late initialized [late_loaders.len] atoms")
 		late_loaders.Cut()
 
-	if (atoms_to_return)
-		return atoms_to_return
+	if (creating_atoms_list)
+		creating_atoms_list = FALSE
+		atoms_to_return = created_atoms.Copy()
+		//created_atoms.Cut()
 
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)
@@ -105,7 +109,7 @@ SUBSYSTEM_DEF(atoms)
 	else
 		SEND_SIGNAL(A,COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZE)
 
-	if (created_atoms)
+	if (creating_atoms_list)
 		created_atoms += A
 
 	return qdeleted || QDELING(A)

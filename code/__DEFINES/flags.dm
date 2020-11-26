@@ -217,3 +217,9 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 
 /// 33554431 (2^24 - 1) is the maximum value our bitflags can reach.
 #define MAX_BITFLAG_DIGITS 8
+
+///mapload flags
+///True if it is being loaded from a template at the beginning of the round
+#define MAPLOAD_START (1<<0)
+///True if it is being loaded from a map template after roundstart
+#define MAPLOAD_AFTER (1<<1)

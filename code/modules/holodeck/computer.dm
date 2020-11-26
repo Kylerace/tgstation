@@ -121,8 +121,8 @@
 	switch(action)
 		if("load_program")
 			var/program_to_load = params["id"]
-			if (!ispath(program_to_load))
-				return FALSE
+			//if (!ispath(program_to_load))
+			//	return FALSE
 			var/list/checked = program_cache.Copy()
 			var/valid = FALSE //dont tell security about this
 			for (var/prog in checked)
@@ -239,11 +239,11 @@
 		return
 
 	spawned -= object
-	//var/turf/target_turf = get_turf(object)
-	//for(var/atom/movable/object_contents in object) // these should be derezed if they were generated
-	//	object_contents.forceMove(target_turf)
-	//	if(ismob(object_contents))
-		//	silent = FALSE // otherwise make sure they are dropped
+	var/turf/target_turf = get_turf(object)
+	for(var/atom/movable/object_contents in object) // these should be derezed if they were generated
+		object_contents.forceMove(target_turf)
+		if(ismob(object_contents))
+			silent = FALSE // otherwise make sure they are dropped
 
 	if(!silent)
 		visible_message("<span class='notice'>[object] fades away!</span>")
