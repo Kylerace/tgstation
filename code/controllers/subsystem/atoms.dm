@@ -28,16 +28,16 @@ SUBSYSTEM_DEF(atoms)
 	initialized = INITIALIZATION_INNEW_REGULAR
 	return ..()
 
-/datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms, list/atoms_to_return = null)
+/datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms, list/passed_in_list = null)
 	if(initialized == INITIALIZATION_INSSATOMS)
 		return
 
 	old_initialized = initialized
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 
+	created_atoms.Cut()
+	creating_atoms_list = passed_in_list
 
-	if (atoms_to_return)
-		creating_atoms_list = TRUE
 	var/count
 	var/mapload_type = atoms ? MAPLOAD_AFTER : MAPLOAD_START
 	var/list/mapload_arg = list(mapload_type)
@@ -70,8 +70,8 @@ SUBSYSTEM_DEF(atoms)
 
 	if (creating_atoms_list)
 		creating_atoms_list = FALSE
-		atoms_to_return = created_atoms.Copy()
-		//created_atoms.Cut()
+		passed_in_list = created_atoms.Copy()
+		created_atoms.Cut()
 
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)

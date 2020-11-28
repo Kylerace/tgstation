@@ -67,9 +67,9 @@
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
 
-	if (returns_created)
-		created_atoms = SSatoms.created_atoms.Copy()
-		SSatoms.created_atoms.Cut()
+	//if (returns_created)
+	//	created_atoms = SSatoms.created_atoms.Copy()
+	//	SSatoms.created_atoms.Cut()
 
 	//calculate all turfs inside the border
 	var/list/template_and_bordering_turfs = block(
