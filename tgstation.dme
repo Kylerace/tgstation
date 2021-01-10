@@ -2221,6 +2221,8 @@
 #include "code\modules\mapping\space_management\space_transition.dm"
 #include "code\modules\mapping\space_management\traits.dm"
 #include "code\modules\mapping\space_management\zlevel_manager.dm"
+#include "code\modules\mapticktests\tests_objects.dm"
+#include "code\modules\mapticktests\tests_templates.dm"
 #include "code\modules\mining\abandoned_crates.dm"
 #include "code\modules\mining\aux_base.dm"
 #include "code\modules\mining\fulton.dm"

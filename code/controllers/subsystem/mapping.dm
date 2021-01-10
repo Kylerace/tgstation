@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(mapping)
 
 	var/list/shuttle_templates = list()
 	var/list/shelter_templates = list()
+	var/list/maptick_templates = list()
 
 	var/list/areas_in_z = list()
 
@@ -394,6 +395,7 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 	preloadRuinTemplates()
 	preloadShuttleTemplates()
 	preloadShelterTemplates()
+	preloadMaptickTemplates()
 
 /datum/controller/subsystem/mapping/proc/preloadRuinTemplates()
 	// Still supporting bans by filename
@@ -447,6 +449,16 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 
 		shelter_templates[S.shelter_id] = S
 		map_templates[S.shelter_id] = S
+
+/datum/controller/subsystem/mapping/proc/preloadMaptickTemplates()
+	for(var/item in subtypesof(/datum/map_template/mapticktest))
+		var/datum/map_template/mapticktest/maptick_type = item
+		if(!(initial(maptick_type.mappath)))
+			continue
+		var/datum/map_template/mapticktest/M = new maptick_type()
+
+		maptick_templates[M.maptick_id] = M
+		map_templates[M.maptick_id] = M
 
 //Manual loading of away missions.
 /client/proc/admin_away()
