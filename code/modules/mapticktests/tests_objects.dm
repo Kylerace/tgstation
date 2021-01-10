@@ -14,3 +14,13 @@
 /obj/item/maptick_test_invisible_overlay/Initialize()
 	. = ..()
 	overlays += image("")
+
+/obj/item/maptick_test_speen_object
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+	lefthand_file = 'icons/mob/inhands/misc/sheets_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/misc/sheets_righthand.dmi'
+
+/obj/item/maptick_test_speen_object/Initialize()
+	. = ..()
+	animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)

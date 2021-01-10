@@ -16,3 +16,11 @@
 /datum/map_template/mapticktest/invisible_image_objects
 	maptick_id = "invisible images"
 	mappath = "_maps/templates/mapticktest_invisible_image_objects.dmm"
+
+/datum/map_template/mapticktest/speen_objects
+	maptick_id = "spinning objects"
+	mappath = "_maps/templates/mapticktest_animation_test.dmm"
+
+/datum/map_template/mapticktest/speen_objects_100_layer
+	maptick_id = "spinning objects 100 layer"
+	mappath = "_maps/templates/mapticktest_animation_50_layer.dmm"
