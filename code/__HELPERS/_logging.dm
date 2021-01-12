@@ -224,6 +224,11 @@ GLOBAL_LIST_INIT(testing_global_profiler, list("_PROFILE_NAME" = "Global"))
 	. = "[perf_info.Join(",")]\n"
 	WRITE_LOG_NO_FORMAT(GLOB.perf_log, .)
 
+/proc/log_maptick(list/maptick_info, filepath)
+	. = "[maptick_info.Join(",")]\n"
+	WRITE_LOG_NO_FORMAT(filepath, .)
+	//TODO: this
+
 /**
  * Appends a tgui-related log entry. All arguments are optional.
  */

@@ -1,26 +1,76 @@
+/*
+when making a test, it should in 99% of cases by 20x20 in order to be standardized, the turf should be featureless plating unless you are
+testing a specific turf. tests must be made to answer a specific question about how something impacts maptick against a control test.
+make sure that in most cases that the entire test area is uniform, the player is expected to be spawned in the middle of the test in a non
+station z level (note, jury is still out on whether number of appearances in the entire z level affects maptick even when unseen).
+
+tests that involve objects should have at least two variants, a 1 layer and a 50 layer version. 1 layer is the object in question
+distributed on every tile once, 50 layer is every tile being filled with 50 of those objects in the exact same place (no pixel shifting),
+unless you are of course testing what pixel shifting does to maptick. if possible base your objects off of /obj/item/maptick_test_generic
+except for one single difference
+
+group 1 and 50 test variants together, post what the purpose of the tests are, and exactly what question they are supposed to answer about maptick
+comment what range of common maptick values you got while testing it. if around 90% of a test had maptick of between 1% and 2% then put 1-2%,
+if it occasionally spikes to 3% with no input then put hs 3% (high spikes are around 3%), same with low dips except with ld
+
+when testing do not move, turn off hud as that raises maptick marginally (the only way to get 0% maptick is with the blank test and no hud)
+CLOTHING THAT CHANGES VISION RAISES MAPTICK EVEN WITHOUT ANY WALLS, UNLESS YOU ARE TESTING THAT DO NOT WEAR ANY MESONS OR WHATEVER
+also by default turn off parallax.
+
+as of right now i am testing with a human wearing the debug outfit, there used to be a dummy species which was preferable to this but i
+think it was removed, ill have to find a species with less visual noise on the suspicion of mob overlays/viscontents/whatever the fuck else
+
+maptick is very noisy, testing stuff on station is almost impossible. even with all of this it is still pretty noisy. maptick might somehow
+improve after the first couple of tests?????
+*/
+
+
 /datum/map_template/mapticktest
 	var/maptick_id
 
+//blank control test, nothing but generic plating 20x20. ~ 0-0.1% hs 0.2-0.3%
 /datum/map_template/mapticktest/blank
 	maptick_id = "blank"
 	mappath = "_maps/templates/mapticktest_blank.dmm"
 
-/datum/map_template/mapticktest/generic_objects_1_layer
+//generic object tests, meant as the control for all object tests
+/datum/map_template/mapticktest/generic_objects_1_layer // 0.2-0.3% hs 0.4%
 	maptick_id = "generic objects 1 layer"
 	mappath = "_maps/templates/mapticktest_generic_objects.dmm"
 
-/datum/map_template/mapticktest/generic_objects_100_layer
+/datum/map_template/mapticktest/generic_objects_50_layer // ~ 9.5-10.5% hs 11.2-11.9% | 8.5-10.5%??? hs ~11.5%
+	maptick_id = "generic objects 50 layer"
+	mappath = "_maps/templates/mapticktest_generic_objects_50_layers.dmm"
+
+/datum/map_template/mapticktest/generic_objects_100_layer //19-20%
 	maptick_id = "generic objects 100 layer"
 	mappath = "_maps/templates/mapticktest_generic_objects_100_layers.dmm"
 
-/datum/map_template/mapticktest/invisible_image_objects
+//these objects have an invisible image as an overlay to test whether or not overlays in general raise maptick
+//will likely need to add many invisible images to fully rule this out
+/datum/map_template/mapticktest/invisible_image_objects // 0.2-0.3% hs 0.4%
 	maptick_id = "invisible images"
 	mappath = "_maps/templates/mapticktest_invisible_image_objects.dmm"
 
-/datum/map_template/mapticktest/speen_objects
+/datum/map_template/mapticktest/invisible_image_objects_50_layer // ~8.5-9.8% hs 11% ld 7-8% | 8.5-10% consistently lower???? hs ~11.5%
+	maptick_id = "invisible images 50 layer"
+	mappath = "_maps/templates/mapticktest_invisible_image_objects_50_layer.dmm"
+
+//these objects are permanently spinning with animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)
+//this is to test whether constant animations increase maptick
+/datum/map_template/mapticktest/speen_objects // 0.3-0.4% hs 0.5%
 	maptick_id = "spinning objects"
 	mappath = "_maps/templates/mapticktest_animation_test.dmm"
 
-/datum/map_template/mapticktest/speen_objects_100_layer
-	maptick_id = "spinning objects 100 layer"
+/datum/map_template/mapticktest/speen_objects_50_layer // 9-10.5% hs 11.5% ld 8.5%
+	maptick_id = "spinning objects 50 layer"
 	mappath = "_maps/templates/mapticktest_animation_50_layer.dmm"
+
+//this is meant to test whether overlays are more expensive than normal icons, the objects have no icon but have an overlay with the metal sheet sprite
+/datum/map_template/mapticktest/invis_objects_vis_overlays //0.2-0.3% hs 0.4%
+	maptick_id = "invis obj vis overlay"
+	mappath = "_maps/templates/mapticktest_invis_object_vis_overlay.dmm"
+
+/datum/map_template/mapticktest/invis_objects_vis_overlays_50_layer
+	maptick_id = "invis obj vis overlay 50 layer"
+	mappath = "_maps/templates/mapticktest_invis_object_vis_overlay_50_layers.dmm"

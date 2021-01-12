@@ -24,3 +24,13 @@
 /obj/item/maptick_test_speen_object/Initialize()
 	. = ..()
 	animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)
+
+/obj/item/maptick_test_invisible_obj_vis_overlay
+	icon = ""
+	var/image/visible_overlay
+
+/obj/item/maptick_test_invisible_obj_vis_overlay/Initialize()
+	. = ..()
+	visible_overlay = icon("icons/obj/stack_objects.dmi", "sheet-metal")
+	overlays += visible_overlay
+

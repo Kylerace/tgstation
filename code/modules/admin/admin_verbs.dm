@@ -175,6 +175,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/validate_cards,
 	/client/proc/test_cardpack_distribution,
 	/client/proc/print_cards,
+	/client/proc/start_maptick_test,
 	#ifdef TESTING
 	/client/proc/check_missing_sprites,
 	#endif
@@ -784,3 +785,28 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	set category = "Debug"
 
 	src << output("", "statbrowser:create_debug")
+
+/client/proc/start_maptick_test()
+	set name = "Start Maptick Test"
+	set category = "Debug"
+
+	var/file_name = input(src, "Put in the name of the maptick log file", "Make Log") as text | null
+	SSmaptick_track.start_tracking(file_name)
+
+	log_admin("[key_name(usr)] has started a maptick test")
+	message_admins("[key_name(usr)] has started a maptick test")
+
+	remove_verb(src, /client/proc/start_maptick_test)
+	add_verb(src, /client/proc/stop_maptick_test)
+
+/client/proc/stop_maptick_test()
+	set name = "Stop Maptick Test"
+	set category = "Debug"
+
+	SSmaptick_track.stop_tracking()
+
+	log_admin("[key_name(usr)] has stopped the maptick test")
+	message_admins("[key_name(usr)] has stopped the maptick test")
+
+	remove_verb(src, /client/proc/stop_maptick_test)
+	add_verb(src, /client/proc/start_maptick_test)
