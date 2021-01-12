@@ -27,19 +27,6 @@ SUBSYSTEM_DEF(maptick_track)
 /datum/controller/subsystem/maptick_track/Initialize(start_timeofday)
 	. = ..()
 
-	/*log_maptick(
-		list(
-			"maptick",
-			"players",
-			"time",
-			"tidi",
-			"tidi_fastavg",
-			"tidi_avg",
-			"tidi_slowavg"
-		),
-		file_output_name
-	)*/
-
 /datum/controller/subsystem/maptick_track/proc/start_tracking(filename)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)

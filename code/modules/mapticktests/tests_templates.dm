@@ -10,8 +10,9 @@ unless you are of course testing what pixel shifting does to maptick. if possibl
 except for one single difference
 
 group 1 and 50 test variants together, post what the purpose of the tests are, and exactly what question they are supposed to answer about maptick
-comment what range of common maptick values you got while testing it. if around 90% of a test had maptick of between 1% and 2% then put 1-2%,
-if it occasionally spikes to 3% with no input then put hs 3% (high spikes are around 3%), same with low dips except with ld
+comment what average maptick was while you were testing via the "start maptick test" admin verb in the debug panel, name it after the test
+after around 10 minutes, turn off the maptick test with the stop maptick test verb. its a csv so you can put it into google sheets or MS office
+to get a graph. always put the last average maptick value you get on the test template in here
 
 when testing do not move, turn off hud as that raises maptick marginally (the only way to get 0% maptick is with the blank test and no hud)
 CLOTHING THAT CHANGES VISION RAISES MAPTICK EVEN WITHOUT ANY WALLS, UNLESS YOU ARE TESTING THAT DO NOT WEAR ANY MESONS OR WHATEVER
