@@ -791,7 +791,8 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	set category = "Debug"
 
 	var/file_name = input(src, "Put in the name of the maptick log file", "Make Log") as text | null
-	SSmaptick_track.start_tracking(file_name)
+	if (!SSmaptick_track.start_tracking(file_name))
+		return
 
 	log_admin("[key_name(usr)] has started a maptick test")
 	message_admins("[key_name(usr)] has started a maptick test")

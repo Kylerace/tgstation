@@ -50,6 +50,7 @@ GLOBAL_LIST_INIT(admin_verbs_debug_mapping, list(
 	/client/proc/show_line_profiling,
 	/client/proc/create_mapping_job_icons,
 	/client/proc/debug_z_levels,
+	/client/proc/create_turf_reservation,
 	/client/proc/place_ruin
 ))
 GLOBAL_PROTECT(admin_verbs_debug_mapping)
@@ -374,3 +375,16 @@ GLOBAL_VAR_INIT(say_disabled, FALSE)
 	messages += "</table>"
 
 	to_chat(src, messages.Join(""), confidential = TRUE)
+
+/client/proc/create_turf_reservation() //note: in the future this will just ask dimensions
+	set name = "Create Turf Reservation"
+	set category = "Mapping"
+
+	var/template_to_load = input(src, "What template_id to use?", "Input Map Template ID") as text | null
+	if (!template_to_load)
+		to_chat(src, "you must input a valid template ID!")
+		return
+	var/datum/map_template/reservation_template = SSmapping.maptick_templates[template_to_load]
+	var/datum/turf_reservation/test_reservation = SSmapping.RequestBlockReservation(reservation_template.width, reservation_template.height)
+	reservation_template.load(locate(test_reservation.bottom_left_coords[1], test_reservation.bottom_left_coords[2], test_reservation.bottom_left_coords[3]))
+	mob.forceMove(locate(13,13,test_reservation.bottom_left_coords[3]))

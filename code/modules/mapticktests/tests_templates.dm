@@ -1,5 +1,5 @@
 /*
-when making a test, it should in 99% of cases by 20x20 in order to be standardized, the turf should be featureless plating unless you are
+when making a test, it should in 99% of cases by 25x25 in order to be standardized, the turf should be featureless plating unless you are
 testing a specific turf. tests must be made to answer a specific question about how something impacts maptick against a control test.
 make sure that in most cases that the entire test area is uniform, the player is expected to be spawned in the middle of the test in a non
 station z level (note, jury is still out on whether number of appearances in the entire z level affects maptick even when unseen).

@@ -2,6 +2,8 @@
 #define TEST_INTENSITY_MEDIUM	"medium"
 #define TEST_INTENSITY_HIGH		"high"
 
+#define DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM 0.0001
+
 SUBSYSTEM_DEF(maptick_track)
 	name = "Maptick Tracking"
 	wait = 5
@@ -11,16 +13,24 @@ SUBSYSTEM_DEF(maptick_track)
 
 	var/file_output_name //we output the recorded values to this name of file
 	var/file_output_path //where the file we make is
+	var/list/used_filenames = list()
 
 	var/list/all_maptick_values = list()
 	var/average_maptick = 0
 
-	var/total_client_movement_this_fire = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
+	var/total_client_movement = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
+	var/client_movement_over_time = 0 //total client movement divided by time elapsed
 	var/number_of_dead_clients = 0
 
-	var/list/used_filenames = list()
+	var/list/tracked_client_mobs = list()
 
 	var/starting_time
+	var/time_elapsed = 0
+
+	var/delta_maptick_average = 0
+	var/stored_maptick_average = 0
+	var/last_fire_maptick_average = 0
+
 
 	var/first_run = TRUE
 	can_fire = FALSE
@@ -42,11 +52,26 @@ SUBSYSTEM_DEF(maptick_track)
 				"average maptick",
 				"minutes",
 				"players",
+				"total tiles moved",
+				"tiles moved per minute"
 			),
 			file_output_path
 		)
+	for (var/mob/mob_with_client in GLOB.player_list)
+		RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
+		RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
+		tracked_client_mobs += mob_with_client
+	return TRUE
+
+/datum/controller/subsystem/maptick_track/proc/unregister_mob(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_MOB_LOGOUT)
+	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 
 
+/datum/controller/subsystem/maptick_track/proc/increment_tilesmoved(datum/source, atom/_OldLoc, _Dir, _Forced = FALSE)
+	SIGNAL_HANDLER
+	total_client_movement++
 
 /datum/controller/subsystem/maptick_track/proc/stop_tracking()
 	can_fire = FALSE
@@ -57,18 +82,24 @@ SUBSYSTEM_DEF(maptick_track)
 /datum/controller/subsystem/maptick_track/fire()
 
 	average_maptick = 0
+
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 	for (var/i in all_maptick_values)
 		average_maptick += i
 	average_maptick = average_maptick / all_maptick_values.len
 
+	time_elapsed = (world.time-starting_time) / 600
+	client_movement_over_time = total_client_movement / time_elapsed
+
 	log_maptick(
 		list(
 			MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 			average_maptick, //average maptick
-			(world.time-starting_time) / 600, //current time in minutes
+			time_elapsed, //current time in minutes
 			length(GLOB.player_list), //players
+			total_client_movement,
+			client_movement_over_time,
 		),
 		file_output_path
 	)
