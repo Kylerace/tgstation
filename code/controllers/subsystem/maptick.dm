@@ -18,6 +18,10 @@ SUBSYSTEM_DEF(maptick_track)
 	var/list/all_maptick_values = list()
 	var/average_maptick = 0
 
+	var/list/x_minute_values = list()
+	var/total_values_in_x_minutes = 5 * 60 * (10 / 5)//reeeeee why is wait an invalid variable
+	var/x_minute_average = 0
+
 	var/total_client_movement = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
 	var/client_movement_over_time = 0 //total client movement divided by time elapsed
 	var/number_of_dead_clients = 0
@@ -50,6 +54,7 @@ SUBSYSTEM_DEF(maptick_track)
 			list(
 				"maptick",
 				"average maptick",
+				"5 minute average", //the last 600 measured maptick values
 				"minutes",
 				"players",
 				"total tiles moved",
@@ -77,6 +82,7 @@ SUBSYSTEM_DEF(maptick_track)
 	can_fire = FALSE
 	used_filenames += file_output_name
 	all_maptick_values.Cut()
+
 	first_run = TRUE
 
 /datum/controller/subsystem/maptick_track/fire()
@@ -84,10 +90,17 @@ SUBSYSTEM_DEF(maptick_track)
 	average_maptick = 0
 
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
+	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 	for (var/i in all_maptick_values)
 		average_maptick += i
 	average_maptick = average_maptick / all_maptick_values.len
+
+	if (x_minute_values.len > total_values_in_x_minutes)
+		x_minute_values.Remove(x_minute_values[1])
+	for (var/i in x_minute_values)
+		x_minute_average += i
+	x_minute_average = x_minute_average / x_minute_values.len
 
 	time_elapsed = (world.time-starting_time) / 600
 	client_movement_over_time = total_client_movement / time_elapsed
@@ -96,6 +109,7 @@ SUBSYSTEM_DEF(maptick_track)
 		list(
 			MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 			average_maptick, //average maptick
+			x_minute_average,
 			time_elapsed, //current time in minutes
 			length(GLOB.player_list), //players
 			total_client_movement,

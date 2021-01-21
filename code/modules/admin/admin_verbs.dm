@@ -796,7 +796,8 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	log_admin("[key_name(usr)] has started a maptick test")
 	message_admins("[key_name(usr)] has started a maptick test")
-
+	//var/datum/secrets_menu/tgui  = new(usr)//create the datum
+	//tgui.ui_interact(usr)
 	remove_verb(src, /client/proc/start_maptick_test)
 	add_verb(src, /client/proc/stop_maptick_test)
 
