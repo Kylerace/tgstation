@@ -50,7 +50,7 @@ GLOBAL_LIST_INIT(admin_verbs_debug_mapping, list(
 	/client/proc/show_line_profiling,
 	/client/proc/create_mapping_job_icons,
 	/client/proc/debug_z_levels,
-	/client/proc/create_turf_reservation,
+	/client/proc/create_template_z_level,
 	/client/proc/place_ruin
 ))
 GLOBAL_PROTECT(admin_verbs_debug_mapping)
@@ -376,15 +376,15 @@ GLOBAL_VAR_INIT(say_disabled, FALSE)
 
 	to_chat(src, messages.Join(""), confidential = TRUE)
 
-/client/proc/create_turf_reservation() //note: in the future this will just ask dimensions
-	set name = "Create Turf Reservation"
+/client/proc/create_template_z_level() //note: in the future this will just ask dimensions
+	set name = "Create Template Z Level"
 	set category = "Mapping"
 
 	var/template_to_load = input(src, "What template_id to use?", "Input Map Template ID") as text | null
 	if (!template_to_load)
 		to_chat(src, "you must input a valid template ID!")
 		return
-	var/datum/map_template/reservation_template = SSmapping.maptick_templates[template_to_load]
-	var/datum/turf_reservation/test_reservation = SSmapping.RequestBlockReservation(reservation_template.width, reservation_template.height)
-	reservation_template.load(locate(test_reservation.bottom_left_coords[1], test_reservation.bottom_left_coords[2], test_reservation.bottom_left_coords[3]))
-	mob.forceMove(locate(13,13,test_reservation.bottom_left_coords[3]))
+	var/datum/map_template/template = SSmapping.maptick_templates[template_to_load]
+	var/datum/space_level/template_level = template.load_new_z()
+	var/turf/target = locate(round((world.maxx - template.width) * 0.5) + 1 + round(template.width * 0.5),round((world.maxy - template.height) * 0.5) + 1 + round(template.height * 0.5), template_level.z_value)
+	mob.forceMove(target)
