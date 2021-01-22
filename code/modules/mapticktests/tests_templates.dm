@@ -75,3 +75,8 @@ improve after the first couple of tests?????
 /datum/map_template/mapticktest/invis_objects_vis_overlays_50_layer
 	maptick_id = "invis obj vis overlay 50 layer"
 	mappath = "_maps/templates/mapticktest_invis_object_vis_overlay_50_layers.dmm"
+
+//this test is designed to test if lack of vision has any effect on maptick, is exactly like the normal generic objects 50 test except the center is walled in
+/datum/map_template/mapticktest/generic_objects_50_layer_walled_in
+	maptick_id = "generic objects 50 layer walled in"
+	mappath = "_maps/templates/mapticktest_generic_objects_50_layers_walled_in_vision.dmm"
