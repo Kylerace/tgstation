@@ -34,3 +34,27 @@
 	visible_overlay = icon("icons/obj/stack_objects.dmi", "sheet-metal")
 	overlays += visible_overlay
 
+/obj/item/maptick_test_invisible_obj_vis_vis_content
+	icon = ""
+	var/obj/item/maptick_test_generic/ecksdee
+
+/obj/item/maptick_test_invisible_obj_vis_vis_content/Initialize()
+	. = ..()
+	ecksdee = new()
+	vis_contents += ecksdee
+
+/obj/item/maptick_test_vis_contents_list_change_spam
+	icon = ""
+	var/obj/item/maptick_test_generic/ecksdee
+
+/obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
+	. = ..()
+	addtimer(CALLBACK(src, .proc/toggle_vis_contents), 1)
+
+/obj/item/maptick_test_vis_contents_list_change_spam/proc/toggle_vis_contents()
+	if (vis_contents.len)
+		vis_contents -= ecksdee
+		qdel(ecksdee)
+	else
+		ecksdee = new()
+		vis_contents += ecksdee

@@ -82,6 +82,9 @@ SUBSYSTEM_DEF(maptick_track)
 	can_fire = FALSE
 	used_filenames += file_output_name
 	all_maptick_values.Cut()
+	total_client_movement = 0
+	for (var/mob/mob_with_client in GLOB.player_list)
+		unregister_mob(mob_with_client)
 
 	first_run = TRUE
 
