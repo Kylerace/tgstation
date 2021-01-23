@@ -46,7 +46,7 @@ SUBSYSTEM_DEF(maptick_track)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)
 			return FALSE
-	starting_time = world.time
+	starting_time = world.timeofday
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
 	can_fire = TRUE
@@ -93,6 +93,7 @@ SUBSYSTEM_DEF(maptick_track)
 	total_client_movement++
 
 /datum/controller/subsystem/maptick_track/proc/stop_tracking()
+	message_admins("the [file_output_name] maptick test has stopped")
 	can_fire = FALSE
 	used_filenames += file_output_name
 	all_maptick_values.Cut()
@@ -119,14 +120,14 @@ SUBSYSTEM_DEF(maptick_track)
 		x_minute_average += i
 	x_minute_average = x_minute_average / x_minute_values.len
 
-	time_elapsed = (world.time-starting_time) / 600
+	time_elapsed = (world.timeofday-starting_time) / 600
 	client_movement_over_time = total_client_movement / time_elapsed
 
 	log_maptick(
 		list(
 			MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 			average_maptick, //average maptick
-			x_minute_average,
+			x_minute_average, //moving average over x minutes, by default its 5
 			time_elapsed, //current time in minutes
 			length(GLOB.player_list), //players
 			total_client_movement,
