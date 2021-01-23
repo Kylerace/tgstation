@@ -11,14 +11,7 @@
 #ifdef TESTING
 #define DATUMVAR_DEBUGGING_MODE
 
-/*
-* Enables extools-powered reference tracking system, letting you see what is referencing objects that refuse to hard delete.
-*
-* * Requires TESTING to be defined to work.
-*/
-//#define REFERENCE_TRACKING
-
-///Method of tracking references without using extools. Slower, kept to avoid over-reliance on extools.
+///Method of tracking references
 //#define LEGACY_REFERENCE_TRACKING
 #ifdef LEGACY_REFERENCE_TRACKING
 

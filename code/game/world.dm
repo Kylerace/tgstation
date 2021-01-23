@@ -2,6 +2,10 @@
 
 GLOBAL_VAR(restart_counter)
 
+// idk where to put this lol
+/proc/auxtools_stack_trace(msg)
+	CRASH(msg)
+
 /**
  * World creation
  *
@@ -29,13 +33,14 @@ GLOBAL_VAR(restart_counter)
  *			All atoms in both compiled and uncompiled maps are initialized()
  */
 /world/New()
-	var/extools = world.GetConfig("env", "EXTOOLS_DLL") || (world.system_type == MS_WINDOWS ? "./byond-extools.dll" : "./libbyond-extools.so")
-	if (fexists(extools))
-		call(extools, "maptick_initialize")()
-	enable_debugger()
-#ifdef REFERENCE_TRACKING
-	enable_reference_tracking()
-#endif
+	var/debug_server = world.GetConfig("env", "AUXTOOLS_DEBUG_DLL")
+	if (debug_server)
+		call(debug_server, "auxtools_init")()
+		enable_debugging()
+
+	var/auxtools_tg = (world.system_type == MS_WINDOWS ? "./auxtools_tg.dll" : "./libauxtools_tg.so")
+	if (fexists(auxtools_tg))
+		call(auxtools_tg, "auxtools_init")()
 
 	log_world("World loaded at [time_stamp()]!")
 
@@ -274,6 +279,17 @@ GLOBAL_VAR(restart_counter)
 	TgsReboot()
 	shutdown_logging() // Past this point, no logging procs can be used, at risk of data loss.
 	..()
+
+/world/Del()
+	var/auxtools_tg = (world.system_type == MS_WINDOWS ? "./auxtools_tg.dll" : "./libauxtools_tg.so")
+	if (fexists(auxtools_tg))
+		call(auxtools_tg, "auxtools_shutdown")()
+
+	var/debug_server = world.GetConfig("env", "AUXTOOLS_DEBUG_DLL")
+	if (debug_server)
+		call(debug_server, "auxtools_shutdown")()
+		enable_debugging()
+	. = ..()
 
 /world/proc/update_status()
 
