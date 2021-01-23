@@ -50,11 +50,12 @@
 /obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
 	. = ..()
 	addtimer(CALLBACK(src, .proc/toggle_vis_contents), 1)
+	ecksdee = new()
+	vis_contents += ecksdee
 
 /obj/item/maptick_test_vis_contents_list_change_spam/proc/toggle_vis_contents()
 	if (vis_contents.len)
 		vis_contents -= ecksdee
-		qdel(ecksdee)
 	else
-		ecksdee = new()
 		vis_contents += ecksdee
+	addtimer(CALLBACK(src, .proc/toggle_vis_contents), 1)
