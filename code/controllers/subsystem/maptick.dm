@@ -66,6 +66,20 @@ SUBSYSTEM_DEF(maptick_track)
 		RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
 		RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
 		tracked_client_mobs += mob_with_client
+	SSair.can_fire = FALSE
+	SSmachines.can_fire = FALSE
+	SSnpcpool.can_fire = FALSE
+	SSidlenpcpool.can_fire = FALSE
+	SSadjacent_air.can_fire = FALSE
+	SSshuttle.can_fire = FALSE
+	SSweather.can_fire = FALSE
+	SSradiation.can_fire = FALSE
+	SSfire_burning.can_fire = FALSE
+	SSmobs.can_fire = FALSE
+	SSai_controllers.can_fire = FALSE
+	SSeconomy.can_fire = FALSE
+	SSfluids.can_fire = FALSE
+	SSobj.can_fire = FALSE
 	return TRUE
 
 /datum/controller/subsystem/maptick_track/proc/unregister_mob(datum/source)
