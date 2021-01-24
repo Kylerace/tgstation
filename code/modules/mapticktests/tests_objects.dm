@@ -117,3 +117,35 @@
 
 /turf/open/floor/maptick_test_changer_two/proc/change_to_other()
 	ChangeTurf(/turf/open/floor/maptick_test_changer_one)
+
+/datum/component/maptick_moving_tester
+	var/mob/living/carbon/host
+	var/going_north = TRUE
+
+/datum/component/maptick_moving_tester/RegisterWithParent()
+	. = ..()
+	if(istype(parent, /mob/living/carbon))
+		host = parent
+		RegisterSignal(host,COMSIG_MOVABLE_MOVED, .proc/prepare_move)
+
+/datum/component/maptick_moving_tester/UnregisterFromParent()
+	. = ..()
+	UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
+
+/datum/component/maptick_moving_tester/proc/prepare_move()
+	if(going_north)
+		if (host.y < 230)
+			actually_move(going_north)
+		else
+			going_north = FALSE
+	else
+		if (host.y > 25)
+			actually_move(going_north)
+		else
+			going_north = TRUE
+
+/datum/component/maptick_moving_tester/proc/actually_move(going_north)
+	if (going_north)
+		walk(host, NORTH)
+	else
+		walk(host, SOUTH)

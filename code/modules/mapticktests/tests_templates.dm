@@ -80,3 +80,68 @@ improve after the first couple of tests?????
 /datum/map_template/mapticktest/generic_objects_50_layer_walled_in
 	maptick_id = "generic objects 50 layer walled in"
 	mappath = "_maps/templates/mapticktest_generic_objects_50_layers_walled_in_vision.dmm"
+
+
+/datum/map_template/mapticktest/mapticktest_moving_genobj50l
+	maptick_id = "mapticktest_moving_genobj50l"
+	mappath = "_maps/templates/mapticktest_moving_genobj50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_changing_turfs
+	maptick_id = "mapticktest_changing_turfs"
+	mappath = "_maps/templates/mapticktest_changing_turfs.dmm"
+
+/datum/map_template/mapticktest/mapticktest_invisible_object
+	maptick_id = "mapticktest_invisible_object"
+	mappath = "_maps/templates/mapticktest_invisible_object.dmm"
+
+/datum/map_template/mapticktest/mapticktest_moving_blank_test
+	maptick_id = "mapticktest_moving_blank_test"
+	mappath = "_maps/templates/mapticktest_moving_blank_test.dmm"
+
+/datum/map_template/mapticktest/mapticktest_moving_genobj
+	maptick_id = "mapticktest_moving_genobj"
+	mappath = "_maps/templates/mapticktest_moving_genobj.dmm"
+
+/datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents
+	maptick_id = "mapticktest_invis_obj_vis_viscontents"
+	mappath = "_maps/templates/mapticktest_invis_obj_vis_viscontents.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_mob
+	maptick_id = "mapticktest_static_mob"
+	mappath = "_maps/templates/mapticktest_static_mob.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_overlay_stacking
+	maptick_id = "mapticktest_static_overlay_stacking"
+	mappath = "_maps/templates/mapticktest_static_overlay_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_viscont_stacking
+	maptick_id = "mapticktest_static_viscont_stacking"
+	mappath = "_maps/templates/mapticktest_static_viscont_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_viscont_changespam
+	maptick_id = "mapticktest_viscont_changespam"
+	mappath = "_maps/templates/mapticktest_viscont_changespam.dmm"
+
+/datum/map_template/mapticktest/mapticktest_invisible_object50l
+	maptick_id = "mapticktest_invisible_object50l"
+	mappath = "_maps/templates/mapticktest_invisible_object50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_mob50l
+	maptick_id = "mapticktest_static_mob50l"
+	mappath = "_maps/templates/mapticktest_static_mob50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_overlay_stacking50l
+	maptick_id = "mapticktest_static_overlay_stacking50l"
+	mappath = "_maps/templates/mapticktest_static_overlay_stacking50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_static_viscont_stacking50l
+	maptick_id = "mapticktest_static_viscont_stacking50l"
+	mappath = "_maps/templates/mapticktest_static_viscont_stacking50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_viscont_changespam50l
+	maptick_id = "mapticktest_viscont_changespam50l"
+	mappath = "_maps/templates/mapticktest_viscont_changespam50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents50l
+	maptick_id = "mapticktest_invis_obj_vis_viscontents50l"
+	mappath = "_maps/templates/mapticktest_invis_obj_vis_viscontents50l.dmm"

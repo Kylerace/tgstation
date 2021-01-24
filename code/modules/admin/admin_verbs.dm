@@ -176,6 +176,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/test_cardpack_distribution,
 	/client/proc/print_cards,
 	/client/proc/start_maptick_test,
+	/client/proc/maptick_test_movement_component,
 	#ifdef TESTING
 	/client/proc/check_missing_sprites,
 	#endif
@@ -812,3 +813,9 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	remove_verb(src, /client/proc/stop_maptick_test)
 	add_verb(src, /client/proc/start_maptick_test)
+
+/client/proc/maptick_test_movement_component()
+	set name = "Maptick Automove"
+	set category = "Debug"
+
+	mob.AddComponent(/datum/component/maptick_moving_tester/)
