@@ -46,7 +46,7 @@ SUBSYSTEM_DEF(maptick_track)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)
 			return FALSE
-	starting_time = world.timeofday
+	starting_time = REALTIMEOFDAY
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
 	can_fire = TRUE
@@ -120,7 +120,7 @@ SUBSYSTEM_DEF(maptick_track)
 		x_minute_average += i
 	x_minute_average = x_minute_average / x_minute_values.len
 
-	time_elapsed = (world.timeofday-starting_time) / 600
+	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = total_client_movement / time_elapsed
 
 	log_maptick(
