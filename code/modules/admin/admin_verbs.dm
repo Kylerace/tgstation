@@ -177,6 +177,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/print_cards,
 	/client/proc/start_maptick_test,
 	/client/proc/maptick_test_movement_component,
+	/client/proc/maptick_menu,
 	#ifdef TESTING
 	/client/proc/check_missing_sprites,
 	#endif

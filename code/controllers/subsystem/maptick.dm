@@ -39,13 +39,18 @@ SUBSYSTEM_DEF(maptick_track)
 	var/first_run = TRUE
 	can_fire = FALSE
 
-/datum/controller/subsystem/maptick_track/Initialize(start_timeofday)
-	. = ..()
-
-/datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_HIGH)
+/datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_MEDIUM)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)
 			return FALSE
+
+	if (intensity == TEST_INTENSITY_HIGH)
+		wait = 1
+	else if (intensity == TEST_INTENSITY_MEDIUM)
+		wait = 5
+	else if (intensity == TEST_INTENSITY_LOW)
+		wait = 10
+
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
@@ -56,6 +61,7 @@ SUBSYSTEM_DEF(maptick_track)
 				"average maptick",
 				"5 minute average", //the last 600 measured maptick values
 				"minutes",
+				"world.cpu",
 				"players",
 				"total tiles moved",
 				"tiles moved per minute"
@@ -103,8 +109,22 @@ SUBSYSTEM_DEF(maptick_track)
 
 	first_run = TRUE
 
-/datum/controller/subsystem/maptick_track/fire()
+	SSair.can_fire = TRUE
+	SSmachines.can_fire = TRUE
+	SSnpcpool.can_fire = TRUE
+	SSidlenpcpool.can_fire = TRUE
+	SSadjacent_air.can_fire = TRUE
+	SSshuttle.can_fire = TRUE
+	SSweather.can_fire = TRUE
+	SSradiation.can_fire = TRUE
+	SSfire_burning.can_fire = TRUE
+	SSmobs.can_fire = TRUE
+	SSai_controllers.can_fire = TRUE
+	SSeconomy.can_fire = TRUE
+	SSfluids.can_fire = TRUE
+	SSobj.can_fire = TRUE
 
+/datum/controller/subsystem/maptick_track/fire()
 	average_maptick = 0
 
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
@@ -121,7 +141,7 @@ SUBSYSTEM_DEF(maptick_track)
 	x_minute_average = x_minute_average / x_minute_values.len
 
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
-	client_movement_over_time = total_client_movement / time_elapsed
+	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
 
 	log_maptick(
 		list(
@@ -129,6 +149,7 @@ SUBSYSTEM_DEF(maptick_track)
 			average_maptick, //average maptick
 			x_minute_average, //moving average over x minutes, by default its 5
 			time_elapsed, //current time in minutes
+			world.cpu,
 			length(GLOB.player_list), //players
 			total_client_movement,
 			client_movement_over_time,

@@ -126,26 +126,34 @@
 	. = ..()
 	if(istype(parent, /mob/living/carbon))
 		host = parent
-		RegisterSignal(host,COMSIG_MOVABLE_MOVED, .proc/prepare_move)
+		//RegisterSignal(host,COMSIG_MOVABLE_MOVED, .proc/prepare_move)
+		addtimer(CALLBACK(src, .proc/prepare_move), 1)
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
-	UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
+	//UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
 
 /datum/component/maptick_moving_tester/proc/prepare_move()
 	if(going_north)
 		if (host.y < 230)
-			actually_move(going_north)
+			//addtimer(CALLBACK(src, .proc/change_to_other), 5)
+			//actually_move(going_north)
+			host.Move(get_step(get_turf(host),NORTH))
 		else
 			going_north = FALSE
 	else
 		if (host.y > 25)
-			actually_move(going_north)
+			//actually_move(going_north)
+			//host.Move(get_step(get_turf(host),SOUTH))
+			host.Move(get_step(get_turf(host),SOUTH))
 		else
 			going_north = TRUE
+	addtimer(CALLBACK(src, .proc/prepare_move), 1)
 
 /datum/component/maptick_moving_tester/proc/actually_move(going_north)
 	if (going_north)
-		walk(host, NORTH)
+		//walk(host, NORTH)
+		host.Move(get_step(get_turf(host),NORTH))
 	else
-		walk(host, SOUTH)
+		//walk(host, SOUTH)
+		host.Move(get_step(get_turf(host),SOUTH))
