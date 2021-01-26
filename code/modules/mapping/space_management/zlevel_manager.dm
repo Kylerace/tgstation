@@ -6,7 +6,7 @@
 	z_list = list()
 	var/list/default_map_traits = DEFAULT_MAP_TRAITS
 
-	if (default_map_traits.len != world.maxz)
+	/*if (default_map_traits.len != world.maxz)
 		WARNING("More or less map attributes pre-defined ([default_map_traits.len]) than existent z-levels ([world.maxz]). Ignoring the larger.")
 		if (default_map_traits.len > world.maxz)
 			default_map_traits.Cut(world.maxz + 1)
@@ -14,7 +14,7 @@
 	for (var/I in 1 to default_map_traits.len)
 		var/list/features = default_map_traits[I]
 		var/datum/space_level/S = new(I, features[DL_NAME], features[DL_TRAITS])
-		z_list += S
+		z_list += S*/
 
 /datum/controller/subsystem/mapping/proc/add_new_zlevel(name, traits = list(), z_type = /datum/space_level)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEW_Z, args)
