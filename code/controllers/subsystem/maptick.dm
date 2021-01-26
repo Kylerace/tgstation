@@ -35,6 +35,8 @@ SUBSYSTEM_DEF(maptick_track)
 	var/stored_maptick_average = 0
 	var/last_fire_maptick_average = 0
 
+	var/times_fired_this_cycle = 0
+	var/list/all_sampled_x_minute_averages = list()
 
 	var/first_run = TRUE
 	can_fire = FALSE
@@ -51,6 +53,8 @@ SUBSYSTEM_DEF(maptick_track)
 	else if (intensity == TEST_INTENSITY_LOW)
 		wait = 10
 
+	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
@@ -102,7 +106,9 @@ SUBSYSTEM_DEF(maptick_track)
 	message_admins("the [file_output_name] maptick test has stopped")
 	can_fire = FALSE
 	used_filenames += file_output_name
+
 	all_maptick_values.Cut()
+	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
 	for (var/mob/mob_with_client in GLOB.player_list)
 		unregister_mob(mob_with_client)
@@ -125,20 +131,26 @@ SUBSYSTEM_DEF(maptick_track)
 	SSobj.can_fire = TRUE
 
 /datum/controller/subsystem/maptick_track/fire()
-	average_maptick = 0
+	times_fired_this_cycle++
 
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
-
-	for (var/i in all_maptick_values)
-		average_maptick += i
-	average_maptick = average_maptick / all_maptick_values.len
 
 	if (x_minute_values.len > total_values_in_x_minutes)
 		x_minute_values.Remove(x_minute_values[1])
 	for (var/i in x_minute_values)
 		x_minute_average += i
-	x_minute_average = x_minute_average / x_minute_values.len
+	x_minute_average = x_minute_average / x_minute_values.len //takes the average maptick value over the last 5 minutes
+
+	//turns out adding all measured maptick values and dividing them to get the average every 0.5 seconds is expensive
+	//now the total average is calculated every 5 minutes once x_minute_values has completely replaced every number from the previous cycle
+	if (times_fired_this_cycle >= total_values_in_x_minutes)
+		all_sampled_x_minute_averages += x_minute_average
+		var/temp_average = 0
+		for (var/i in all_sampled_x_minute_averages)
+			temp_average += i
+		average_maptick = temp_average / all_sampled_x_minute_averages.len
+		times_fired_this_cycle = 0
 
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
