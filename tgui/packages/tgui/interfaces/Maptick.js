@@ -3,11 +3,30 @@ import { useBackend, useLocalState } from '../backend';
 import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList} from '../components';
 import { Window } from '../layouts';
 
+const TAB2NAME = [
+  {
+    title: 'Status',
+    blurb: 'Where useless shit goes to die',
+    gauge: 5,
+    component: () => Status,
+  },
+  {
+    title: 'Initiation',
+    blurb: 'Where fuckwits put logging',
+    gauge: 25,
+    component: () => Initiation,
+  },
+  {
+    title: 'Miscellaneous',
+    blurb: 'How I ran an """event"""',
+    gauge: 75,
+    component: () => Miscellaneous,
+  },
+];
 
-
-/*export const Maptick = (props, context) => {
+export const Maptick = (props, context) => {
   const { act, data } = useBackend(context);
-  /*const [
+  const [
     tabIndex,
     setTabIndex,
   ] = useLocalState(context, 'tab-index', 2);
@@ -25,17 +44,17 @@ import { Window } from '../layouts';
           <Button
           color = "blue"
           content = "Status"
-          //onClick={() => setTabIndex(0)}
+          onClick={() => setTabIndex(0)}
           />
           <Button
           color = "blue"
           content = "Initiation"
-          //onClick={() => setTabIndex(1)}
+          onClick={() => setTabIndex(1)}
           />
           <Button
           color = "blue"
           content = "Miscellaneous"
-          //onClick={() => setTabIndex(2)}
+          onClick={() => setTabIndex(2)}
           />
           </>
          )}>
@@ -44,45 +63,29 @@ import { Window } from '../layouts';
       </Window.Content>
     </Window>
   );
-}*/
+}
 
-/*  const Status = (props, context) => {
-    const { act, data } = useBackend(context);
-    const {
-      ongoing_test,
-      current_maptick_average,
-      current_maptick_exact,
-      current_moving_average,
-      templates,
-      players
-    } = data;
-  }
-
-  const Initiation = (props, context) => {
-    const { act, data } = useBackend(context);
-
-  }
-
-  const Miscellaneous = (props, context) => {
-    const { act, data } = useBackend(context);
-
-  }
-*/
-
-export const Maptick = (props, context) => {
+const Status = (props, context) => {
   const { act, data } = useBackend(context);
-  // Extract `health` and `color` variables from the `data` object.
-  //const {
-  //  health,
-  //  color,
-  //} = data;
-  return (
-    <Window resizable>
-      <Window.Content scrollable>
-        <Section title="Health status">
+  const {
+    ongoing_test,
+    current_maptick_average,
+    current_maptick_exact,
+    current_moving_average,
+    templates,
+    players
+  } = data;
+}
 
-        </Section>
-      </Window.Content>
-    </Window>
-  );
-};
+const Initiation = (props, context) => {
+  const { act, data } = useBackend(context);
+
+}
+
+const Miscellaneous = (props, context) => {
+  const { act, data } = useBackend(context);
+
+}
+
+
+

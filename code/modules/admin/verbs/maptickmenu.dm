@@ -8,14 +8,20 @@
 	var/client/holder
 	var/ongoing_test = FALSE
 
-	var/current_maptick_average// = SSmaptick_track.average_maptick
-	var/current_maptick_exact// = MAPTICK_LAST_INTERNAL_TICK_USAGE
-	var/current_moving_average// = SSmaptick_track.x_minute_average
-	var/time_elapsed// = SSmaptick_track.time_elapsed
+	var/current_maptick_average
+	var/current_maptick_exact
+	var/current_moving_average
+	var/time_elapsed
 	var/name
 
+/datum/maptick_menu/ui_state(mob/user)
+	return GLOB.admin_state
 
 /datum/maptick_menu/New(user)
+	current_maptick_average = SSmaptick_track.average_maptick
+	current_maptick_exact = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	current_moving_average = SSmaptick_track.x_minute_average
+	time_elapsed = SSmaptick_track.time_elapsed
 	if (istype(user, /client))
 		var/client/user_client = user
 		holder = user_client //if its a client, assign it to holder
