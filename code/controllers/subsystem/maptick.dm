@@ -2,7 +2,8 @@
 #define TEST_INTENSITY_MEDIUM	"medium"
 #define TEST_INTENSITY_HIGH		"high"
 
-#define DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM 0.0001
+#define DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM 0.01 //default is 0.0001
+#define DELTA_MAPTICK_CYCLES_TO_ALERT 20
 
 SUBSYSTEM_DEF(maptick_track)
 	name = "Maptick Tracking"
@@ -31,9 +32,10 @@ SUBSYSTEM_DEF(maptick_track)
 	var/starting_time
 	var/time_elapsed = 0
 
-	var/delta_maptick_average = 0
-	var/stored_maptick_average = 0
+	var/most_recent_delta_maptick_average = 0
+	var/average_delta_maptick_average = 0 //average difference between each new maptick average and the value before it
 	var/last_fire_maptick_average = 0
+	var/total_x_cycles_below_delta_average_minimum = 0
 
 	var/times_fired_this_cycle = 0
 	var/list/all_sampled_x_minute_averages = list()
@@ -53,12 +55,20 @@ SUBSYSTEM_DEF(maptick_track)
 	else if (intensity == TEST_INTENSITY_LOW)
 		wait = 10
 
+	all_maptick_values.Cut()
+	all_sampled_x_minute_averages.Cut()
+	total_client_movement = 0
+
 	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	last_fire_maptick_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	most_recent_delta_maptick_average = 0
+
 	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
 	can_fire = TRUE
+
 	log_maptick(
 			list(
 				"maptick",
@@ -68,14 +78,17 @@ SUBSYSTEM_DEF(maptick_track)
 				"world.cpu",
 				"players",
 				"total tiles moved",
-				"tiles moved per minute"
+				"tiles moved per minute",
+				"delta maptick average"
 			),
 			file_output_path
 		)
+
 	for (var/mob/mob_with_client in GLOB.player_list)
 		RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
 		RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
 		tracked_client_mobs += mob_with_client
+
 	SSair.can_fire = FALSE
 	SSmachines.can_fire = FALSE
 	SSnpcpool.can_fire = FALSE
@@ -107,9 +120,7 @@ SUBSYSTEM_DEF(maptick_track)
 	can_fire = FALSE
 	used_filenames += file_output_name
 
-	all_maptick_values.Cut()
-	all_sampled_x_minute_averages.Cut()
-	total_client_movement = 0
+
 	for (var/mob/mob_with_client in GLOB.player_list)
 		unregister_mob(mob_with_client)
 
@@ -136,6 +147,7 @@ SUBSYSTEM_DEF(maptick_track)
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 
+
 	if (x_minute_values.len > total_values_in_x_minutes)
 		x_minute_values.Remove(x_minute_values[1])
 	for (var/i in x_minute_values)
@@ -152,6 +164,14 @@ SUBSYSTEM_DEF(maptick_track)
 		average_maptick = temp_average / all_sampled_x_minute_averages.len
 		times_fired_this_cycle = 0
 
+		most_recent_delta_maptick_average = abs(average_maptick - last_fire_maptick_average)
+		if (most_recent_delta_maptick_average < DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM)
+			total_x_cycles_below_delta_average_minimum++
+
+			if (total_x_cycles_below_delta_average_minimum > DELTA_MAPTICK_CYCLES_TO_ALERT)
+				message_admins("Delta maptick average has gone below [DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM] for more than [DELTA_MAPTICK_CYCLES_TO_ALERT * 20] minutes")
+
+
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
 
@@ -165,6 +185,7 @@ SUBSYSTEM_DEF(maptick_track)
 			length(GLOB.player_list), //players
 			total_client_movement,
 			client_movement_over_time,
+			most_recent_delta_maptick_average
 		),
 		file_output_path
 	)

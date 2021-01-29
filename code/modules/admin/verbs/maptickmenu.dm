@@ -38,7 +38,7 @@
 		ui = new(user, src, "Maptick")
 		ui.open()
 
-/*/datum/maptick_menu/ui_data(mob/user)
+/datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
 	data["ongoing_test"] = ongoing_test
 	data["current_maptick_average"] = current_maptick_average
@@ -49,12 +49,11 @@
 	data["players"] = length(GLOB.player_list)
 
 
-	return data*/
+	return data
 
-/*/datum/maptick_menu/ui_act(action, params)
+/datum/maptick_menu/ui_act(action, params)
 	. = ..()
 	if(.)
 		return
 
 	//switch(action)
-*/
