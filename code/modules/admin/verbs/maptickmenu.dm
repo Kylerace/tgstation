@@ -41,10 +41,10 @@
 /datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
 	data["ongoing_test"] = ongoing_test
-	data["current_maptick_average"] = current_maptick_average
-	data["current_maptick_exact"] = current_maptick_exact
-	data["current_moving_average"] = current_moving_average
-	data["time_elapsed"] = time_elapsed
+	data["current_maptick_average"] = SSmaptick_track.average_maptick
+	data["current_maptick_exact"] = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	data["current_moving_average"] = SSmaptick_track.x_minute_average
+	data["time_elapsed"] = SSmaptick_track.time_elapsed
 	data["templates"] = SSmapping.maptick_templates
 	data["players"] = length(GLOB.player_list)
 
