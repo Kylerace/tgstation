@@ -1,22 +1,7 @@
 import { toFixed } from 'common/math';
 import { useBackend, useLocalState } from '../backend';
-import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box} from '../components';
+import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box, Dropdown} from '../components';
 import { Window } from '../layouts';
-
-/*const TAB2NAME = [
-  {
-    title: 'Status',
-    component: () => Status,
-  },
-  {
-    title: 'Initiation',
-    component: () => Initiation,
-  },
-  {
-    title: 'Miscellaneous',
-    component: () => Miscellaneous,
-  },
-];*/
 
 export const Maptick = (props, context) => {
   const { act, data } = useBackend(context);
@@ -102,6 +87,9 @@ const Status = (props, context) => {
           <LabeledList.Item label="Number of Players">
             {players}
           </LabeledList.Item>
+          <LabeledList.Item label="Time Elapsed in Minutes">
+            {time_elapsed}
+          </LabeledList.Item>
         </LabeledList>
       </Flex.Item>
     </Flex>
@@ -109,6 +97,41 @@ const Status = (props, context) => {
 
   )
 };
+
+
+
+const Initiation = (props, context) => {
+  const { act, data } = useBackend(context);
+  const [
+    templates = []
+  ] = data;
+  return (
+
+    <Flex title="Start Maptick Tests">
+      <Flex.Item>
+        <Dropdown
+        width="240px"
+        options={templates.map(template => template.name)}
+        selected="Combine mutations"
+        onSelected={value => act(`combine_${source.Source}`, {
+      })} />
+      </Flex.Item>
+    </Flex>
+ )
+};
+
+const Miscellaneous = (props, context) => {
+  const { act, data } = useBackend(context);
+  return (
+    <Flex title="Miscellaneous">
+      <Flex.Item>
+
+      </Flex.Item>
+    </Flex>
+  )
+};
+
+
 
 /*
 
@@ -179,29 +202,3 @@ const Status = (props, context) => {
           </Table.Row>
         </Table>
 */
-
-const Initiation = (props, context) => {
-  const { act, data } = useBackend(context);
-  return (
-
-    <Flex title="Start Maptick Tests">
-      <Flex.Item>
-
-      </Flex.Item>
-    </Flex>
- )
-};
-
-const Miscellaneous = (props, context) => {
-  const { act, data } = useBackend(context);
-  return (
-    <Flex title="Miscellaneous">
-      <Flex.Item>
-
-      </Flex.Item>
-    </Flex>
-  )
-};
-
-
-
