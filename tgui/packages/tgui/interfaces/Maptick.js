@@ -103,16 +103,31 @@ const Status = (props, context) => {
 const Initiation = (props, context) => {
   const { act, data } = useBackend(context);
   const templates = data.templates || [];
+  const selected_template = data.selected_template
   return (
 
     <Flex title="Start Maptick Tests">
       <Flex.Item>
         <Dropdown
         width="240px"
-        options={templates.map(template => template.name)}
-        selected="Combine mutations"
-        onSelected={value => act(`combine_${source.Source}`, {
-      })} />
+        options={templates}// options={templates.map(template => template.name)}
+        selected={selected_template || "No Template Selected"}
+        onSelected={value => act('template select', {select: value})}
+        />
+      </Flex.Item>
+      <Flex.Item>
+        <Button
+        key={"Load Test Template"}
+        content={"Load Test Template"}
+        onClick={() => act('load template')}/>
+        <Button
+        key={"Start Maptick Test"}
+        content={"Start Maptick Test"}
+        onClick={() => act('start test')}/>
+        <Button
+        key={"End Maptick Test"}
+        content={"End Maptick Test"}
+        onClick={() => act('end test')}/>
       </Flex.Item>
     </Flex>
  )

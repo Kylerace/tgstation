@@ -14,6 +14,7 @@
 	var/time_elapsed
 	var/name
 	var/list/template_ids = list()
+	var/current_template = null
 
 /datum/maptick_menu/ui_state(mob/user)
 	return GLOB.admin_state
@@ -43,7 +44,8 @@
 /datum/maptick_menu/proc/generate_program_list()
 	for (var/template_path in subtypesof(/datum/map_template/mapticktest))
 		var/datum/map_template/mapticktest/true_template = template_path
-		template_ids["name"] = initial(true_template.maptick_id)
+		template_ids += initial(true_template.maptick_id)//template_ids["name"] = initial(true_template.maptick_id)
+
 
 /datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
@@ -52,8 +54,9 @@
 	data["current_maptick_exact"] = MAPTICK_LAST_INTERNAL_TICK_USAGE
 	data["current_moving_average"] = SSmaptick_track.x_minute_average
 	data["time_elapsed"] = SSmaptick_track.time_elapsed
-	data["templates"] = list(template_ids)
+	data["templates"] = template_ids
 	data["players"] = length(GLOB.player_list)
+	data["selected_template"] = current_template
 
 	return data
 
@@ -62,4 +65,29 @@
 	if(.)
 		return
 
-	//switch(action)
+	switch(action)
+		if("template select")
+			current_template = params["select"]
+			message_admins("[current_template] has been selected")
+
+		if("load template")
+			load_test(current_template)
+			message_admins("load template [current_template]")
+
+		if("start test")
+			SSmaptick_track.start_tracking("ecksdee")
+			message_admins("start test")
+
+		if("stop test")
+			SSmaptick_track.stop_tracking()
+			message_admins("stop test")
+
+
+/datum/maptick_menu/proc/load_test(test_id)
+	var/datum/map_template/mapticktest/test_template = SSmapping.maptick_templates[test_id]
+	if (!holder.mob)
+		message_admins("you must be in a mob to do this!")
+		return
+
+	var/mob/client_mob = holder.mob
+	test_template.load(locate(client_mob.x, client_mob.y, client_mob.z), TRUE)
