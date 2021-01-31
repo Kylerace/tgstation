@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(mapping)
 
 	var/list/shuttle_templates = list()
 	var/list/shelter_templates = list()
+	var/list/holodeck_templates = list()
 
 	var/list/maptick_templates = list()
 
@@ -193,6 +194,7 @@ Used by the AI doomsday and the self-destruct nuke.
 	unused_turfs = SSmapping.unused_turfs
 	turf_reservations = SSmapping.turf_reservations
 	used_turfs = SSmapping.used_turfs
+	holodeck_templates = SSmapping.holodeck_templates
 
 	config = SSmapping.config
 	next_map_config = SSmapping.next_map_config
@@ -396,6 +398,7 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 	preloadRuinTemplates()
 	preloadShuttleTemplates()
 	preloadShelterTemplates()
+	preloadHolodeckTemplates()
 
 	preloadMaptickTemplates()
 
@@ -452,19 +455,15 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 		shelter_templates[S.shelter_id] = S
 		map_templates[S.shelter_id] = S
 
+/datum/controller/subsystem/mapping/proc/preloadHolodeckTemplates()
+	for(var/item in subtypesof(/datum/map_template/holodeck))
+		var/datum/map_template/holodeck/holodeck_type = item
+		if(!(initial(holodeck_type.mappath)))
+			continue
+		var/datum/map_template/holodeck/holo_template = new holodeck_type()
 
-
-
-
-
-
-
-
-
-
-
-
-
+		holodeck_templates[holo_template.template_id] = holo_template
+		map_templates[holo_template.template_id] = holo_template
 
 /datum/controller/subsystem/mapping/proc/preloadMaptickTemplates()
 	for(var/item in subtypesof(/datum/map_template/mapticktest))
