@@ -48,7 +48,6 @@
 	ecksdee = new()
 	vis_contents += ecksdee
 
-
 /obj/item/maptick_test_vis_contents_list_change_spam //spams the fuck out of vis contents changes
 	icon = ""
 	var/obj/item/maptick_test_generic/ecksdee

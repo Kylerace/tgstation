@@ -92,6 +92,7 @@ think it was removed, ill have to find a species with less visual noise on the s
 	maptick_id = "mapticktest_invisible_object"
 	mappath = "_maps/templates/mapticktest_invisible_object.dmm"
 
+
 /datum/map_template/mapticktest/mapticktest_moving_blank_test
 	maptick_id = "mapticktest_moving_blank_test"
 	mappath = "_maps/templates/mapticktest_moving_blank_test.dmm"
@@ -99,6 +100,7 @@ think it was removed, ill have to find a species with less visual noise on the s
 /datum/map_template/mapticktest/mapticktest_moving_genobj
 	maptick_id = "mapticktest_moving_genobj"
 	mappath = "_maps/templates/mapticktest_moving_genobj.dmm"
+
 
 /datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents
 	maptick_id = "mapticktest_invis_obj_vis_viscontents"

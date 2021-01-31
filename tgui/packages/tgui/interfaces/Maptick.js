@@ -102,9 +102,7 @@ const Status = (props, context) => {
 
 const Initiation = (props, context) => {
   const { act, data } = useBackend(context);
-  const [
-    templates = []
-  ] = data;
+  const templates = data.templates || [];
   return (
 
     <Flex title="Start Maptick Tests">
