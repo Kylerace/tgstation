@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(mapping)
 
 	var/list/shuttle_templates = list()
 	var/list/shelter_templates = list()
+
 	var/list/maptick_templates = list()
 
 	var/list/areas_in_z = list()
@@ -395,6 +396,7 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 	preloadRuinTemplates()
 	preloadShuttleTemplates()
 	preloadShelterTemplates()
+
 	preloadMaptickTemplates()
 
 /datum/controller/subsystem/mapping/proc/preloadRuinTemplates()
@@ -449,6 +451,20 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 
 		shelter_templates[S.shelter_id] = S
 		map_templates[S.shelter_id] = S
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /datum/controller/subsystem/mapping/proc/preloadMaptickTemplates()
 	for(var/item in subtypesof(/datum/map_template/mapticktest))
