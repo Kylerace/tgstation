@@ -108,7 +108,7 @@ const Initiation = (props, context) => {
   return (
 
     <Flex title="Start Maptick Tests">
-      <Flex.Item>
+      <Flex.Item mx={1} grow={1}>
         <Dropdown
         width="240px"
         options={templates}// options={templates.map(template => template.name)}
@@ -116,9 +116,10 @@ const Initiation = (props, context) => {
         onSelected={value => act('template select', {select: value})}
         />
       </Flex.Item>
-      <Flex my={0.5} mx={0.5}>
+      <Flex my={0.5} mx={0.5} grow={1}>
         <Flex.Item>
           <Input
+            maxlength={50}
             value={test_name}
             placeholder={test_name}
             onChange={(e, value) => act('name test', {new_name: value})}
