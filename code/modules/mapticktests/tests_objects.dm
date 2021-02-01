@@ -130,7 +130,7 @@
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
-	//UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
 
 /datum/component/maptick_moving_tester/proc/prepare_move()
 	if(going_north)

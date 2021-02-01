@@ -1,6 +1,6 @@
 import { toFixed } from 'common/math';
 import { useBackend, useLocalState } from '../backend';
-import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box, Dropdown} from '../components';
+import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box, Dropdown, Input} from '../components';
 import { Window } from '../layouts';
 
 export const Maptick = (props, context) => {
@@ -103,7 +103,8 @@ const Status = (props, context) => {
 const Initiation = (props, context) => {
   const { act, data } = useBackend(context);
   const templates = data.templates || [];
-  const selected_template = data.selected_template
+  const selected_template = data.selected_template;
+  const test_name = data.test_name;
   return (
 
     <Flex title="Start Maptick Tests">
@@ -115,20 +116,31 @@ const Initiation = (props, context) => {
         onSelected={value => act('template select', {select: value})}
         />
       </Flex.Item>
-      <Flex.Item>
-        <Button
-        key={"Load Test Template"}
-        content={"Load Test Template"}
-        onClick={() => act('load template')}/>
-        <Button
-        key={"Start Maptick Test"}
-        content={"Start Maptick Test"}
-        onClick={() => act('start test')}/>
-        <Button
-        key={"End Maptick Test"}
-        content={"End Maptick Test"}
-        onClick={() => act('end test')}/>
-      </Flex.Item>
+      <Flex my={0.5} mx={0.5}>
+        <Flex.Item>
+          <Input
+            value={test_name}
+            placeholder={test_name}
+            onChange={(e, value) => act('name test', {new_name: value})}
+            />
+        </Flex.Item>
+        <Flex.Item>
+          <Button //try to get this area BELOW the area with the dropdown, preferably to the side too
+          key={"Load Test Template"}
+          content={"Load Test Template"}
+          onClick={() => act('load template')}/>
+          <Button
+          key={"Start Maptick Test"}
+          content={"Start Maptick Test"}
+          onClick={() => act('start test')}/>
+          <Button
+          key={"End Maptick Test"}
+          content={"End Maptick Test"}
+          onClick={() => act('end test')}/>
+        </Flex.Item>
+
+      </Flex>
+
     </Flex>
  )
 };
@@ -138,7 +150,16 @@ const Miscellaneous = (props, context) => {
   return (
     <Flex title="Miscellaneous">
       <Flex.Item>
-
+        <Button
+          key={"Start Automoving"}
+          content={"Start Automoving"}
+          onClick={() => act('start automove')}
+        />
+        <Button
+          key={"End Automoving"}
+          content={"End Automoving"}
+          onClick={() => act('end automove')}
+        />
       </Flex.Item>
     </Flex>
   )

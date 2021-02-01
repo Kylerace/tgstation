@@ -12,7 +12,7 @@
 	var/current_maptick_exact
 	var/current_moving_average
 	var/time_elapsed
-	var/name
+	var/name = "Default-Test-Name"
 	var/list/template_ids = list()
 	var/current_template = null
 
@@ -46,7 +46,6 @@
 		var/datum/map_template/mapticktest/true_template = template_path
 		template_ids += initial(true_template.maptick_id)//template_ids["name"] = initial(true_template.maptick_id)
 
-
 /datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
 	data["ongoing_test"] = ongoing_test
@@ -57,6 +56,7 @@
 	data["templates"] = template_ids
 	data["players"] = length(GLOB.player_list)
 	data["selected_template"] = current_template
+	data["test_name"] = name
 
 	return data
 
@@ -75,12 +75,25 @@
 			message_admins("load template [current_template]")
 
 		if("start test")
-			SSmaptick_track.start_tracking("ecksdee")
-			message_admins("start test")
+			SSmaptick_track.start_tracking(name)
+			message_admins(action)
 
-		if("stop test")
+		if("end test")
 			SSmaptick_track.stop_tracking()
-			message_admins("stop test")
+			message_admins(action)
+
+		if("name test")
+			name = params["new_name"]
+			message_admins(name)
+
+		if("start automove")
+			apply_automove()
+			message_admins(action)
+
+		if("end automove")
+			end_automove()
+			message_admins(action)
+
 
 
 /datum/maptick_menu/proc/load_test(test_id)
@@ -91,3 +104,16 @@
 
 	var/mob/client_mob = holder.mob
 	test_template.load(locate(client_mob.x, client_mob.y, client_mob.z), TRUE)
+
+/datum/maptick_menu/proc/apply_automove()
+	if (holder.mob)
+		var/mob/client_mob = holder.mob
+		client_mob.AddComponent(/datum/component/maptick_moving_tester)
+
+/datum/maptick_menu/proc/end_automove()
+	if (!holder.mob)
+		message_admins("youre not in a mob! somehow")
+		return
+	var/mob/client_mob = holder.mob
+	var/datum/component/maptick_moving_tester/to_remove = client_mob.GetComponent(/datum/component/maptick_moving_tester)
+	qdel(to_remove)
