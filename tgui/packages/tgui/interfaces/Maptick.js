@@ -106,17 +106,18 @@ const Initiation = (props, context) => {
   const selected_template = data.selected_template;
   const test_name = data.test_name;
   return (
-
-    <Flex title="Start Maptick Tests">
+  <Flex title="Start Maptick Tests" direction="column">
+    <Flex direction="row" my={1}>
       <Flex.Item mx={1} grow={1}>
         <Dropdown
-        width="240px"
+        width="360px"
         options={templates}// options={templates.map(template => template.name)}
         selected={selected_template || "No Template Selected"}
         onSelected={value => act('template select', {select: value})}
         />
       </Flex.Item>
-      <Flex my={0.5} mx={0.5} grow={1}>
+      </Flex>
+      <Flex my={0.5} mx={0.5} grow={1} direction="row">
         <Flex.Item>
           <Input
             maxlength={50}
@@ -140,9 +141,10 @@ const Initiation = (props, context) => {
           onClick={() => act('end test')}/>
         </Flex.Item>
 
-      </Flex>
+
 
     </Flex>
+  </Flex>
  )
 };
 
