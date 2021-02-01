@@ -70,3 +70,9 @@
 // A reasonable number of maximum overlays an object needs
 // If you think you need more, rethink it
 #define MAX_ATOM_OVERLAYS 100
+
+//#def MAPTICK_TESTING
+//uncomment if you want to completely optimise the world for maptick tracking
+//basically required for good measurements but of course cannot be used on live servers, makes the centcom level blank, stops the game from
+//spawning the station, lavaland, and space ruin templates, makes skeletons have aritificial gravity so its easier to spawn them in and use them
+//without them floating, causes the maptick subsystem to disable many many other subsystems when turned on for a test

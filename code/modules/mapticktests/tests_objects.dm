@@ -48,7 +48,6 @@
 	ecksdee = new()
 	vis_contents += ecksdee
 
-
 /obj/item/maptick_test_vis_contents_list_change_spam //spams the fuck out of vis contents changes
 	icon = ""
 	var/obj/item/maptick_test_generic/ecksdee
@@ -131,7 +130,7 @@
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
-	//UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
 
 /datum/component/maptick_moving_tester/proc/prepare_move()
 	if(going_north)

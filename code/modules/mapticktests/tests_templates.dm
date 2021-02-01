@@ -21,8 +21,6 @@ also by default turn off parallax.
 as of right now i am testing with a human wearing the debug outfit, there used to be a dummy species which was preferable to this but i
 think it was removed, ill have to find a species with less visual noise on the suspicion of mob overlays/viscontents/whatever the fuck else
 
-maptick is very noisy, testing stuff on station is almost impossible. even with all of this it is still pretty noisy. maptick might somehow
-improve after the first couple of tests?????
 */
 
 
@@ -94,6 +92,7 @@ improve after the first couple of tests?????
 	maptick_id = "mapticktest_invisible_object"
 	mappath = "_maps/templates/mapticktest_invisible_object.dmm"
 
+
 /datum/map_template/mapticktest/mapticktest_moving_blank_test
 	maptick_id = "mapticktest_moving_blank_test"
 	mappath = "_maps/templates/mapticktest_moving_blank_test.dmm"
@@ -101,6 +100,7 @@ improve after the first couple of tests?????
 /datum/map_template/mapticktest/mapticktest_moving_genobj
 	maptick_id = "mapticktest_moving_genobj"
 	mappath = "_maps/templates/mapticktest_moving_genobj.dmm"
+
 
 /datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents
 	maptick_id = "mapticktest_invis_obj_vis_viscontents"

@@ -651,6 +651,9 @@
 		. = TRUE
 
 	if(!(signalOut & COMSIG_ATOM_NO_UPDATE_OVERLAYS))
+		if(LAZYLEN(managed_vis_overlays))
+			SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
+
 		var/list/new_overlays = update_overlays()
 		if(managed_overlays)
 			cut_overlay(managed_overlays)
@@ -1027,6 +1030,8 @@
  * * clean_types: any of the CLEAN_ constants
  */
 /atom/proc/wash(clean_types)
+	SHOULD_CALL_PARENT(TRUE)
+
 	. = FALSE
 	if(SEND_SIGNAL(src, COMSIG_COMPONENT_CLEAN_ACT, clean_types) & COMPONENT_CLEANED)
 		. = TRUE
@@ -1842,7 +1847,7 @@
 
 +*/
 /atom/proc/InitializeAIController()
-	if(ai_controller)
+	if(ispath(ai_controller))
 		ai_controller = new ai_controller(src)
 
 /**

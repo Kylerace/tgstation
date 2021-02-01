@@ -40,6 +40,8 @@ SUBSYSTEM_DEF(maptick_track)
 	var/times_fired_this_cycle = 0
 	var/list/all_sampled_x_minute_averages = list()
 
+	var/standard_deviation = 0
+
 	var/first_run = TRUE
 	can_fire = FALSE
 
@@ -66,43 +68,33 @@ SUBSYSTEM_DEF(maptick_track)
 	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
-	file_output_path = "[GLOB.log_directory]/mapticktest-[world.timeofday]-[SSmapping.config?.map_name]-[file_output_name].csv"
+	file_output_path = "[GLOB.log_directory]/mapticktest-[REALTIMEOFDAY]-[SSmapping.config?.map_name]-[file_output_name].csv"
 	can_fire = TRUE
 
-	log_maptick(
-			list(
-				"maptick",
-				"average maptick",
-				"5 minute average", //the last 600 measured maptick values
-				"minutes",
-				"world.cpu",
-				"players",
-				"total tiles moved",
-				"tiles moved per minute",
-				"delta maptick average"
-			),
-			file_output_path
-		)
+	log_maptick_stats("start")
 
 	for (var/mob/mob_with_client in GLOB.player_list)
 		RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
 		RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
 		tracked_client_mobs += mob_with_client
 
-	SSair.can_fire = FALSE
-	SSmachines.can_fire = FALSE
-	SSnpcpool.can_fire = FALSE
-	SSidlenpcpool.can_fire = FALSE
-	SSadjacent_air.can_fire = FALSE
-	SSshuttle.can_fire = FALSE
-	SSweather.can_fire = FALSE
-	SSradiation.can_fire = FALSE
-	SSfire_burning.can_fire = FALSE
-	SSmobs.can_fire = FALSE
-	SSai_controllers.can_fire = FALSE
-	SSeconomy.can_fire = FALSE
-	SSfluids.can_fire = FALSE
-	SSobj.can_fire = FALSE
+	#ifdef MAPTICK_TESTING
+		SSair.can_fire = FALSE
+		SSmachines.can_fire = FALSE
+		SSnpcpool.can_fire = FALSE
+		SSidlenpcpool.can_fire = FALSE
+		SSadjacent_air.can_fire = FALSE
+		SSshuttle.can_fire = FALSE
+		SSweather.can_fire = FALSE
+		SSradiation.can_fire = FALSE
+		SSfire_burning.can_fire = FALSE
+		SSmobs.can_fire = FALSE
+		SSai_controllers.can_fire = FALSE
+		SSeconomy.can_fire = FALSE
+		SSfluids.can_fire = FALSE
+		SSobj.can_fire = FALSE
+	#endif
+
 	return TRUE
 
 /datum/controller/subsystem/maptick_track/proc/unregister_mob(datum/source)
@@ -116,30 +108,50 @@ SUBSYSTEM_DEF(maptick_track)
 	total_client_movement++
 
 /datum/controller/subsystem/maptick_track/proc/stop_tracking()
-	message_admins("the [file_output_name] maptick test has stopped")
 	can_fire = FALSE
+	message_admins("the [file_output_name] maptick test has stopped")
+
 	used_filenames += file_output_name
 
 
 	for (var/mob/mob_with_client in GLOB.player_list)
 		unregister_mob(mob_with_client)
 
-	first_run = TRUE
+	var/temp_average = 0
+	for (var/i in all_maptick_values)
+		temp_average += i
+	average_maptick = temp_average / all_maptick_values.len
 
-	SSair.can_fire = TRUE
-	SSmachines.can_fire = TRUE
-	SSnpcpool.can_fire = TRUE
-	SSidlenpcpool.can_fire = TRUE
-	SSadjacent_air.can_fire = TRUE
-	SSshuttle.can_fire = TRUE
-	SSweather.can_fire = TRUE
-	SSradiation.can_fire = TRUE
-	SSfire_burning.can_fire = TRUE
-	SSmobs.can_fire = TRUE
-	SSai_controllers.can_fire = TRUE
-	SSeconomy.can_fire = TRUE
-	SSfluids.can_fire = TRUE
-	SSobj.can_fire = TRUE
+	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
+	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
+
+	//calculate the standard deviation
+	/*var/sums_of_square_of_deviations_from_mean = 0 //basically the sigma in standard deviation
+	for (var/i in all_maptick_values)
+		sums_of_square_of_deviations_from_mean += (i - average_maptick) ** 2 //for each datapoint, find the square of its distance to the mean
+	standard_deviation = sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)*/
+
+	standard_deviation = calculate_standard_deviation()
+
+	log_maptick_stats("end")
+
+	#ifdef MAPTICK_TESTING
+		first_run = TRUE
+		SSair.can_fire = TRUE
+		SSmachines.can_fire = TRUE
+		SSnpcpool.can_fire = TRUE
+		SSidlenpcpool.can_fire = TRUE
+		SSadjacent_air.can_fire = TRUE
+		SSshuttle.can_fire = TRUE
+		SSweather.can_fire = TRUE
+		SSradiation.can_fire = TRUE
+		SSfire_burning.can_fire = TRUE
+		SSmobs.can_fire = TRUE
+		SSai_controllers.can_fire = TRUE
+		SSeconomy.can_fire = TRUE
+		SSfluids.can_fire = TRUE
+		SSobj.can_fire = TRUE
+	#endif
 
 /datum/controller/subsystem/maptick_track/fire()
 	times_fired_this_cycle++
@@ -175,21 +187,76 @@ SUBSYSTEM_DEF(maptick_track)
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
 
-	log_maptick(
-		list(
-			MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
-			average_maptick, //average maptick
-			x_minute_average, //moving average over x minutes, by default its 5
-			time_elapsed, //current time in minutes
-			world.cpu,
-			length(GLOB.player_list), //players
-			total_client_movement,
-			client_movement_over_time,
-			most_recent_delta_maptick_average
-		),
-		file_output_path
-	)
+	log_maptick_stats("mid")
+
+/datum/controller/subsystem/maptick_track/proc/calculate_standard_deviation()
+	var/sums_of_square_of_deviations_from_mean = 0 //basically the sigma in standard deviation
+	for (var/i in all_maptick_values)
+		sums_of_square_of_deviations_from_mean += (i - average_maptick) ** 2 //for each datapoint, find the square of its distance to the mean
+	return sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)
+
+/datum/controller/subsystem/maptick_track/proc/log_maptick_stats(log_type = "mid")
+	if(!file_output_path)
+		stack_trace("no file output path selected!")
+
+	switch(log_type)
+		if("start")
+			log_maptick(
+				list(
+					"maptick",
+					"5 minute average", //the last 600 measured maptick values
+					"minutes",
+					"average maptick",
+					"maptick percentage of world.cpu",
+					//"players",
+					//"total tiles moved",
+					//"tiles moved per minute",
+					//"delta maptick average",
+					"standard deviation",
+					"world.tick_usage"
+				),
+				file_output_path
+			)
+
+		if("mid")
+			log_maptick(
+				list(
+					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
+					x_minute_average, //moving average over x minutes, by default its 5
+					time_elapsed, //current time in minutes
+					"", //average maptick, filled in at the end
+					(world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE) * 100,
+					//length(GLOB.player_list), //players
+					//total_client_movement,
+					//client_movement_over_time,
+					//most_recent_delta_maptick_average,
+					"", //standard deviation, filled in at the end
+					world.tick_usage,
+				),
+				file_output_path
+			)
+
+		if("end")
+			log_maptick(
+				list(
+					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
+					x_minute_average, //moving average over x minutes, by default its 5
+					time_elapsed, //current time in minutes
+					average_maptick, //average maptick
+					(world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE) * 100,
+					//length(GLOB.player_list), //players
+					//total_client_movement,
+					//client_movement_over_time,
+					//most_recent_delta_maptick_average,
+					standard_deviation,
+					world.tick_usage
+				),
+			file_output_path
+			)
+
 
 #undef TEST_INTENSITY_LOW
 #undef TEST_INTENSITY_MEDIUM
 #undef TEST_INTENSITY_HIGH
+#undef DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM
+#undef DELTA_MAPTICK_CYCLES_TO_ALERT

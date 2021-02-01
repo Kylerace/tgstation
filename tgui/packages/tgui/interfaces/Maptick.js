@@ -1,22 +1,7 @@
 import { toFixed } from 'common/math';
 import { useBackend, useLocalState } from '../backend';
-import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box} from '../components';
+import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, LabeledList, Table, Tabs, Box, Dropdown, Input} from '../components';
 import { Window } from '../layouts';
-
-/*const TAB2NAME = [
-  {
-    title: 'Status',
-    component: () => Status,
-  },
-  {
-    title: 'Initiation',
-    component: () => Initiation,
-  },
-  {
-    title: 'Miscellaneous',
-    component: () => Miscellaneous,
-  },
-];*/
 
 export const Maptick = (props, context) => {
   const { act, data } = useBackend(context);
@@ -102,6 +87,9 @@ const Status = (props, context) => {
           <LabeledList.Item label="Number of Players">
             {players}
           </LabeledList.Item>
+          <LabeledList.Item label="Time Elapsed in Minutes">
+            {time_elapsed}
+          </LabeledList.Item>
         </LabeledList>
       </Flex.Item>
     </Flex>
@@ -109,6 +97,78 @@ const Status = (props, context) => {
 
   )
 };
+
+
+
+const Initiation = (props, context) => {
+  const { act, data } = useBackend(context);
+  const templates = data.templates || [];
+  const selected_template = data.selected_template;
+  const test_name = data.test_name;
+  return (
+  <Flex title="Start Maptick Tests" direction="column">
+    <Flex direction="row" my={1}>
+      <Flex.Item mx={1} grow={1}>
+        <Dropdown
+        width="360px"
+        options={templates}// options={templates.map(template => template.name)}
+        selected={selected_template || "No Template Selected"}
+        onSelected={value => act('template select', {select: value})}
+        />
+      </Flex.Item>
+      </Flex>
+      <Flex my={0.5} mx={0.5} grow={1} direction="row">
+        <Flex.Item>
+          <Input
+            maxlength={50}
+            value={test_name}
+            placeholder={test_name}
+            onChange={(e, value) => act('name test', {new_name: value})}
+            />
+        </Flex.Item>
+        <Flex.Item>
+          <Button //try to get this area BELOW the area with the dropdown, preferably to the side too
+          key={"Load Test Template"}
+          content={"Load Test Template"}
+          onClick={() => act('load template')}/>
+          <Button
+          key={"Start Maptick Test"}
+          content={"Start Maptick Test"}
+          onClick={() => act('start test')}/>
+          <Button
+          key={"End Maptick Test"}
+          content={"End Maptick Test"}
+          onClick={() => act('end test')}/>
+        </Flex.Item>
+
+
+
+    </Flex>
+  </Flex>
+ )
+};
+
+const Miscellaneous = (props, context) => {
+  const { act, data } = useBackend(context);
+  return (
+    <Flex title="Miscellaneous">
+      <Flex.Item>
+        <Button
+          key={"Start Automoving"}
+          content={"Start Automoving"}
+          onClick={() => act('start automove')}
+        />
+        <Button
+          key={"End Automoving"}
+          content={"End Automoving"}
+          onClick={() => act('end automove')}
+        />
+      </Flex.Item>
+    </Flex>
+  )
+};
+
+
 
 /*
 
@@ -179,29 +239,3 @@ const Status = (props, context) => {
           </Table.Row>
         </Table>
 */
-
-const Initiation = (props, context) => {
-  const { act, data } = useBackend(context);
-  return (
-
-    <Flex title="Start Maptick Tests">
-      <Flex.Item>
-
-      </Flex.Item>
-    </Flex>
- )
-};
-
-const Miscellaneous = (props, context) => {
-  const { act, data } = useBackend(context);
-  return (
-    <Flex title="Miscellaneous">
-      <Flex.Item>
-
-      </Flex.Item>
-    </Flex>
-  )
-};
-
-
-
