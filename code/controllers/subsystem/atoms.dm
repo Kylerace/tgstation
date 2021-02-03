@@ -109,6 +109,8 @@ SUBSYSTEM_DEF(atoms)
 	else
 		SEND_SIGNAL(A,COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZE)
 
+	GLOB.total_atom_count++
+
 	if (created_atoms)
 		created_atoms += A
 

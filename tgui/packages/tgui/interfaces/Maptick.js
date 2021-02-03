@@ -9,7 +9,7 @@ export const Maptick = (props, context) => {
     TabIndex,
     setTabIndex,
   ] = useLocalState(context, 'tab-index', 2);
-  //const TabComponent = TAB2NAME[TabIndex-1].component();
+  const test_name = data.test_name;
   return (
     <Window
     title="Maptick Testing Panel"
@@ -37,7 +37,7 @@ export const Maptick = (props, context) => {
             lineHeight="23px"
             selected={TabIndex === 3}
             onClick={() => setTabIndex(3)}>
-            Miscellaneous
+            Investigation
           </Tabs.Tab>
         </Tabs>
         {TabIndex === 1 && (
@@ -70,6 +70,7 @@ const Status = (props, context) => {
     templates,
     players,
     time_elapsed,
+    standard_deviation,
   } = data;
   return (
     <Flex title="Current Maptick Stats">
@@ -90,7 +91,16 @@ const Status = (props, context) => {
           <LabeledList.Item label="Time Elapsed in Minutes">
             {time_elapsed}
           </LabeledList.Item>
+          <LabeledList.Item label="Standard Deviation">
+            {standard_deviation}
+          </LabeledList.Item>
         </LabeledList>
+      </Flex.Item>
+      <Flex.Item>
+        <Button
+        key={"Calculate Standard Deviation"}
+        content={"Calculate Standard Deviation"}
+        onClick={() => act('calculate sd')}/>
       </Flex.Item>
     </Flex>
 
@@ -108,24 +118,27 @@ const Initiation = (props, context) => {
   return (
   <Flex title="Start Maptick Tests" direction="column">
     <Flex direction="row" my={1}>
-      <Flex.Item mx={1} grow={1}>
+      <Flex.Item my={1} grow={1}>
         <Dropdown
         width="360px"
-        options={templates}// options={templates.map(template => template.name)}
+        options={templates}
         selected={selected_template || "No Template Selected"}
         onSelected={value => act('template select', {select: value})}
         />
       </Flex.Item>
-      </Flex>
-      <Flex my={0.5} mx={0.5} grow={1} direction="row">
+    </Flex>
+      <Flex direction="row" my={1}>
         <Flex.Item>
           <Input
-            maxlength={50}
+            maxLength={50}
+            width="200px"
             value={test_name}
             placeholder={test_name}
             onChange={(e, value) => act('name test', {new_name: value})}
             />
         </Flex.Item>
+      </Flex>
+      <Flex my={1} grow={1} direction="row">
         <Flex.Item>
           <Button //try to get this area BELOW the area with the dropdown, preferably to the side too
           key={"Load Test Template"}
@@ -140,102 +153,30 @@ const Initiation = (props, context) => {
           content={"End Maptick Test"}
           onClick={() => act('end test')}/>
         </Flex.Item>
-
-
-
-    </Flex>
+      </Flex>
+      <Flex my={1} grow={1} direction="row">
+        <Flex.Item>
+          <Button
+            key={"Start Automoving"}
+            content={"Start Automoving"}
+            onClick={() => act('start automove')}
+          />
+          <Button
+            key={"End Automoving"}
+            content={"End Automoving"}
+            onClick={() => act('end automove')}
+          />
+        </Flex.Item>
+      </Flex>
   </Flex>
  )
 };
 
-const Miscellaneous = (props, context) => {
+const Investigation = (props, context) => {
   const { act, data } = useBackend(context);
   return (
-    <Flex title="Miscellaneous">
-      <Flex.Item>
-        <Button
-          key={"Start Automoving"}
-          content={"Start Automoving"}
-          onClick={() => act('start automove')}
-        />
-        <Button
-          key={"End Automoving"}
-          content={"End Automoving"}
-          onClick={() => act('end automove')}
-        />
-      </Flex.Item>
+    <Flex title="Investigation">
+
     </Flex>
   )
 };
-
-
-
-/*
-
-<Flex.Item grow={1}>
-          <Section
-            fill={false}
-            title={TAB2NAME[tabIndex-1].title}>
-            <TabComponent />
-          </Section>
-        </Flex.Item>
-
-<Section
-        title = "Maptick Menu"
-        buttons={(
-          <>
-          <Button
-          color = "blue"
-          content = "Status"
-          selected={tabIndex === 1}
-          onClick={() => setTabIndex(1)}
-          />
-          <Button
-          color = "blue"
-          content = "Initiation"
-          selected={tabIndex === 2}
-          onClick={() => setTabIndex(2)}
-          />
-          <Button
-          color = "blue"
-          content = "Miscellaneous"
-          selected={tabIndex === 3}
-          onClick={() => setTabIndex(3)}
-          />
-          </>
-         )}>
-        </Section>
-
-<LabeledList>
-          <LabeledList.Item label="Current Maptick Value">
-            {current_maptick_exact}
-          </LabeledList.Item>
-          <LabeledList.Item label="Average Maptick Value">
-            {current_maptick_average}
-          </LabeledList.Item>
-          <LabeledList.Item label="Maptick Moving Average">
-            {current_moving_average}
-          </LabeledList.Item>
-          <LabeledList.Item label="Number of Players">
-            {players}
-          </LabeledList.Item>
-        </LabeledList>
-///
-
-<Table>
-          <Table.Row>
-            <Table.Cell>
-              content={current_maptick_average+" Current Average Maptick"}
-            </Table.Cell>
-            <Table.Cell>
-              content={current_maptick_exact+" Current Maptick"}
-            </Table.Cell>
-            <Table.Cell>
-              content={current_moving_average+" Current Moving Average"}
-            </Table.Cell>
-            <Table.Cell>
-              content={players+" Number of Players"}
-            </Table.Cell>
-          </Table.Row>
-        </Table>
-*/

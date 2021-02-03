@@ -288,6 +288,8 @@
 	if(smoothing_flags & SMOOTH_QUEUED)
 		SSicon_smooth.remove_from_queues(src)
 
+	GLOB.total_atom_count--
+
 	return ..()
 
 /atom/proc/handle_ricochet(obj/projectile/P)

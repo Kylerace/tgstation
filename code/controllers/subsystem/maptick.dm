@@ -125,13 +125,7 @@ SUBSYSTEM_DEF(maptick_track)
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
 
-	//calculate the standard deviation
-	/*var/sums_of_square_of_deviations_from_mean = 0 //basically the sigma in standard deviation
-	for (var/i in all_maptick_values)
-		sums_of_square_of_deviations_from_mean += (i - average_maptick) ** 2 //for each datapoint, find the square of its distance to the mean
-	standard_deviation = sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)*/
-
-	standard_deviation = calculate_standard_deviation()
+	calculate_standard_deviation()
 
 	log_maptick_stats("end")
 
@@ -193,7 +187,7 @@ SUBSYSTEM_DEF(maptick_track)
 	var/sums_of_square_of_deviations_from_mean = 0 //basically the sigma in standard deviation
 	for (var/i in all_maptick_values)
 		sums_of_square_of_deviations_from_mean += (i - average_maptick) ** 2 //for each datapoint, find the square of its distance to the mean
-	return sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)
+	standard_deviation = sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)
 
 /datum/controller/subsystem/maptick_track/proc/log_maptick_stats(log_type = "mid")
 	if(!file_output_path)
@@ -207,7 +201,7 @@ SUBSYSTEM_DEF(maptick_track)
 					"5 minute average", //the last 600 measured maptick values
 					"minutes",
 					"average maptick",
-					"maptick percentage of world.cpu",
+					"world.cpu - maptick",
 					//"players",
 					//"total tiles moved",
 					//"tiles moved per minute",
@@ -230,7 +224,7 @@ SUBSYSTEM_DEF(maptick_track)
 					//total_client_movement,
 					//client_movement_over_time,
 					//most_recent_delta_maptick_average,
-					"", //standard deviation, filled in at the end
+					standard_deviation ? standard_deviation : "", //standard deviation, filled in at the end (unless its requested to calculate it)
 					world.tick_usage,
 				),
 				file_output_path
