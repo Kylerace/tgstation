@@ -79,20 +79,20 @@ SUBSYSTEM_DEF(maptick_track)
 		tracked_client_mobs += mob_with_client
 
 	#ifdef MAPTICK_TESTING
-		SSair.can_fire = FALSE
-		SSmachines.can_fire = FALSE
-		SSnpcpool.can_fire = FALSE
-		SSidlenpcpool.can_fire = FALSE
-		SSadjacent_air.can_fire = FALSE
-		SSshuttle.can_fire = FALSE
-		SSweather.can_fire = FALSE
-		SSradiation.can_fire = FALSE
-		SSfire_burning.can_fire = FALSE
-		SSmobs.can_fire = FALSE
-		SSai_controllers.can_fire = FALSE
-		SSeconomy.can_fire = FALSE
-		SSfluids.can_fire = FALSE
-		SSobj.can_fire = FALSE
+	SSair.can_fire = FALSE
+	SSmachines.can_fire = FALSE
+	SSnpcpool.can_fire = FALSE
+	SSidlenpcpool.can_fire = FALSE
+	SSadjacent_air.can_fire = FALSE
+	SSshuttle.can_fire = FALSE
+	SSweather.can_fire = FALSE
+	SSradiation.can_fire = FALSE
+	SSfire_burning.can_fire = FALSE
+	SSmobs.can_fire = FALSE
+	SSai_controllers.can_fire = FALSE
+	SSeconomy.can_fire = FALSE
+	SSfluids.can_fire = FALSE
+	SSobj.can_fire = FALSE
 	#endif
 
 	return TRUE
@@ -136,21 +136,21 @@ SUBSYSTEM_DEF(maptick_track)
 	log_maptick_stats("end")
 
 	#ifdef MAPTICK_TESTING
-		first_run = TRUE
-		SSair.can_fire = TRUE
-		SSmachines.can_fire = TRUE
-		SSnpcpool.can_fire = TRUE
-		SSidlenpcpool.can_fire = TRUE
-		SSadjacent_air.can_fire = TRUE
-		SSshuttle.can_fire = TRUE
-		SSweather.can_fire = TRUE
-		SSradiation.can_fire = TRUE
-		SSfire_burning.can_fire = TRUE
-		SSmobs.can_fire = TRUE
-		SSai_controllers.can_fire = TRUE
-		SSeconomy.can_fire = TRUE
-		SSfluids.can_fire = TRUE
-		SSobj.can_fire = TRUE
+	first_run = TRUE
+	SSair.can_fire = TRUE
+	SSmachines.can_fire = TRUE
+	SSnpcpool.can_fire = TRUE
+	SSidlenpcpool.can_fire = TRUE
+	SSadjacent_air.can_fire = TRUE
+	SSshuttle.can_fire = TRUE
+	SSweather.can_fire = TRUE
+	SSradiation.can_fire = TRUE
+	SSfire_burning.can_fire = TRUE
+	SSmobs.can_fire = TRUE
+	SSai_controllers.can_fire = TRUE
+	SSeconomy.can_fire = TRUE
+	SSfluids.can_fire = TRUE
+	SSobj.can_fire = TRUE
 	#endif
 
 /datum/controller/subsystem/maptick_track/fire()
@@ -224,8 +224,8 @@ SUBSYSTEM_DEF(maptick_track)
 					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
-					"", //average maptick, filled in at the end
-					(world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE) * 100,
+					average_maptick, //average maptick, filled in at the end
+					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
 					//length(GLOB.player_list), //players
 					//total_client_movement,
 					//client_movement_over_time,
@@ -243,7 +243,7 @@ SUBSYSTEM_DEF(maptick_track)
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick
-					(world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE) * 100,
+					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
 					//length(GLOB.player_list), //players
 					//total_client_movement,
 					//client_movement_over_time,
