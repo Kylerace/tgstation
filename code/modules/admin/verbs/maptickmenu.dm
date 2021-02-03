@@ -20,10 +20,6 @@
 	return GLOB.admin_state
 
 /datum/maptick_menu/New(user)
-	current_maptick_average = SSmaptick_track.average_maptick
-	current_maptick_exact = MAPTICK_LAST_INTERNAL_TICK_USAGE
-	current_moving_average = SSmaptick_track.x_minute_average
-	time_elapsed = SSmaptick_track.time_elapsed
 	if (istype(user, /client))
 		var/client/user_client = user
 		holder = user_client //if its a client, assign it to holder
@@ -57,6 +53,7 @@
 	data["players"] = length(GLOB.player_list)
 	data["selected_template"] = current_template
 	data["test_name"] = name
+	data["standard_deviation"] = SSmaptick_track.standard_deviation
 
 	return data
 
@@ -76,7 +73,7 @@
 
 		if("start test")
 			SSmaptick_track.start_tracking(name)
-			message_admins(action)
+			message_admins("[name] test has started")
 
 		if("end test")
 			SSmaptick_track.stop_tracking()
@@ -94,6 +91,9 @@
 			end_automove()
 			message_admins(action)
 
+		if("calculate sd")
+			SSmaptick_track.calculate_standard_deviation()
+			message_admins(action)
 
 
 /datum/maptick_menu/proc/load_test(test_id)
