@@ -180,6 +180,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/maptick_menu,
 	#ifdef TESTING
 	/client/proc/check_missing_sprites,
+	/client/proc/export_dynamic_json,
+	/client/proc/run_dynamic_simulations,
 	#endif
 	/datum/admins/proc/create_or_modify_area,
 #ifdef REFERENCE_TRACKING
