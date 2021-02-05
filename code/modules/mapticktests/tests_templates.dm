@@ -145,3 +145,19 @@ think it was removed, ill have to find a species with less visual noise on the s
 /datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents50l
 	maptick_id = "mapticktest_invis_obj_vis_viscontents50l"
 	mappath = "_maps/templates/mapticktest_invis_obj_vis_viscontents50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_overlay_stacking
+	maptick_id = "mapticktest_overlay_stacking"
+	mappath = "_maps/templates/mapticktest_overlay_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_viscont_stacking
+	maptick_id = "mapticktest_viscont_stacking"
+	mappath = "_maps/templates/mapticktest_viscont_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_turf_vis_contents_stacking
+	maptick_id = "mapticktest_turf_vis_contents_stacking"
+	mappath = "_maps/templates/mapticktest_turf_vis_contents_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_turf_overlay_stacking
+	maptick_id = "mapticktest_turf_overlay_stacking"
+	mappath = "_maps/templates/mapticktest_turf_overlay_stacking.dmm"
