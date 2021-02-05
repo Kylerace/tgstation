@@ -91,6 +91,7 @@
 
 /obj/item/maptick_test_completely_invis_object
 	icon = ""
+	//alpha = 0
 
 /turf/open/floor/maptick_test_changer_one
 	icon_state = "wood"
