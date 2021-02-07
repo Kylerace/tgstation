@@ -119,6 +119,9 @@
 /turf/open/floor/maptick_test_changer_two/proc/change_to_other()
 	ChangeTurf(/turf/open/floor/maptick_test_changer_one)
 
+/obj/structure/closet/maptick_test_infinite_closet
+	storage_capacity = 300000000000
+
 /datum/component/maptick_moving_tester
 	var/mob/living/carbon/host
 	var/going_north = TRUE
