@@ -83,7 +83,7 @@
 /obj/item/maptick_test_static_overlay_stacking/Initialize()
 	. = ..()
 	for(var/i=0, i < 50, i++)
-		overlays += image('icons/obj/stack_objects.dmi',src,"sheet-metal")
+		overlays += getRandomAnimalImage(src)
 
 /mob/maptick_test_static_mob
 	icon = 'icons/obj/stack_objects.dmi'
