@@ -20,7 +20,7 @@ SUBSYSTEM_DEF(maptick_track)
 	var/average_maptick = 0
 
 	var/list/x_minute_values = list()
-	var/total_values_in_x_minutes = 5 * 60 * (10 / 5)//reeeeee why is wait an invalid variable
+	var/total_values_in_x_minutes //reeeeee why is wait an invalid variable
 	var/x_minute_average = 0
 
 	var/total_client_movement = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
@@ -57,6 +57,7 @@ SUBSYSTEM_DEF(maptick_track)
 	else if (intensity == TEST_INTENSITY_LOW)
 		wait = 10
 
+	total_values_in_x_minutes = 5 * 60 * (10 / wait)
 	all_maptick_values.Cut()
 	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
@@ -207,9 +208,9 @@ SUBSYSTEM_DEF(maptick_track)
 					"minutes",
 					"average maptick",
 					"world.cpu - maptick",
-					//"players",
-					//"total tiles moved",
-					//"tiles moved per minute",
+					"players",
+					"total tiles moved",
+					"tiles moved per minute",
 					//"delta maptick average",
 					"standard deviation",
 					"world.tick_usage"
@@ -225,9 +226,9 @@ SUBSYSTEM_DEF(maptick_track)
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick, filled in at the end
 					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
-					//length(GLOB.player_list), //players
-					//total_client_movement,
-					//client_movement_over_time,
+					length(GLOB.player_list), //players
+					total_client_movement,
+					client_movement_over_time,
 					//most_recent_delta_maptick_average,
 					standard_deviation ? standard_deviation : "", //standard deviation, filled in at the end (unless its requested to calculate it)
 					world.tick_usage,
@@ -243,9 +244,9 @@ SUBSYSTEM_DEF(maptick_track)
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick
 					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
-					//length(GLOB.player_list), //players
-					//total_client_movement,
-					//client_movement_over_time,
+					length(GLOB.player_list), //players
+					total_client_movement,
+					client_movement_over_time,
 					//most_recent_delta_maptick_average,
 					standard_deviation,
 					world.tick_usage
