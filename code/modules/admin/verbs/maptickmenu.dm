@@ -37,6 +37,7 @@
 		ui = new(user, src, "Maptick")
 		ui.open()
 
+///makes sure we have all the maptick testing programs
 /datum/maptick_menu/proc/generate_program_list()
 	for (var/template_path in SSmapping.maptick_ids)
 		template_ids += template_path
@@ -64,35 +65,35 @@
 	switch(action)
 		if("template select")
 			current_template = params["select"]
-			message_admins("[current_template] has been selected")
+			message_admins("[current_template] has been selected") //remove for potato
 
 		if("load template")
 			load_test(current_template)
-			message_admins("load template [current_template]")
+			message_admins("load template [current_template]") //remove for potato
 
 		if("start test")
 			SSmaptick_track.start_tracking(name)
-			message_admins("[name] test has started")
+			message_admins("the [name] maptick test has been started by [holder.ckey]")
 
 		if("end test")
 			SSmaptick_track.stop_tracking()
-			message_admins(action)
+			message_admins("The [name] maptick test has been ended by [holder.ckey]")
 
 		if("name test")
 			name = params["new_name"]
-			message_admins(name)
+			message_admins(name) //remove for potato
 
 		if("start automove")
 			apply_automove()
-			message_admins(action)
+			message_admins(action) //remove for potato
 
 		if("end automove")
 			end_automove()
-			message_admins(action)
+			message_admins(action) //remove for potato
 
 		if("calculate sd")
 			SSmaptick_track.calculate_standard_deviation()
-			message_admins(action)
+			message_admins(action) //remove for potato
 
 
 /datum/maptick_menu/proc/load_test(test_id)
