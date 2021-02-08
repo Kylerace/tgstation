@@ -27,6 +27,15 @@ think it was removed, ill have to find a species with less visual noise on the s
 /datum/map_template/mapticktest
 	var/maptick_id
 
+/datum/map_template/mapticktest/New(path = null, rename = null, cache = FALSE)
+	if(path)
+		mappath = path
+	if(mappath)
+		preload_size(mappath, cache)
+	if(rename)
+		name = rename
+		maptick_id = rename
+/*
 //blank control test, nothing but generic plating 20x20. ~ 0-0.1% hs 0.2-0.3%
 /datum/map_template/mapticktest/blank
 	maptick_id = "blank"
@@ -145,3 +154,20 @@ think it was removed, ill have to find a species with less visual noise on the s
 /datum/map_template/mapticktest/mapticktest_invis_obj_vis_viscontents50l
 	maptick_id = "mapticktest_invis_obj_vis_viscontents50l"
 	mappath = "_maps/templates/mapticktest_invis_obj_vis_viscontents50l.dmm"
+
+/datum/map_template/mapticktest/mapticktest_overlay_stacking
+	maptick_id = "mapticktest_overlay_stacking"
+	mappath = "_maps/templates/mapticktest_overlay_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_viscont_stacking
+	maptick_id = "mapticktest_viscont_stacking"
+	mappath = "_maps/templates/mapticktest_viscont_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_turf_vis_contents_stacking
+	maptick_id = "mapticktest_turf_vis_contents_stacking"
+	mappath = "_maps/templates/mapticktest_turf_vis_contents_stacking.dmm"
+
+/datum/map_template/mapticktest/mapticktest_turf_overlay_stacking
+	maptick_id = "mapticktest_turf_overlay_stacking"
+	mappath = "_maps/templates/mapticktest_turf_overlay_stacking.dmm"
+*/
