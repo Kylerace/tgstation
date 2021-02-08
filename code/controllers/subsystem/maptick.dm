@@ -60,11 +60,16 @@ SUBSYSTEM_DEF(maptick_track)
 	all_maptick_values.Cut()
 	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
+	total_values_in_x_minutes = 0
+	x_minute_values.Cut()
 
+	time_elapsed = 0
 	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
 	last_fire_maptick_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
 	most_recent_delta_maptick_average = 0
+	x_minute_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
 
+	total_x_cycles_below_delta_average_minimum = 0
 	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
@@ -218,7 +223,7 @@ SUBSYSTEM_DEF(maptick_track)
 					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
-					"", //average maptick, filled in at the end
+					average_maptick, //average maptick, filled in at the end
 					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
 					//length(GLOB.player_list), //players
 					//total_client_movement,
