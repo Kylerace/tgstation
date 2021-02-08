@@ -469,7 +469,6 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 /datum/controller/subsystem/mapping/proc/preloadMaptickTemplates(path = "_maps/tests/")
 	var/list/filelist = flist(path)
 	for(var/map in filelist)
-		message_admins("ecksdee")
 		var/datum/map_template/mapticktest/T = new(path = "[path][map]", rename = "[map]")
 		maptick_templates[T.maptick_id] = T
 		maptick_ids += T.maptick_id
