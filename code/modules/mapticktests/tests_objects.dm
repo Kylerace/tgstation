@@ -82,7 +82,7 @@
 
 /obj/item/maptick_test_static_overlay_stacking/Initialize()
 	. = ..()
-	for(var/i=0, i < 50, i++)
+	for(var/i=0, i < 2, i++)
 		overlays += getRandomAnimalImage(src)
 
 /mob/maptick_test_static_mob

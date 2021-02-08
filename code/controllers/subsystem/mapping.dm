@@ -25,6 +25,7 @@ SUBSYSTEM_DEF(mapping)
 	var/list/shelter_templates = list()
 	var/list/holodeck_templates = list()
 
+	var/list/maptick_ids = list()
 	var/list/maptick_templates = list()
 
 	var/list/areas_in_z = list()
@@ -468,15 +469,13 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 		holodeck_templates[holo_template.template_id] = holo_template
 		map_templates[holo_template.template_id] = holo_template
 
-/datum/controller/subsystem/mapping/proc/preloadMaptickTemplates()
-	for(var/item in subtypesof(/datum/map_template/mapticktest))
-		var/datum/map_template/mapticktest/maptick_type = item
-		if(!(initial(maptick_type.mappath)))
-			continue
-		var/datum/map_template/mapticktest/M = new maptick_type()
-
-		maptick_templates[M.maptick_id] = M
-		map_templates[M.maptick_id] = M
+/datum/controller/subsystem/mapping/proc/preloadMaptickTemplates(path = "_maps/tests/")
+	var/list/filelist = flist(path)
+	for(var/map in filelist)
+		message_admins("ecksdee")
+		var/datum/map_template/mapticktest/T = new(path = "[path][map]", rename = "[map]")
+		maptick_templates[T.maptick_id] = T
+		maptick_ids += T.maptick_id
 
 //Manual loading of away missions.
 /client/proc/admin_away()

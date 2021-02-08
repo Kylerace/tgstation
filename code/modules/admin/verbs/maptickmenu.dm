@@ -38,9 +38,8 @@
 		ui.open()
 
 /datum/maptick_menu/proc/generate_program_list()
-	for (var/template_path in subtypesof(/datum/map_template/mapticktest))
-		var/datum/map_template/mapticktest/true_template = template_path
-		template_ids += initial(true_template.maptick_id)//template_ids["name"] = initial(true_template.maptick_id)
+	for (var/template_path in SSmapping.maptick_ids)
+		template_ids += template_path
 
 /datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
