@@ -181,3 +181,22 @@
 	. = ..()
 	for (var/i in 1 to 50)
 		SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = FALSE)
+
+/turf/open/floor/maptick_test_turf_single_viscont
+	icon_state = "wood"
+
+/turf/open/floor/maptick_test_turf_single_viscont/Initialize(mapload)
+	. = ..()
+	var/obj/maptick_test_single_viscontent/vis_daddy = locate() in locate(1,1,1)
+	if (!vis_daddy)
+		vis_daddy = new(locate(1,1,1))
+
+	vis_contents += vis_daddy
+
+/obj/maptick_test_single_viscontent
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/obj/maptick_test_single_viscontent/Initialize(mapload)
+	. = ..()
+	icon = getRandomAnimalImage(src)

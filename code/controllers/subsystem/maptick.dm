@@ -1,6 +1,6 @@
-#define TEST_INTENSITY_LOW 		"low"
-#define TEST_INTENSITY_MEDIUM	"medium"
-#define TEST_INTENSITY_HIGH		"high"
+#define TEST_INTENSITY_LOW 		1
+#define TEST_INTENSITY_MEDIUM	5
+#define TEST_INTENSITY_HIGH		10
 
 #define DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM 0.01 //default is 0.0001
 #define DELTA_MAPTICK_CYCLES_TO_ALERT 20
@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(maptick_track)
 	var/total_values_in_x_minutes //reeeeee why is wait an invalid variable
 	var/x_minute_average = 0
 
+	var/track_client_movement = FALSE
 	var/total_client_movement = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
 	var/client_movement_over_time = 0 //total client movement divided by time elapsed
 	var/number_of_dead_clients = 0
@@ -45,24 +46,23 @@ SUBSYSTEM_DEF(maptick_track)
 	var/first_run = TRUE
 	can_fire = FALSE
 
+
+
 /datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_MEDIUM)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)
 			return FALSE
 
-	if (intensity == TEST_INTENSITY_HIGH)
-		wait = 1
-	else if (intensity == TEST_INTENSITY_MEDIUM)
-		wait = 5
-	else if (intensity == TEST_INTENSITY_LOW)
-		wait = 10
+	wait = intensity
 
+	track_client_movement = track_movement
 	total_values_in_x_minutes = 5 * 60 * (10 / wait)
 	all_maptick_values.Cut()
 	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
 	total_values_in_x_minutes = 0
-	x_minute_values.Cut()
+	if (x_minute_values.len)
+		x_minute_values.Cut()
 
 	time_elapsed = 0
 	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
@@ -79,11 +79,13 @@ SUBSYSTEM_DEF(maptick_track)
 
 	log_maptick_stats("start")
 
-	for (var/mob/mob_with_client in GLOB.player_list)
-		RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
-		RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
-		tracked_client_mobs += mob_with_client
+	if(track_movement)
+		for (var/mob/mob_with_client in GLOB.player_list)
+			RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
+			RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
+			tracked_client_mobs += mob_with_client
 
+	//this is NEVER to be used for live rounds
 	#ifdef MAPTICK_TESTING
 	SSair.can_fire = FALSE
 	SSmachines.can_fire = FALSE
@@ -159,12 +161,12 @@ SUBSYSTEM_DEF(maptick_track)
 	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 
-
+	//by default x is 5 minutes, this is the moving average
 	if (x_minute_values.len > total_values_in_x_minutes)
 		x_minute_values.Remove(x_minute_values[1])
 	for (var/i in x_minute_values)
 		x_minute_average += i
-	x_minute_average = x_minute_average / x_minute_values.len //takes the average maptick value over the last 5 minutes
+	x_minute_average = x_minute_values.len ? x_minute_average / x_minute_values.len : MAPTICK_LAST_INTERNAL_TICK_USAGE//takes the average maptick value over the last 5 minutes
 
 	//turns out adding all measured maptick values and dividing them to get the average every 0.5 seconds is expensive
 	//now the total average is calculated every 5 minutes once x_minute_values has completely replaced every number from the previous cycle
@@ -189,12 +191,14 @@ SUBSYSTEM_DEF(maptick_track)
 
 	log_maptick_stats("mid")
 
+///calculates the standard deviation of every maptick value measured throughout the test. can get very expensive
 /datum/controller/subsystem/maptick_track/proc/calculate_standard_deviation()
 	var/sums_of_square_of_deviations_from_mean = 0 //basically the sigma in standard deviation
 	for (var/i in all_maptick_values)
 		sums_of_square_of_deviations_from_mean += (i - average_maptick) ** 2 //for each datapoint, find the square of its distance to the mean
 	standard_deviation = sqrt(sums_of_square_of_deviations_from_mean / all_maptick_values.len)
 
+///deals with logging the recorded data to the csv file defined by file_output_path
 /datum/controller/subsystem/maptick_track/proc/log_maptick_stats(log_type = "mid")
 	if(!file_output_path)
 		stack_trace("no file output path selected!")
