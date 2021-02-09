@@ -159,3 +159,22 @@
 	else
 		//walk(host, SOUTH)
 		host.Move(get_step(get_turf(host),SOUTH))
+
+/turf/open/floor/maptick_test_turf_single_viscont
+	icon_state = "wood"
+
+/turf/open/floor/maptick_test_turf_single_viscont/Initialize(mapload)
+	. = ..()
+	var/obj/maptick_test_single_viscontent/vis_daddy = locate() in locate(1,1,1)
+	if (!vis_daddy)
+		vis_daddy = new(locate(1,1,1))
+
+	vis_contents += vis_daddy
+
+/obj/maptick_test_single_viscontent
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/obj/maptick_test_single_viscontent/Initialize(mapload)
+	. = ..()
+	icon = getRandomAnimalImage(src)

@@ -10,12 +10,23 @@ export const Maptick = (props, context) => {
     setTabIndex,
   ] = useLocalState(context, 'tab-index', 2);
   const test_name = data.test_name;
+  const currently_testing = data.ongoing_test;
   return (
     <Window
     title="Maptick Testing Panel"
     width={500}
     height={485}>
       <Window.Content>
+        <Flex direction="row">
+          <Flex.Item mx={1}>
+            {test_name != "Maptick-Test" ? test_name : "Default Test Name"}
+          </Flex.Item>
+          <Flex.Item mx={1}>
+            <NoticeBox color={currently_testing ? 'green' : 'red'}>
+              {currently_testing ? test_name+" Is Being Recorded" : "No Test Is Being Recorded"}
+            </NoticeBox>
+          </Flex.Item>
+        </Flex>
         <Flex direction="column" height="100%">
         <Tabs>
           <Tabs.Tab
@@ -50,7 +61,7 @@ export const Maptick = (props, context) => {
         )}
         {TabIndex === 3 && (
           <>
-            <Miscellaneous/>
+            <Investigation/>
           </>
         )}
 
@@ -73,8 +84,8 @@ const Status = (props, context) => {
     standard_deviation,
   } = data;
   return (
-    <Flex title="Current Maptick Stats">
-      <Flex.Item>
+    <Flex title="Current Maptick Stats" direction="column">
+      <Flex.Item direction="column">
         <LabeledList>
           <LabeledList.Item label="Current Maptick Value">
             {current_maptick_exact}
@@ -96,12 +107,13 @@ const Status = (props, context) => {
           </LabeledList.Item>
         </LabeledList>
       </Flex.Item>
-      <Flex.Item>
+      <Flex.Item direction="column">
         <Button
         key={"Calculate Standard Deviation"}
         content={"Calculate Standard Deviation"}
         onClick={() => act('calculate sd')}/>
       </Flex.Item>
+
     </Flex>
 
 
@@ -115,6 +127,9 @@ const Initiation = (props, context) => {
   const templates = data.templates || [];
   const selected_template = data.selected_template;
   const test_name = data.test_name;
+  const currently_testing = data.ongoing_test;
+  const test_intensities = ["One measurement per second","Two measurements per second","Ten measurements per second"];
+
   return (
   <Flex title="Start Maptick Tests" direction="column">
     <Flex direction="row" my={1}>
@@ -147,6 +162,7 @@ const Initiation = (props, context) => {
           <Button
           key={"Start Maptick Test"}
           content={"Start Maptick Test"}
+          color={currently_testing ? 'red' : 'green'}
           onClick={() => act('start test')}/>
           <Button
           key={"End Maptick Test"}
@@ -168,6 +184,13 @@ const Initiation = (props, context) => {
           />
         </Flex.Item>
       </Flex>
+      <Flex my={1} grow={1} direction="row">
+        <Dropdown
+        width="240px"
+        options={test_intensities}
+        onSelected={value => act('test intensity', {intensity: value})}
+        />
+      </Flex>
   </Flex>
  )
 };
@@ -175,8 +198,13 @@ const Initiation = (props, context) => {
 const Investigation = (props, context) => {
   const { act, data } = useBackend(context);
   return (
-    <Flex title="Investigation">
-
+    <Flex title="Investigation" direction="column">
+      <Flex.Item>
+        <Button
+        key={"Include Total Player Movement"}
+        content={"Include Total Player Movement"}
+        onClick={() => act('include player movement')}/>
+      </Flex.Item>
     </Flex>
   )
 };

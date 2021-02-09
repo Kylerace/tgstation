@@ -1,3 +1,7 @@
+#define TEST_INTENSITY_LOW 		1
+#define TEST_INTENSITY_MEDIUM	5
+#define TEST_INTENSITY_HIGH		10
+
 /client/proc/maptick_menu()
 	set name = "Maptick Menu"
 	set category = "Debug"
@@ -12,9 +16,12 @@
 	var/current_maptick_exact
 	var/current_moving_average
 	var/time_elapsed
-	var/name = "Default-Test-Name"
+	var/name = "Maptick-Test"
 	var/list/template_ids = list()
 	var/current_template = null
+
+	var/include_movement = FALSE
+	var/test_intensity = TEST_INTENSITY_MEDIUM
 
 /datum/maptick_menu/ui_state(mob/user)
 	return GLOB.admin_state
@@ -54,6 +61,7 @@
 	data["selected_template"] = current_template
 	data["test_name"] = name
 	data["standard_deviation"] = SSmaptick_track.standard_deviation
+	data["test intensity"] = test_intensity
 
 	return data
 
@@ -72,7 +80,7 @@
 			message_admins("load template [current_template]") //remove for potato
 
 		if("start test")
-			SSmaptick_track.start_tracking(name)
+			SSmaptick_track.start_tracking(name, include_movement)
 			message_admins("the [name] maptick test has been started by [holder.ckey]")
 
 		if("end test")
@@ -80,7 +88,8 @@
 			message_admins("The [name] maptick test has been ended by [holder.ckey]")
 
 		if("name test")
-			name = params["new_name"]
+			name = null
+			name = copytext(params["new_name"], 1, 0)
 			message_admins(name) //remove for potato
 
 		if("start automove")
@@ -94,6 +103,20 @@
 		if("calculate sd")
 			SSmaptick_track.calculate_standard_deviation()
 			message_admins(action) //remove for potato
+
+		if("include player movement")
+			include_movement = TRUE
+
+		if("test intensity")
+			switch(params["intensity"])
+				if("One measurement per second")
+					test_intensity = TEST_INTENSITY_LOW
+				if("Two measurements per second")
+					test_intensity = TEST_INTENSITY_MEDIUM
+				if("Ten measurements per second")
+					test_intensity = TEST_INTENSITY_HIGH
+
+
 
 
 /datum/maptick_menu/proc/load_test(test_id)
@@ -117,3 +140,7 @@
 	var/mob/client_mob = holder.mob
 	var/datum/component/maptick_moving_tester/to_remove = client_mob.GetComponent(/datum/component/maptick_moving_tester)
 	qdel(to_remove)
+
+#undef TEST_INTENSITY_LOW
+#undef TEST_INTENSITY_MEDIUM
+#undef TEST_INTENSITY_HIGH
