@@ -20,7 +20,7 @@ SUBSYSTEM_DEF(maptick_track)
 	var/average_maptick = 0
 
 	var/list/x_minute_values = list()
-	var/total_values_in_x_minutes //reeeeee why is wait an invalid variable
+	var/total_values_in_x_minutes = 0//reeeeee why is wait an invalid variable
 	var/x_minute_average = 0
 
 	var/track_client_movement = FALSE
@@ -60,7 +60,6 @@ SUBSYSTEM_DEF(maptick_track)
 	all_maptick_values.Cut()
 	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
-	total_values_in_x_minutes = 0
 	if (x_minute_values.len)
 		x_minute_values.Cut()
 
@@ -75,7 +74,6 @@ SUBSYSTEM_DEF(maptick_track)
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
 	file_output_path = "[GLOB.log_directory]/mapticktest-[REALTIMEOFDAY]-[SSmapping.config?.map_name]-[file_output_name].csv"
-	can_fire = TRUE
 
 	log_maptick_stats("start")
 
@@ -103,6 +101,7 @@ SUBSYSTEM_DEF(maptick_track)
 	SSobj.can_fire = FALSE
 	#endif
 
+	can_fire = TRUE
 	return TRUE
 
 /datum/controller/subsystem/maptick_track/proc/unregister_mob(datum/source)
@@ -166,7 +165,8 @@ SUBSYSTEM_DEF(maptick_track)
 		x_minute_values.Remove(x_minute_values[1])
 	for (var/i in x_minute_values)
 		x_minute_average += i
-	x_minute_average = x_minute_values.len ? x_minute_average / x_minute_values.len : MAPTICK_LAST_INTERNAL_TICK_USAGE//takes the average maptick value over the last 5 minutes
+
+	x_minute_average = x_minute_average / max(x_minute_values.len, 1)
 
 	//turns out adding all measured maptick values and dividing them to get the average every 0.5 seconds is expensive
 	//now the total average is calculated every 5 minutes once x_minute_values has completely replaced every number from the previous cycle
