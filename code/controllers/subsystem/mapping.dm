@@ -71,7 +71,7 @@ SUBSYSTEM_DEF(mapping)
 	//initialize_biomes()
 	loadWorld()
 	repopulate_sorted_areas()
-	process_teleport_locs()			//Sets up the wizard teleport locations
+	//process_teleport_locs()			//Sets up the wizard teleport locations
 	preloadTemplates()
 	run_map_generation()
 
@@ -246,10 +246,10 @@ Used by the AI doomsday and the self-destruct nuke.
 		++i
 
 	// load the maps
-	for (var/P in parsed_maps)
-		var/datum/parsed_map/pm = P
-		if (!pm.load(1, 1, start_z + parsed_maps[P], no_changeturf = TRUE))
-			errorList |= pm.original_path
+	//for (var/P in parsed_maps)
+	//	var/datum/parsed_map/pm = P
+	//	if (!pm.load(1, 1, start_z + parsed_maps[P], no_changeturf = TRUE))
+	//		errorList |= pm.original_path
 	if(!silent)
 		INIT_ANNOUNCE("Loaded [name] in [(REALTIMEOFDAY - start_time)/10]s!")
 	return parsed_maps
@@ -399,10 +399,10 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 		var/datum/map_template/T = new(path = "[path][map]", rename = "[map]")
 		map_templates[T.name] = T
 
-	preloadRuinTemplates()
-	preloadShuttleTemplates()
-	preloadShelterTemplates()
-	preloadHolodeckTemplates()
+	//preloadRuinTemplates()
+	//preloadShuttleTemplates()
+	//preloadShelterTemplates()
+	//preloadHolodeckTemplates()
 
 	preloadMaptickTemplates()
 

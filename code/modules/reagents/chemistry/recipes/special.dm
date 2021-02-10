@@ -114,11 +114,11 @@ GLOBAL_LIST_INIT(medicine_reagents, build_medicine_reagents())
 			return possible_results.Copy()
 
 /datum/chemical_reaction/randomized/proc/HasConflicts()
-	for(var/x in required_reagents)
-		for(var/datum/chemical_reaction/R in GLOB.chemical_reactions_list[x])
-			if(chem_recipes_do_conflict(R,src))
-				return TRUE
-	return FALSE
+	//for(var/x in required_reagents)
+	//	for(var/datum/chemical_reaction/R in GLOB.chemical_reactions_list[x])
+	//		if(chem_recipes_do_conflict(R,src))
+	//			return TRUE
+	return TRUE
 
 /datum/chemical_reaction/randomized/proc/unwrap_reagent_list(list/textreagents)
 	. = list()
