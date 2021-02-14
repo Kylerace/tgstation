@@ -16,7 +16,7 @@
 	var/current_maptick_exact
 	var/current_moving_average
 	var/time_elapsed
-	var/name = "Maptick-Test"
+	var/name//"Maptick-Test"
 	var/list/template_ids = list()
 	var/current_template = null
 
@@ -34,6 +34,10 @@
 		var/mob/user_mob = user
 		holder = user_mob.client
 	generate_program_list()
+	if(SSmaptick_track.file_output_name == "")
+		name = "Maptick-Test"
+	else
+		name = SSmaptick_track.file_output_name
 
 /datum/maptick_menu/ui_close()
 	qdel(src)
@@ -53,7 +57,7 @@
 	var/list/data = list()
 	data["ongoing_test"] = ongoing_test
 	data["current_maptick_average"] = SSmaptick_track.average_maptick
-	data["current_maptick_exact"] = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	data["current_maptick_exact"] = world.map_cpu
 	data["current_moving_average"] = SSmaptick_track.x_minute_average
 	data["time_elapsed"] = SSmaptick_track.time_elapsed
 	data["templates"] = template_ids
@@ -105,6 +109,7 @@
 			message_admins(action) //remove for potato
 
 		if("include player movement")
+			message_admins("action")
 			include_movement = TRUE
 
 		if("test intensity")

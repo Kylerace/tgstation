@@ -12,12 +12,13 @@ SUBSYSTEM_DEF(maptick_track)
 	init_order = INIT_ORDER_MAPTICK
 	runlevels = RUNLEVEL_GAME
 
-	var/file_output_name //we output the recorded values to this name of file
+	var/file_output_name = ""//we output the recorded values to this name of file
 	var/file_output_path //where the file we make is
 	var/list/used_filenames = list()
 
 	var/list/all_maptick_values = list()
 	var/average_maptick = 0
+	var/maptick_per_player = 0
 
 	var/list/x_minute_values = list()
 	var/total_values_in_x_minutes = 0//reeeeee why is wait an invalid variable
@@ -64,10 +65,10 @@ SUBSYSTEM_DEF(maptick_track)
 		x_minute_values.Cut()
 
 	time_elapsed = 0
-	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
-	last_fire_maptick_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	average_maptick = world.map_cpu
+	last_fire_maptick_average = world.map_cpu
 	most_recent_delta_maptick_average = 0
-	x_minute_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	x_minute_average = world.map_cpu
 
 	total_x_cycles_below_delta_average_minimum = 0
 	times_fired_this_cycle = 0
@@ -157,8 +158,10 @@ SUBSYSTEM_DEF(maptick_track)
 /datum/controller/subsystem/maptick_track/fire()
 	times_fired_this_cycle++
 
-	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
-	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
+	all_maptick_values += world.map_cpu
+	x_minute_values += world.map_cpu
+	if(GLOB.player_list.len)
+		maptick_per_player = world.map_cpu / GLOB.player_list.len
 
 	//by default x is 5 minutes, this is the moving average
 	if (x_minute_values.len > total_values_in_x_minutes)
@@ -225,11 +228,11 @@ SUBSYSTEM_DEF(maptick_track)
 		if("mid")
 			log_maptick(
 				list(
-					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
+					world.map_cpu, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick, filled in at the end
-					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
+					world.cpu - world.map_cpu,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
@@ -243,11 +246,11 @@ SUBSYSTEM_DEF(maptick_track)
 		if("end")
 			log_maptick(
 				list(
-					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
+					world.map_cpu, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick
-					world.cpu - MAPTICK_LAST_INTERNAL_TICK_USAGE,
+					world.cpu - world.map_cpu,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
