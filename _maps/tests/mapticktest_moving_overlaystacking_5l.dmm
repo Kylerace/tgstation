@@ -5,7 +5,7 @@
 /obj/item/maptick_test_static_overlay_stacking,
 /obj/item/maptick_test_static_overlay_stacking,
 /obj/item/maptick_test_static_overlay_stacking,
-/turf/open/space/basic,
+/turf/open/floor/plating,
 /area/space)
 
 (1,1,1) = {"

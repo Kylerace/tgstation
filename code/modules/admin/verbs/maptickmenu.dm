@@ -20,7 +20,7 @@
 	var/list/template_ids = list()
 	var/current_template = null
 
-	var/include_movement = FALSE
+	var/include_movement = TRUE
 	var/test_intensity = TEST_INTENSITY_MEDIUM
 
 /datum/maptick_menu/ui_state(mob/user)
