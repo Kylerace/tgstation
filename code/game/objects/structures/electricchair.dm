@@ -50,3 +50,22 @@
 
 /obj/structure/chair/e_chair/post_unbuckle_mob(mob/living/L)
 	SEND_SIGNAL(L, COMSIG_CLEAR_MOOD_EVENT, "dying")
+
+/datum/component/electrified_chair
+	var/obj/structure/chair/parent_chair
+	var/obj/item/shock_kit/used_shock_kit
+
+
+/datum/component/electrified_chair/Initialize(obj/item/shock_kit/input_shock_kit)
+	if(!istype(parent, /obj/structure/chair) || !istype(input_shock_kit, /obj/item/shock_kit))
+		return COMPONENT_INCOMPATIBLE
+	parent_chair = parent
+	input_shock_kit = used_shock_kit
+	RegisterSignal(parent_chair, COMSIG_PARENT_QDELETED, .proc/unregister)
+	RegisterSignal(used_shock_kit, COMSIG_PARENT_QDELETED, .proc/unregister)
+
+/datum/compontent/electrified_chair/unregister()
+	//do all the shit related to deleting itself
+	parent_chair = null
+	used_shock_kit = null
+	qdel(src)

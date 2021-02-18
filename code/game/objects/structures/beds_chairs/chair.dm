@@ -14,6 +14,7 @@
 	var/buildstacktype = /obj/item/stack/sheet/iron
 	var/buildstackamount = 1
 	var/item_chair = /obj/item/chair // if null it can't be picked up
+	var/electric_offset = 0
 
 
 /obj/structure/chair/examine(mob/user)
@@ -75,24 +76,24 @@
 	qdel(src)
 
 /obj/structure/chair/attackby(obj/item/W, mob/user, params)
-	if(!(flags_1 & NODECONSTRUCT_1))
-		if(W.tool_behaviour == TOOL_WRENCH)
-			W.play_tool_sound(src)
-			deconstruct()
-		else if(istype(W, /obj/item/assembly/shock_kit) && type == /obj/structure/chair)
-			if(!user.temporarilyRemoveItemFromInventory(W))
-				return
-			var/obj/item/assembly/shock_kit/new_shock_kit = W
-			var/obj/structure/chair/e_chair/new_e_chair = new /obj/structure/chair/e_chair(src.loc)
-			playsound(src.loc, 'sound/items/deconstruct.ogg', 50, TRUE)
-			new_e_chair.setDir(dir)
-			new_e_chair.part = new_shock_kit
-			new_shock_kit.forceMove(new_e_chair)
-			new_shock_kit.master = new_e_chair
-			qdel(src)
-	else
+	if(flags_1 & NODECONSTRUCT_1)
 		return ..()
-
+	if(W.tool_behaviour == TOOL_WRENCH)
+		W.play_tool_sound(src)
+		deconstruct()
+		return
+	if(istype(W, /obj/item/assembly/shock_kit) && type == /obj/structure/chair)
+		if(!user.temporarilyRemoveItemFromInventory(W))
+			return
+		var/obj/item/assembly/shock_kit/new_shock_kit = W
+		var/obj/structure/chair/e_chair/new_e_chair = new (loc)
+		playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
+		new_e_chair.setDir(dir)
+		new_e_chair.part = new_shock_kit
+		new_shock_kit.forceMove(new_e_chair)
+		new_shock_kit.master = new_e_chair
+		qdel(src)
+		return
 
 /obj/structure/chair/attack_tk(mob/user)
 	if(!anchored || has_buckled_mobs() || !isturf(user.loc))
