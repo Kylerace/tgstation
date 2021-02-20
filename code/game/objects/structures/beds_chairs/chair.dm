@@ -15,6 +15,7 @@
 	var/buildstackamount = 1
 	var/item_chair = /obj/item/chair // if null it can't be picked up
 	var/electric_offset = 0
+	var/obj/item/assembly/shock_kit/stored_kit
 
 
 /obj/structure/chair/examine(mob/user)
@@ -78,21 +79,28 @@
 /obj/structure/chair/attackby(obj/item/W, mob/user, params)
 	if(flags_1 & NODECONSTRUCT_1)
 		return ..()
+	if(W.tool_behaviour == TOOL_SCREWDRIVER && stored_kit)
+		stored_kit.forceMove(loc)
+		stored_kit = null
+		return
 	if(W.tool_behaviour == TOOL_WRENCH)
 		W.play_tool_sound(src)
 		deconstruct()
 		return
-	if(istype(W, /obj/item/assembly/shock_kit) && type == /obj/structure/chair)
+	if(istype(W, /obj/item/assembly/shock_kit) && !stored_kit)
 		if(!user.temporarilyRemoveItemFromInventory(W))
 			return
-		var/obj/item/assembly/shock_kit/new_shock_kit = W
-		var/obj/structure/chair/e_chair/new_e_chair = new (loc)
+		stored_kit = W
+		stored_kit.forceMove(src)
+		to_chat(user, text="You connect the shock kit to the chair, turning it electric")
+		AddComponent(/datum/component/electrified_chair, stored_kit)
+		/*var/obj/structure/chair/e_chair/new_e_chair = new (loc)
 		playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 		new_e_chair.setDir(dir)
 		new_e_chair.part = new_shock_kit
 		new_shock_kit.forceMove(new_e_chair)
 		new_shock_kit.master = new_e_chair
-		qdel(src)
+		qdel(src)*/
 		return
 
 /obj/structure/chair/attack_tk(mob/user)
