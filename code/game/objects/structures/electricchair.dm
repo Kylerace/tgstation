@@ -62,7 +62,6 @@
 	///the mob buckled to parent_chair, if any
 	var/mob/living/guinea_pig
 
-
 /datum/component/electrified_chair/Initialize(obj/item/assembly/shock_kit/input_shock_kit)
 	if(!istype(parent, /obj/structure/chair) || !istype(input_shock_kit, /obj/item/assembly/shock_kit))
 		message_admins("incompatible")
@@ -79,11 +78,13 @@
 
 /datum/component/electrified_chair/proc/unregister()
 	SIGNAL_HANDLER
-	message_admins("unregister")
 	//do all the shit related to deleting itself
-	UnregisterSignal(parent_chair, list(COMSIG_PARENT_PREQDELETED, COMSIG_MOVABLE_BUCKLE, COMSIG_MOVABLE_UNBUCKLE))
-	UnregisterSignal(used_shock_kit, list(COMSIG_PARENT_PREQDELETED))
-	UnregisterSignal(guinea_pig, list(COMSIG_PARENT_PREQDELETED))
+	if(parent_chair)
+		UnregisterSignal(parent_chair, list(COMSIG_PARENT_PREQDELETED, COMSIG_MOVABLE_BUCKLE, COMSIG_MOVABLE_UNBUCKLE, COMSIG_ATOM_EXIT))
+	if(used_shock_kit)
+		UnregisterSignal(used_shock_kit, list(COMSIG_PARENT_PREQDELETED))
+	if(guinea_pig)
+		UnregisterSignal(guinea_pig, list(COMSIG_PARENT_PREQDELETED))
 	parent_chair = null
 	used_shock_kit = null
 	guinea_pig  = null
@@ -120,23 +121,20 @@
 		message_admins("no shock")
 		return
 	message_admins("shock guinea pig")
-	var/area/parents_area = get_area(parent_chair)
-	if(!isarea(parents_area))
-		return
-	if(!parents_area.powered(AREA_USAGE_EQUIP))
-		return
-	parents_area.use_power(AREA_USAGE_EQUIP, 5000)
 
 	//flick("echair_shock", parent_chair)
-	var/datum/effect_system/spark_spread/shock_sparks = new(parent_chair.loc)
-	shock_sparks.set_up(12, 1, src)
-	shock_sparks.start()
+	var/turf/our_turf = get_turf(parent_chair)
+	var/obj/structure/cable/live_cable = our_turf.get_cable_node()
+	if(!live_cable)
+		return
+
 	if(parent_chair.has_buckled_mobs())
 		for(var/m in parent_chair.buckled_mobs)
 			var/mob/living/buckled_mob = m
 			buckled_mob.electrocute_act(85, parent_chair, 1)
 			to_chat(buckled_mob, "<span class='userdanger'>You feel a deep shock course through your body!</span>")
-			addtimer(CALLBACK(buckled_mob, /mob/living.proc/electrocute_act, 85, parent_chair, 1), 1)
+
+			//addtimer(CALLBACK(buckled_mob, /mob/living/proc/electrocute_act, 85, parent_chair, 1), 1)
 	parent_chair.visible_message("<span class='danger'>The electric chair went off!</span>", "<span class='hear'>You hear a deep sharp shock!</span>")
 	addtimer(CALLBACK(src, .proc/shock_guinea_pig), 5 SECONDS)
 
