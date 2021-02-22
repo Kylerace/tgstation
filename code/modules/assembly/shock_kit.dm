@@ -41,9 +41,3 @@
 	electropack_part.attack_self(user)
 	add_fingerprint(user)
 	return
-
-/obj/item/assembly/shock_kit/receive_signal()
-	if(istype(loc, /obj/structure/chair/e_chair))
-		var/obj/structure/chair/e_chair/C = loc
-		C.shock()
-	return

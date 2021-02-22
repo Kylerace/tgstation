@@ -94,13 +94,6 @@
 		stored_kit.forceMove(src)
 		to_chat(user, text="You connect the shock kit to the chair, turning it electric")
 		AddComponent(/datum/component/electrified_chair, stored_kit)
-		/*var/obj/structure/chair/e_chair/new_e_chair = new (loc)
-		playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
-		new_e_chair.setDir(dir)
-		new_e_chair.part = new_shock_kit
-		new_shock_kit.forceMove(new_e_chair)
-		new_shock_kit.master = new_e_chair
-		qdel(src)*/
 		return
 
 /obj/structure/chair/attack_tk(mob/user)
