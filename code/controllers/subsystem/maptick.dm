@@ -2,9 +2,6 @@
 #define TEST_INTENSITY_MEDIUM	5
 #define TEST_INTENSITY_HIGH		10
 
-#define DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM 0.01 //default is 0.0001
-#define DELTA_MAPTICK_CYCLES_TO_ALERT 20
-
 SUBSYSTEM_DEF(maptick_track)
 	name = "Maptick Tracking"
 	wait = 5
@@ -181,14 +178,6 @@ SUBSYSTEM_DEF(maptick_track)
 		average_maptick = temp_average / all_sampled_x_minute_averages.len
 		times_fired_this_cycle = 0
 
-		most_recent_delta_maptick_average = abs(average_maptick - last_fire_maptick_average)
-		if (most_recent_delta_maptick_average < DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM)
-			total_x_cycles_below_delta_average_minimum++
-
-			if (total_x_cycles_below_delta_average_minimum > DELTA_MAPTICK_CYCLES_TO_ALERT)
-				message_admins("Delta maptick average has gone below [DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM] for more than [DELTA_MAPTICK_CYCLES_TO_ALERT * 20] minutes")
-
-
 	time_elapsed = (REALTIMEOFDAY-starting_time) / 600
 	client_movement_over_time = time_elapsed ? total_client_movement / time_elapsed : 0
 
@@ -265,5 +254,3 @@ SUBSYSTEM_DEF(maptick_track)
 #undef TEST_INTENSITY_LOW
 #undef TEST_INTENSITY_MEDIUM
 #undef TEST_INTENSITY_HIGH
-#undef DELTA_MAPTICK_AVERAGE_ALERT_MINIMUM
-#undef DELTA_MAPTICK_CYCLES_TO_ALERT
