@@ -170,7 +170,7 @@
 /turf/open/floor/maptick_test_turf_overlay/Initialize(mapload)
 	. = ..()
 	for (var/i in 1 to 50)
-		overlays += image('icons/obj/stack_objects.dmi',src,"sheet-metal")
+		overlays += getRandomAnimalImage(src)
 
 /turf/open/floor/maptick_test_turf_vis_contents
 	name = "plating"
@@ -200,3 +200,27 @@
 /obj/maptick_test_single_viscontent/Initialize(mapload)
 	. = ..()
 	icon = getRandomAnimalImage(src)
+
+/obj/item/maptick_test_inside_contents_changing
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/obj/item/maptick_test_inside_contents_changing/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSprocessing, src)
+
+/obj/item/maptick_test_inside_contents_changing/process()
+	name = pick("lkajdsj", "aksjdhakjshd", "alijsdlkajs")
+	if(prob(5))
+		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
+	else
+		vis_contents.Cut()
+
+/mob/maptick_test_changing_object_vorerer
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/mob/maptick_test_changing_object_vorerer/Initialize()
+	. = ..()
+	for(var/i = 0, i < 100, i++)
+		new /obj/item/maptick_test_inside_contents_changing(src)
