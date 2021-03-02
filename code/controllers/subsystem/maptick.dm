@@ -26,15 +26,11 @@ SUBSYSTEM_DEF(maptick_track)
 	var/client_movement_over_time = 0 //total client movement divided by time elapsed
 	var/number_of_dead_clients = 0
 
-	var/list/tracked_client_mobs = list()
-
+	///REALTIMEOFDAY when start_tracking() was called
 	var/starting_time
 	var/time_elapsed = 0
 
-	var/most_recent_delta_maptick_average = 0
-	var/average_delta_maptick_average = 0 //average difference between each new maptick average and the value before it
 	var/last_fire_maptick_average = 0
-	var/total_x_cycles_below_delta_average_minimum = 0
 
 	var/times_fired_this_cycle = 0
 	var/list/all_sampled_x_minute_averages = list()
@@ -43,8 +39,6 @@ SUBSYSTEM_DEF(maptick_track)
 
 	var/first_run = TRUE
 	can_fire = FALSE
-
-
 
 /datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_MEDIUM)
 	for (var/possible_repeated_name in used_filenames)
@@ -64,10 +58,8 @@ SUBSYSTEM_DEF(maptick_track)
 	time_elapsed = 0
 	average_maptick = world.map_cpu
 	last_fire_maptick_average = world.map_cpu
-	most_recent_delta_maptick_average = 0
 	x_minute_average = world.map_cpu
 
-	total_x_cycles_below_delta_average_minimum = 0
 	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
 	file_output_name = filename
@@ -79,7 +71,6 @@ SUBSYSTEM_DEF(maptick_track)
 		for (var/mob/mob_with_client in GLOB.player_list)
 			RegisterSignal(mob_with_client, COMSIG_MOB_LOGOUT, .proc/unregister_mob, TRUE)
 			RegisterSignal(mob_with_client, COMSIG_MOVABLE_MOVED, .proc/increment_tilesmoved, TRUE)
-			tracked_client_mobs += mob_with_client
 
 	//this is NEVER to be used for live rounds
 	#ifdef MAPTICK_TESTING
@@ -203,11 +194,10 @@ SUBSYSTEM_DEF(maptick_track)
 					"5 minute average", //the last 600 measured maptick values
 					"minutes",
 					"average maptick",
-					"world.cpu - maptick",
+					"world.cpu",
 					"players",
 					"total tiles moved",
 					"tiles moved per minute",
-					//"delta maptick average",
 					"standard deviation",
 					"world.tick_usage"
 				),
@@ -221,11 +211,10 @@ SUBSYSTEM_DEF(maptick_track)
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick, filled in at the end
-					world.cpu - world.map_cpu,
+					world.cpu,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
-					//most_recent_delta_maptick_average,
 					standard_deviation ? standard_deviation : "", //standard deviation, filled in at the end (unless its requested to calculate it)
 					world.tick_usage,
 				),
@@ -239,11 +228,10 @@ SUBSYSTEM_DEF(maptick_track)
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick
-					world.cpu - world.map_cpu,
+					world.cpu,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
-					//most_recent_delta_maptick_average,
 					standard_deviation,
 					world.tick_usage
 				),

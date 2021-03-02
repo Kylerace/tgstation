@@ -55,7 +55,7 @@
 
 /datum/maptick_menu/ui_data(mob/user)
 	var/list/data = list()
-	data["ongoing_test"] = ongoing_test
+	data["ongoing_test"] = SSmaptick.can_fire
 	data["current_maptick_average"] = SSmaptick_track.average_maptick
 	data["current_maptick_exact"] = world.map_cpu
 	data["current_moving_average"] = SSmaptick_track.x_minute_average

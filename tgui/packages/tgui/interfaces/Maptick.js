@@ -43,13 +43,6 @@ export const Maptick = (props, context) => {
             onClick={() => setTabIndex(2)}>
             Initiation
           </Tabs.Tab>
-          <Tabs.Tab
-            icon="list"
-            lineHeight="23px"
-            selected={TabIndex === 3}
-            onClick={() => setTabIndex(3)}>
-            Investigation
-          </Tabs.Tab>
         </Tabs>
         {TabIndex === 1 && (
           <Status />
@@ -193,18 +186,4 @@ const Initiation = (props, context) => {
       </Flex>
   </Flex>
  )
-};
-
-const Investigation = (props, context) => {
-  const { act, data } = useBackend(context);
-  return (
-    <Flex title="Investigation" direction="column">
-      <Flex.Item>
-        <Button
-        key={"Include Total Player Movement"}
-        content={"Include Total Player Movement"}
-        onClick={() => act('include player movement')}/>
-      </Flex.Item>
-    </Flex>
-  )
 };
