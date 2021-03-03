@@ -109,7 +109,7 @@
 			message_admins(action) //remove for potato
 
 		if("include player movement")
-			message_admins("action")
+			message_admins(action)
 			include_movement = TRUE
 
 		if("test intensity")

@@ -27,7 +27,8 @@
 #define COMSIG_GLOB_JOB_AFTER_SPAWN "!job_after_spawn"
 /// crewmember joined the game (mob/living, rank)
 #define COMSIG_GLOB_CREWMEMBER_JOINED "!crewmember_joined"
-
+/// sendable by the maptick menu to change behavior in maptick testing object spawned by map templates
+#define COMSIG_GLOB_MAPTICK_OBJECT_TOGGLE "!maptick_object_toggle"
 /// signals from globally accessible objects
 
 ///from SSsun when the sun changes position : (azimuth)
