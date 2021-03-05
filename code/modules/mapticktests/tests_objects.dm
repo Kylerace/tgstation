@@ -121,40 +121,31 @@
 	storage_capacity = 300000000000
 
 /datum/component/maptick_moving_tester
-	var/mob/living/carbon/host //just cast it reeee
 	var/going_north = TRUE
 
 /datum/component/maptick_moving_tester/RegisterWithParent()
 	. = ..()
 	if(istype(parent, /mob/living/carbon))
-		host = parent
 		//RegisterSignal(host,COMSIG_MOVABLE_MOVED, .proc/prepare_move)
-		addtimer(CALLBACK(src, .proc/prepare_move), 1)
+		//addtimer(CALLBACK(src, .proc/prepare_move), 1)
+		START_PROCESSING(SSprojectiles, src)
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
-	UnregisterSignal(host, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
 
-/datum/component/maptick_moving_tester/proc/prepare_move()
+/datum/component/maptick_moving_tester/process()
+	var/mob/living/carbon/parent_as_carbon = parent
 	if(going_north)
-		if (host.y < 230)
-			host.Move(get_step(get_turf(host),NORTH))
+		if (parent_as_carbon.y < 230)
+			parent_as_carbon.Move(get_step(get_turf(host),NORTH))
 		else
 			going_north = FALSE
 	else
-		if (host.y > 25)
-			host.Move(get_step(get_turf(host),SOUTH))
+		if (parent_as_carbon.y > 25)
+			parent_as_carbon.Move(get_step(get_turf(host),SOUTH))
 		else
 			going_north = TRUE
-	addtimer(CALLBACK(src, .proc/prepare_move), 1)
-
-/datum/component/maptick_moving_tester/proc/actually_move(going_north)
-	if (going_north)
-		//walk(host, NORTH)
-		host.Move(get_step(get_turf(host),NORTH))
-	else
-		//walk(host, SOUTH)
-		host.Move(get_step(get_turf(host),SOUTH))
 
 /turf/open/floor/maptick_test_turf_overlay
 	name = "plating"
@@ -205,7 +196,7 @@
 
 /obj/item/maptick_test_inside_contents_changing/process()
 	name = pick("lkajdsj", "aksjdhakjshd", "alijsdlkajs")
-	if(prob(5))
+	if(prob(10))
 		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
 	else if (prob(20))
 		overlays += getRandomAnimalImage(src)
