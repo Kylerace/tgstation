@@ -12,11 +12,8 @@
 	var/client/holder
 	var/ongoing_test = FALSE
 
-	var/current_maptick_average
-	var/current_maptick_exact
-	var/current_moving_average
-	var/time_elapsed
 	var/name//"Maptick-Test"
+
 	var/list/template_ids = list()
 	var/current_template = null
 
@@ -120,8 +117,6 @@
 					test_intensity = TEST_INTENSITY_MEDIUM
 				if("Ten measurements per second")
 					test_intensity = TEST_INTENSITY_HIGH
-
-
 
 
 /datum/maptick_menu/proc/load_test(test_id)

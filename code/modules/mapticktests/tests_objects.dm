@@ -1,10 +1,12 @@
+
+//control item
 /obj/item/maptick_test_generic
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 	lefthand_file = 'icons/mob/inhands/misc/sheets_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/sheets_righthand.dmi'
 
-
+//generic items but with an invisible overlay
 /obj/item/maptick_test_invisible_overlay
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
@@ -16,7 +18,7 @@
 	. = ..()
 	overlays += image("")
 
-
+//to test constant animation's affect on maptick
 /obj/item/maptick_test_speen_object
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
@@ -27,7 +29,7 @@
 	. = ..()
 	animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)
 
-
+//item is invisible but the overlay is visible, to test if that makes a difference (doesnt seem to)
 /obj/item/maptick_test_invisible_obj_vis_overlay
 	icon = ""
 	var/image/visible_overlay
@@ -37,9 +39,8 @@
 	visible_overlay = icon("icons/obj/stack_objects.dmi", "sheet-metal")
 	overlays += visible_overlay
 
-
-//below is unused so far
-/obj/item/maptick_test_invisible_obj_vis_vis_content //like above, but adds to vis_contents instead of overlays
+//like above, but adds to vis_contents instead of overlays
+/obj/item/maptick_test_invisible_obj_vis_vis_content
 	icon = ""
 	var/obj/item/maptick_test_generic/ecksdee
 
@@ -48,23 +49,22 @@
 	ecksdee = new()
 	vis_contents += ecksdee
 
-/obj/item/maptick_test_vis_contents_list_change_spam //spams the fuck out of vis contents changes
-	icon = ""
-	var/obj/item/maptick_test_generic/ecksdee
+//spams the fuck out of vis contents changes
+/obj/item/maptick_test_vis_contents_list_change_spam
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
 
 /obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
 	. = ..()
-	addtimer(CALLBACK(src, .proc/toggle_vis_contents), 5)
-	ecksdee = new()
-	vis_contents += ecksdee
 
-/obj/item/maptick_test_vis_contents_list_change_spam/proc/toggle_vis_contents()
-	if (vis_contents.len > 1)
-		vis_contents -= ecksdee
+	START_PROCESSING(SSobj, src)
+
+/obj/item/maptick_test_vis_contents_list_change_spam/process()
+	if (managed_overlays.len)
+		for(var/obj/effect/overlay/vis/vs as anything in managed_overlays)
+			SSvis_overlays.remove_vis_overlay(src, list(vs))
 	else
-		vis_contents += ecksdee
-	addtimer(CALLBACK(src, .proc/toggle_vis_contents), 5)
-
+		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
 
 /obj/item/maptick_test_static_vis_contents_stacking
 	icon = ""
@@ -121,7 +121,7 @@
 	storage_capacity = 300000000000
 
 /datum/component/maptick_moving_tester
-	var/mob/living/carbon/host
+	var/mob/living/carbon/host //just cast it reeee
 	var/going_north = TRUE
 
 /datum/component/maptick_moving_tester/RegisterWithParent()
@@ -138,15 +138,11 @@
 /datum/component/maptick_moving_tester/proc/prepare_move()
 	if(going_north)
 		if (host.y < 230)
-			//addtimer(CALLBACK(src, .proc/change_to_other), 5)
-			//actually_move(going_north)
 			host.Move(get_step(get_turf(host),NORTH))
 		else
 			going_north = FALSE
 	else
 		if (host.y > 25)
-			//actually_move(going_north)
-			//host.Move(get_step(get_turf(host),SOUTH))
 			host.Move(get_step(get_turf(host),SOUTH))
 		else
 			going_north = TRUE
@@ -211,9 +207,15 @@
 	name = pick("lkajdsj", "aksjdhakjshd", "alijsdlkajs")
 	if(prob(5))
 		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
+	else if (prob(20))
+		overlays += getRandomAnimalImage(src)
 	else
-		vis_contents.Cut()
+		if (managed_overlays.len)
+			for(var/obj/effect/overlay/vis/vs as anything in managed_overlays)
+				SSvis_overlays.remove_vis_overlay(src, list(vs))
+		overlays.Cut()
 
+//to test if changing contents inside mobs affect maptick, these have 100 objects each and they dont seem to matter at all
 /mob/maptick_test_changing_object_vorerer
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"

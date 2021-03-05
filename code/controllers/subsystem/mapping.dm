@@ -62,6 +62,10 @@ SUBSYSTEM_DEF(mapping)
 	HACK_LoadMapConfig()
 	if(initialized)
 		return
+#ifdef EMPTY_WORLD
+	preloadTemplates()
+	return ..()
+#endif
 	if(config.defaulted)
 		var/old_config = config
 		config = global.config.defaultmap

@@ -1,3 +1,4 @@
+//#ifdef MAPTICK_TESTING
 #define TEST_INTENSITY_LOW 		1
 #define TEST_INTENSITY_MEDIUM	5
 #define TEST_INTENSITY_HIGH		10
@@ -9,35 +10,46 @@ SUBSYSTEM_DEF(maptick_track)
 	init_order = INIT_ORDER_MAPTICK
 	runlevels = RUNLEVEL_GAME
 
-	var/file_output_name = ""//we output the recorded values to this name of file
-	var/file_output_path //where the file we make is
+	///we output the recorded values to this name of file
+	var/file_output_name = ""
+	///where the file we make is
+	var/file_output_path
 	var/list/used_filenames = list()
 
 	var/list/all_maptick_values = list()
 	var/average_maptick = 0
 	var/maptick_per_player = 0
 
+	///this list stores the last total_values_in_x_minutes measurements to calculate x_minute_average
 	var/list/x_minute_values = list()
+	///how many maptick measurements fit into the moving average's duration
 	var/total_values_in_x_minutes = 0//reeeeee why is wait an invalid variable
+	///moving average calculated over x minutes
 	var/x_minute_average = 0
 
+	///whether or not to track the movement of every client mob in world
 	var/track_client_movement = FALSE
-	var/total_client_movement = 0 //how many combined tiles all mobs with attached clients have moved since our last fire()
-	var/client_movement_over_time = 0 //total client movement divided by time elapsed
+	///how many combined tiles all mobs with attached clients have moved since our last fire()
+	var/total_client_movement = 0
+	///total client movement divided by real time elapsed
+	var/client_movement_over_time = 0
+	///how many clients are in ghosts
 	var/number_of_dead_clients = 0
 
 	///REALTIMEOFDAY when start_tracking() was called
 	var/starting_time
+	///current REALTIMEOFDAY minus starting_time
 	var/time_elapsed = 0
 
-	var/last_fire_maptick_average = 0
-
+	///used to keep track of how many measurements we've made since we last added the moving average to all_sampled_x_minute_averages
 	var/times_fired_this_cycle = 0
+	///all moving averages stored after being calculated into one list so the runtime overall average can be calculated
 	var/list/all_sampled_x_minute_averages = list()
 
+	///standard deviation of all maptick values measured thus far, expensive so only calculated at the end or when requested
 	var/standard_deviation = 0
 
-	var/first_run = TRUE
+	//this subsystem should not be running most of the time
 	can_fire = FALSE
 
 /datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_MEDIUM)
@@ -57,7 +69,6 @@ SUBSYSTEM_DEF(maptick_track)
 
 	time_elapsed = 0
 	average_maptick = world.map_cpu
-	last_fire_maptick_average = world.map_cpu
 	x_minute_average = world.map_cpu
 
 	times_fired_this_cycle = 0
@@ -126,7 +137,6 @@ SUBSYSTEM_DEF(maptick_track)
 	log_maptick_stats("end")
 
 	#ifdef MAPTICK_TESTING
-	first_run = TRUE
 	SSair.can_fire = TRUE
 	SSmachines.can_fire = TRUE
 	SSnpcpool.can_fire = TRUE
@@ -195,6 +205,10 @@ SUBSYSTEM_DEF(maptick_track)
 					"minutes",
 					"average maptick",
 					"world.cpu",
+					"tidi",
+					"tidi_fastavg",
+					"tidi_avg",
+					"tidi_slowavg",
 					"players",
 					"total tiles moved",
 					"tiles moved per minute",
@@ -212,6 +226,10 @@ SUBSYSTEM_DEF(maptick_track)
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick, filled in at the end
 					world.cpu,
+					SStime_track.time_dilation_current,
+					SStime_track.time_dilation_avg_fast,
+					SStime_track.time_dilation_avg,
+					SStime_track.time_dilation_avg_slow,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
@@ -242,3 +260,5 @@ SUBSYSTEM_DEF(maptick_track)
 #undef TEST_INTENSITY_LOW
 #undef TEST_INTENSITY_MEDIUM
 #undef TEST_INTENSITY_HIGH
+
+//#endif
