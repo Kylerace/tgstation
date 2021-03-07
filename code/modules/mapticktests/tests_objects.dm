@@ -138,15 +138,16 @@
 	var/mob/living/carbon/parent_as_carbon = parent
 	if(going_north)
 		if (parent_as_carbon.y < 230)
-			parent_as_carbon.Move(get_step(get_turf(host),NORTH))
+			parent_as_carbon.Move(get_step(get_turf(parent_as_carbon),NORTH))
 		else
 			going_north = FALSE
 	else
 		if (parent_as_carbon.y > 25)
-			parent_as_carbon.Move(get_step(get_turf(host),SOUTH))
+			parent_as_carbon.Move(get_step(get_turf(parent_as_carbon),SOUTH))
 		else
 			going_north = TRUE
 
+//50 random animal overlays added to each turf
 /turf/open/floor/maptick_test_turf_overlay
 	name = "plating"
 	icon_state = "plating"

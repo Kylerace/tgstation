@@ -116,6 +116,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	update_appearance()
 
+#ifndef EMPTY_WORLD
 	if(!T)
 		var/list/turfs = get_area_turfs(/area/shuttle/arrival)
 		if(turfs.len)
@@ -124,6 +125,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 			T = SSmapping.get_station_center()
 
 	forceMove(T)
+#endif
 
 	if(!name) //To prevent nameless ghosts
 		name = random_unique_name(gender)

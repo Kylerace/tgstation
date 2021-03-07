@@ -77,5 +77,5 @@
 #define MAX_ATOM_OVERLAYS 100
 
 //allows the maptick tracking subsystem to be used, as well as the maptick menu
-//#define MAPTICK_TESTING
+#define MAPTICK_TESTING
 
