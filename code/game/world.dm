@@ -79,6 +79,12 @@ GLOBAL_VAR(restart_counter)
 
 	Master.Initialize(10, FALSE, TRUE)
 
+#ifdef EMPTY_WORLD
+	maxz = 1
+	SSmobs.MaxZChanged()
+	SSidlenpcpool.MaxZChanged()
+#endif
+
 	#ifdef UNIT_TESTS
 	HandleTestRun()
 	#endif

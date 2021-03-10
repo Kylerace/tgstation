@@ -1,7 +1,10 @@
-//#ifdef MAPTICK_TESTING
+#ifdef MAPTICK_TESTING
+
 #define TEST_INTENSITY_LOW 		1
 #define TEST_INTENSITY_MEDIUM	5
 #define TEST_INTENSITY_HIGH		10
+
+#define MOVING_AVERAGE_TIME_PERIOD 5 MINUTES
 
 SUBSYSTEM_DEF(maptick_track)
 	name = "Maptick Tracking"
@@ -14,10 +17,14 @@ SUBSYSTEM_DEF(maptick_track)
 	var/file_output_name = ""
 	///where the file we make is
 	var/file_output_path
+	///we dont want to output to the same file twice
 	var/list/used_filenames = list()
 
+	///used for calculating the true maptick average, stores all maptick measurements made
 	var/list/all_maptick_values = list()
+	///before the current test is stopped, average maptick is approximated from the moving average, the true average is calculated when stop_tracking() is called
 	var/average_maptick = 0
+	///maptick / playercount
 	var/maptick_per_player = 0
 
 	///this list stores the last total_values_in_x_minutes measurements to calculate x_minute_average
@@ -52,6 +59,7 @@ SUBSYSTEM_DEF(maptick_track)
 	//this subsystem should not be running most of the time
 	can_fire = FALSE
 
+///allows fire to be called and sets up stats + the file to log to, stats are put into a blank state here so that they dont get erased in stop_tracking()
 /datum/controller/subsystem/maptick_track/proc/start_tracking(filename, track_movement = FALSE, intensity = TEST_INTENSITY_MEDIUM)
 	for (var/possible_repeated_name in used_filenames)
 		if (possible_repeated_name == filename)
@@ -60,7 +68,7 @@ SUBSYSTEM_DEF(maptick_track)
 	wait = intensity
 
 	track_client_movement = track_movement
-	total_values_in_x_minutes = 5 * 60 * (10 / wait)
+	total_values_in_x_minutes = MOVING_AVERAGE_TIME_PERIOD / wait
 	all_maptick_values.Cut()
 	all_sampled_x_minute_averages.Cut()
 	total_client_movement = 0
@@ -68,8 +76,8 @@ SUBSYSTEM_DEF(maptick_track)
 		x_minute_values.Cut()
 
 	time_elapsed = 0
-	average_maptick = world.map_cpu
-	x_minute_average = world.map_cpu
+	average_maptick = MAPTICK_LAST_INTERNAL_TICK_USAGE
+	x_minute_average = MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 	times_fired_this_cycle = 0
 	starting_time = REALTIMEOFDAY
@@ -109,11 +117,12 @@ SUBSYSTEM_DEF(maptick_track)
 	UnregisterSignal(source, COMSIG_MOB_LOGOUT)
 	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 
-
-/datum/controller/subsystem/maptick_track/proc/increment_tilesmoved(datum/source, atom/_OldLoc, _Dir, _Forced = FALSE)
+///a client mob has moved, so increment the total amount of clients moved since tracking started (for tracking game-wide movement)
+/datum/controller/subsystem/maptick_track/proc/increment_tilesmoved()
 	SIGNAL_HANDLER
 	total_client_movement++
 
+///stops fire being called and finializes stats that are expensive like standard deviation and overall average
 /datum/controller/subsystem/maptick_track/proc/stop_tracking()
 	can_fire = FALSE
 	message_admins("the [file_output_name] maptick test has stopped")
@@ -156,10 +165,10 @@ SUBSYSTEM_DEF(maptick_track)
 /datum/controller/subsystem/maptick_track/fire()
 	times_fired_this_cycle++
 
-	all_maptick_values += world.map_cpu
-	x_minute_values += world.map_cpu
+	all_maptick_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
+	x_minute_values += MAPTICK_LAST_INTERNAL_TICK_USAGE
 	if(GLOB.player_list.len)
-		maptick_per_player = world.map_cpu / GLOB.player_list.len
+		maptick_per_player = MAPTICK_LAST_INTERNAL_TICK_USAGE / GLOB.player_list.len
 
 	//by default x is 5 minutes, this is the moving average
 	if (x_minute_values.len > total_values_in_x_minutes)
@@ -206,9 +215,6 @@ SUBSYSTEM_DEF(maptick_track)
 					"average maptick",
 					"world.cpu",
 					"tidi",
-					"tidi_fastavg",
-					"tidi_avg",
-					"tidi_slowavg",
 					"players",
 					"total tiles moved",
 					"tiles moved per minute",
@@ -221,15 +227,12 @@ SUBSYSTEM_DEF(maptick_track)
 		if("mid")
 			log_maptick(
 				list(
-					world.map_cpu, //maptick
+					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick, filled in at the end
 					world.cpu,
 					SStime_track.time_dilation_current,
-					SStime_track.time_dilation_avg_fast,
-					SStime_track.time_dilation_avg,
-					SStime_track.time_dilation_avg_slow,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
@@ -242,11 +245,12 @@ SUBSYSTEM_DEF(maptick_track)
 		if("end")
 			log_maptick(
 				list(
-					world.map_cpu, //maptick
+					MAPTICK_LAST_INTERNAL_TICK_USAGE, //maptick
 					x_minute_average, //moving average over x minutes, by default its 5
 					time_elapsed, //current time in minutes
 					average_maptick, //average maptick
 					world.cpu,
+					SStime_track.time_dilation_current,
 					length(GLOB.player_list), //players
 					total_client_movement,
 					client_movement_over_time,
@@ -256,9 +260,10 @@ SUBSYSTEM_DEF(maptick_track)
 			file_output_path
 			)
 
+#undef MOVING_AVERAGE_TIME_PERIOD
 
 #undef TEST_INTENSITY_LOW
 #undef TEST_INTENSITY_MEDIUM
 #undef TEST_INTENSITY_HIGH
 
-//#endif
+#endif

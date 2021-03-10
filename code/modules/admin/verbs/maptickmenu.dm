@@ -54,7 +54,7 @@
 	var/list/data = list()
 	data["ongoing_test"] = SSmaptick_track.can_fire
 	data["current_maptick_average"] = SSmaptick_track.average_maptick
-	data["current_maptick_exact"] = world.map_cpu
+	data["current_maptick_exact"] = MAPTICK_LAST_INTERNAL_TICK_USAGE
 	data["current_moving_average"] = SSmaptick_track.x_minute_average
 	data["time_elapsed"] = SSmaptick_track.time_elapsed
 	data["templates"] = template_ids
@@ -63,6 +63,8 @@
 	data["test_name"] = name
 	data["standard_deviation"] = SSmaptick_track.standard_deviation
 	data["test intensity"] = test_intensity
+	data["cpu"] = world.cpu
+	data["time_dilation_average"] = SStime_track.time_dilation_avg
 
 	return data
 

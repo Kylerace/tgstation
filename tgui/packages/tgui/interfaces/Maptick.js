@@ -75,6 +75,8 @@ const Status = (props, context) => {
     players,
     time_elapsed,
     standard_deviation,
+    cpu,
+    time_dilation_average
   } = data;
   return (
     <Flex title="Current Maptick Stats" direction="column">
@@ -89,6 +91,9 @@ const Status = (props, context) => {
           <LabeledList.Item label="Maptick Moving Average">
             {current_moving_average}
           </LabeledList.Item>
+          <LabeledList.Item label="cpu">
+            {cpu}
+          </LabeledList.Item>
           <LabeledList.Item label="Number of Players">
             {players}
           </LabeledList.Item>
@@ -97,6 +102,9 @@ const Status = (props, context) => {
           </LabeledList.Item>
           <LabeledList.Item label="Standard Deviation">
             {standard_deviation}
+          </LabeledList.Item>
+          <LabeledList.Item label="Time Dilation Average">
+            {time_dilation_average}
           </LabeledList.Item>
         </LabeledList>
       </Flex.Item>

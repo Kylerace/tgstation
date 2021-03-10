@@ -123,9 +123,9 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 			T = pick(turfs)
 		else
 			T = SSmapping.get_station_center()
-
-	forceMove(T)
 #endif
+	forceMove(T)
+
 
 	if(!name) //To prevent nameless ghosts
 		name = random_unique_name(gender)
