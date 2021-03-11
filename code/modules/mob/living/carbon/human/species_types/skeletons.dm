@@ -21,6 +21,9 @@
 /datum/species/skeleton/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
 	. = ..()
 	C.set_safe_hunger_level()
+#ifdef MAPTICK_TESTING
+	C.AddElement(/datum/element/forced_gravity)
+#endif
 
 /datum/species/skeleton/check_roundstart_eligible()
 	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
