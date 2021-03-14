@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/mob/maptick_test_changing_object_vorerer,
+/mob/maptick_tester/changing_object_vorerer,
 /turf/open/floor/plating,
 /area/space)
 

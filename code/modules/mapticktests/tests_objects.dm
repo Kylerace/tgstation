@@ -10,6 +10,12 @@
 /turf/open/floor/maptick_tester
 	icon_state = "wood"
 
+///father type of mobs meant for testing maptick, only needed to toggle emissive blockers
+/mob/maptick_tester
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+	blocks_emissive = FALSE
+
 ///10 of the same overlay that doesnt change
 /obj/item/maptick_tester/static_overlay_stacking
 
@@ -58,28 +64,28 @@
 		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
 
 //generic items but with an invisible overlay
-/obj/item/maptick_tester_generic/invisible_overlay
+/obj/item/maptick_tester/invisible_overlay
 	var/image/invisible_overlay
 
-/obj/item/maptick_tester_generic/invisible_overlay/Initialize()
+/obj/item/maptick_tester/invisible_overlay/Initialize()
 	. = ..()
 	overlays += image("")
 
 ///to test constant animation's affect on maptick
-/obj/item/maptick_tester_generic/speen_object
+/obj/item/maptick_tester/speen_object
 
-/obj/item/maptick_tester_generic/speen_object/Initialize()
+/obj/item/maptick_tester/speen_object/Initialize()
 	. = ..()
 	animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)
 
 ///just a mob that doesnt move
-/mob/maptick_tester_static_mob
+/mob/maptick_tester/static_mob
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 	status_flags = null
 
 ///completely invisible object to see if maptick is still affected by that
-/obj/item/maptick_tester_generic/completely_invis_object
+/obj/item/maptick_tester/completely_invis_object
 	icon = ""
 
 ///changing turfs, they change to the other one every process
@@ -109,9 +115,10 @@
 	ChangeTurf(/turf/open/floor/maptick_tester/changer_one)
 ///end of changing turfs
 
-///for testing whether contents factor into maptick, but fucktons of objects into these and theyll swallow them up
+///for testing whether contents factor into maptick, put fucktons of objects into these and theyll swallow them up. also not dense so you can do moving tests
 /obj/structure/closet/maptick_tester_infinite_closet
 	storage_capacity = 300000000000
+	density = FALSE
 
 ///automover, makes you move() up and down but doesnt let you see the edges of the z level (unless you have binoculars maybe)
 /datum/component/maptick_moving_tester
@@ -170,15 +177,15 @@
 	SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = FALSE)
 
 ///item intended to be used as contents in something else, has its name and overlays and vis_contents changing
-/obj/item/maptick_tester_generic/inside_contents_changing
+/obj/item/maptick_tester/inside_contents_changing
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 
-/obj/item/maptick_tester_generic/inside_contents_changing/Initialize(mapload)
+/obj/item/maptick_tester/inside_contents_changing/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSprocessing, src)
 
-/obj/item/maptick_tester_generic/inside_contents_changing/process()
+/obj/item/maptick_tester/inside_contents_changing/process()
 	name = pick("lkajdsj", "aksjdhakjshd", "alijsdlkajs")
 	if(prob(10))
 		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
@@ -191,14 +198,14 @@
 		overlays.Cut()
 
 ///to test if changing contents inside mobs affect maptick, these have 100 objects each and they dont seem to matter at all
-/mob/maptick_tester_changing_object_vorerer
+/mob/maptick_tester/changing_object_vorerer
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 
-/mob/maptick_tester_changing_object_vorerer/Initialize()
+/mob/maptick_tester/changing_object_vorerer/Initialize()
 	. = ..()
 	for(var/i = 0, i < 100, i++)
-		new /obj/item/maptick_tester_generic/inside_contents_changing(src)
+		new /obj/item/maptick_tester/inside_contents_changing(src)
 
 ///adds ten decal elements with a different icon_state for each
 /turf/open/floor/maptick_tester/fake_decals_ten_stack
