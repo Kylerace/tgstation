@@ -41,7 +41,7 @@
 /obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
 	. = ..()
 
-	START_PROCESSING(SSobj, src)
+	START_PROCESSING(SSfluids, src)
 
 /obj/item/maptick_test_vis_contents_list_change_spam/process()
 	if (length(managed_overlays))
@@ -194,3 +194,8 @@
 	. = ..()
 	for(var/i = 0, i < 100, i++)
 		new /obj/item/maptick_test_inside_contents_changing(src)
+
+///turns out its hard to stack 50 decals on a turf without some of them not sticking, so this uses mutable appearances to do it instead
+/turf/open/floor/maptick_test_fake_decals_fifty_stack
+	icon_state = "wood"
+

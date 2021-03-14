@@ -106,6 +106,9 @@ const Status = (props, context) => {
           <LabeledList.Item label="Time Dilation Average">
             {time_dilation_average}
           </LabeledList.Item>
+          <LabeledList.Item label="Maptick Percentage of CPU">
+            {(current_maptick_exact / cpu) * 100 + '%'}
+          </LabeledList.Item>
         </LabeledList>
       </Flex.Item>
       <Flex.Item direction="column">
@@ -156,19 +159,20 @@ const Initiation = (props, context) => {
       </Flex>
       <Flex my={1} grow={1} direction="row">
         <Flex.Item>
-          <Button //try to get this area BELOW the area with the dropdown, preferably to the side too
+          <Button
           key={"Load Test Template"}
           content={"Load Test Template"}
           onClick={() => act('load template')}/>
           <Button
           key={"Start Maptick Test"}
           content={"Start Maptick Test"}
-          color={currently_testing ? 'red' : 'green'}
+          color={'green'}
           onClick={() => act('start test')}/>
           <Button
           key={"End Maptick Test"}
           content={"End Maptick Test"}
-          onClick={() => act('end test')}/>
+          onClick={() => act('end test')}
+          color={'red'}/>
         </Flex.Item>
       </Flex>
       <Flex my={1} grow={1} direction="row">
