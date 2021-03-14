@@ -41,7 +41,7 @@
 /obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
 	. = ..()
 
-	START_PROCESSING(SSobj, src)
+	START_PROCESSING(SSfluids, src)
 
 /obj/item/maptick_test_vis_contents_list_change_spam/process()
 	if (length(managed_overlays))
@@ -194,3 +194,24 @@
 	. = ..()
 	for(var/i = 0, i < 100, i++)
 		new /obj/item/maptick_test_inside_contents_changing(src)
+
+///decal that i can spam onto a turf and have all of them stick
+/obj/effect/turf_decal/maptick_test_semi_random_decal
+	icon = 'icons/turf/decals.dmi'
+	icon_state = "warningline"
+	layer = TURF_DECAL_LAYER
+
+/obj/effect/turf_decal/Initialize()
+	..()
+	return INITIALIZE_HINT_QDEL
+
+/obj/effect/turf_decal/ComponentInitialize()
+	. = ..()
+	var/turf/T = loc
+	if(!istype(T)) //you know this will happen somehow
+		CRASH("Turf decal initialized in an object/nullspace")
+	var/list/to_get = icon_states(icon)
+	for(var/i in to_get)
+		if(i == "")
+			to_get -= i
+	T.AddElement(/datum/element/decal, icon, pick(to_get), dir, FALSE, color, null, null, alpha)

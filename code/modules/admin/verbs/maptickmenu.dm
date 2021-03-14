@@ -120,7 +120,6 @@
 				if("Ten measurements per second")
 					test_intensity = TEST_INTENSITY_HIGH
 
-
 /datum/maptick_menu/proc/load_test(test_id)
 	var/datum/map_template/mapticktest/test_template = SSmapping.maptick_templates[test_id]
 	if (!holder.mob)
