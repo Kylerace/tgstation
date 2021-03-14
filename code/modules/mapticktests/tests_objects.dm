@@ -4,6 +4,43 @@
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 
+///10 of the same overlay that doesnt change
+/obj/item/maptick_test_static_overlay_stacking
+	icon = ""
+
+/obj/item/maptick_test_static_overlay_stacking/Initialize()
+	. = ..()
+	for(var/i=0, i < 10, i++)
+		var/image/to_add = image('icons/obj/stack_objects.dmi', src, "sheet-metal", layer, dir)
+		overlays += to_add
+
+///10 overlays with randomized vars to try to make as many unique appearances as possible
+/obj/item/maptick_test_randomized_overlay_stacking
+	icon = ""
+
+/obj/item/maptick_test_randomized_overlay_stacking/Initialize()
+	. = ..()
+	for(var/i=0, i < 10, i++)
+		var/image/to_add = image('icons/obj/stack_objects.dmi', src, pick(icon_states('icons/obj/stack_objects.dmi')), layer, dir, pixel_x = rand(-10,10), pixel_y = rand(-10,10))
+		to_add.alpha = rand(240, 255)
+		overlays += to_add
+
+///spams the fuck out of vis contents changes
+/obj/item/maptick_test_vis_contents_list_change_spam
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
+	. = ..()
+
+	START_PROCESSING(SSfluids, src)
+
+/obj/item/maptick_test_vis_contents_list_change_spam/process()
+	if (length(managed_overlays))
+		SSvis_overlays.remove_vis_overlay(src, list(managed_overlays))
+	else
+		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
+
 //generic items but with an invisible overlay
 /obj/item/maptick_test_invisible_overlay
 	icon = 'icons/obj/stack_objects.dmi'
@@ -22,50 +59,6 @@
 /obj/item/maptick_test_speen_object/Initialize()
 	. = ..()
 	animate(src, transform = turn(matrix(), 120), time = 1, loop = -1)
-
-///like above, but adds to vis_contents instead of overlays
-/obj/item/maptick_test_invisible_obj_vis_vis_content
-	icon = ""
-	var/obj/item/maptick_test_generic/ecksdee
-
-/obj/item/maptick_test_invisible_obj_vis_vis_content/Initialize()
-	. = ..()
-	ecksdee = new()
-	vis_contents += ecksdee
-
-///spams the fuck out of vis contents changes
-/obj/item/maptick_test_vis_contents_list_change_spam
-	icon = 'icons/obj/stack_objects.dmi'
-	icon_state = "sheet-metal"
-
-/obj/item/maptick_test_vis_contents_list_change_spam/Initialize()
-	. = ..()
-
-	START_PROCESSING(SSfluids, src)
-
-/obj/item/maptick_test_vis_contents_list_change_spam/process()
-	if (length(managed_overlays))
-		SSvis_overlays.remove_vis_overlay(src, list(managed_overlays))
-	else
-		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
-
-/obj/item/maptick_test_static_vis_contents_stacking
-	icon = ""
-	var/obj/item/maptick_test_generic/ecksdee = new()
-
-/obj/item/maptick_test_static_vis_contents_stacking/Initialize()
-	. = ..()
-	for(var/i=1, i < 50, i++)
-		vis_contents += ecksdee
-
-
-/obj/item/maptick_test_static_overlay_stacking
-	icon = ""
-
-/obj/item/maptick_test_static_overlay_stacking/Initialize()
-	. = ..()
-	for(var/i=0, i < 1, i++)
-		overlays += getRandomAnimalImage(src)
 
 ///just a mob that doesnt move
 /mob/maptick_test_static_mob
@@ -115,7 +108,7 @@
 /datum/component/maptick_moving_tester/RegisterWithParent()
 	. = ..()
 	if(istype(parent, /mob/living/carbon))
-		START_PROCESSING(SSprojectiles, src)
+		START_PROCESSING(SSfastprocess, src)
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()

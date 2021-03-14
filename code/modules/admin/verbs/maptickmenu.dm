@@ -12,7 +12,8 @@
 	var/client/holder
 	var/ongoing_test = FALSE
 
-	var/name//"Maptick-Test"
+	///the unique part of the filename we're outputting to, default is "Maptick-Test"
+	var/name
 
 	var/list/template_ids = list()
 	var/current_template = null
