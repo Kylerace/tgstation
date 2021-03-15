@@ -84,6 +84,20 @@
 	icon_state = "sheet-metal"
 	status_flags = null
 
+/obj/item/maptick_tester/emissive_blocker
+	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+
+/obj/item/maptick_tester/test_emissive_blocker
+	var/obj/item/maptick_tester/test_emissive_blocker/pic
+
+/obj/item/maptick_tester/test_emissive_blocker/Initialize()
+	. = ..()
+	pic = new type(null)//image(icon, src, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
+	pic.plane = EMISSIVE_BLOCKER_PLANE
+	pic.layer = EMISSIVE_BLOCKER_LAYER
+	overlays += pic
+	//SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = FALSE)
+
 ///completely invisible object to see if maptick is still affected by that
 /obj/item/maptick_tester/completely_invis_object
 	icon = ""
