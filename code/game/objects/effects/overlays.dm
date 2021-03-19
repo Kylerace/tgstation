@@ -54,6 +54,7 @@
 	var/unused = 0
 	///overlays which go unused for this amount of time get cleaned up
 	var/cache_expiration = 2 MINUTES
+	var/is_in_vis_contents = TRUE
 
 /obj/effect/overlay/atmos_excited
 	name = "excited group"

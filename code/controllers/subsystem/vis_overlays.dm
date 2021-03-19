@@ -31,24 +31,28 @@ SUBSYSTEM_DEF(vis_overlays)
 			return
 
 //the "thing" var can be anything with vis_contents which includes images
-/datum/controller/subsystem/vis_overlays/proc/add_vis_overlay(atom/movable/thing, icon, iconstate, layer, plane, dir, alpha = 255, add_appearance_flags = NONE, unique = FALSE)
+/datum/controller/subsystem/vis_overlays/proc/add_vis_overlay(atom/movable/thing, icon, iconstate, layer, plane, dir, alpha = 255, add_appearance_flags = NONE, unique = FALSE, use_vis = TRUE)
 	var/obj/effect/overlay/vis/overlay
 	if(!unique)
-		. = "[icon]|[iconstate]|[layer]|[plane]|[dir]|[alpha]|[add_appearance_flags]"
+		. = "[icon]|[iconstate]|[layer]|[plane]|[dir]|[alpha]|[add_appearance_flags][use_vis]"
 		overlay = vis_overlay_cache[.]
 		if(!overlay)
-			overlay = _create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags)
+			overlay = _create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags, use_vis)
 			vis_overlay_cache[.] = overlay
 		else
 			overlay.unused = 0
 	else
-		overlay = _create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags)
+		overlay = _create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags, use_vis)
 		overlay.cache_expiration = -1
 		var/cache_id = "\ref[overlay]@{[world.time]}"
 		unique_vis_overlays += overlay
 		vis_overlay_cache[cache_id] = overlay
 		. = overlay
-	thing.vis_contents += overlay
+	if(use_vis)
+		thing.vis_contents += overlay
+	else
+		thing.overlays += overlay
+		overlay.is_in_vis_contents = FALSE
 
 	if(!isatom(thing)) // Automatic rotation is not supported on non atoms
 		return overlay
@@ -59,7 +63,7 @@ SUBSYSTEM_DEF(vis_overlays)
 		thing.managed_vis_overlays += overlay
 	return overlay
 
-/datum/controller/subsystem/vis_overlays/proc/_create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags)
+/datum/controller/subsystem/vis_overlays/proc/_create_new_vis_overlay(icon, iconstate, layer, plane, dir, alpha, add_appearance_flags, use_vis = TRUE)
 	var/obj/effect/overlay/vis/overlay = new
 	overlay.icon = icon
 	overlay.icon_state = iconstate
@@ -68,11 +72,17 @@ SUBSYSTEM_DEF(vis_overlays)
 	overlay.dir = dir
 	overlay.alpha = alpha
 	overlay.appearance_flags |= add_appearance_flags
+	overlay.is_in_vis_contents = use_vis
 	return overlay
 
 
 /datum/controller/subsystem/vis_overlays/proc/remove_vis_overlay(atom/movable/thing, list/overlays)
-	thing.vis_contents -= overlays
+	for(var/obj/effect/overlay/vis/overlay_to_remove in overlays)
+		if(overlay_to_remove.is_in_vis_contents)
+			thing.vis_contents -= overlay_to_remove
+			continue
+		else
+			thing.overlays -= overlay_to_remove
 	if(!isatom(thing))
 		return
 	thing.managed_vis_overlays -= overlays
