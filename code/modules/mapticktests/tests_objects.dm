@@ -83,20 +83,22 @@
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-metal"
 	status_flags = null
+	blocks_emissive = FALSE //as opposed to EMISSIVE_BLOCK_UNIQUE
 
+///like the maptick_tester object but is set to block emissives like normal items
 /obj/item/maptick_tester/emissive_blocker
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
 
-/obj/item/maptick_tester/test_emissive_blocker
-	var/obj/item/maptick_tester/test_emissive_blocker/pic
+///like the emissive_blocker object but has an overlay to block emissives instead of vis_contents
+/obj/item/maptick_tester/emissive_blocker/overlay
 
-/obj/item/maptick_tester/test_emissive_blocker/Initialize()
+/obj/item/maptick_tester/emissive_blocker/overlay/update_emissive_block()
 	. = ..()
-	pic = new type(null)//image(icon, src, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
-	pic.plane = EMISSIVE_BLOCKER_PLANE
-	pic.layer = EMISSIVE_BLOCKER_LAYER
-	overlays += pic
-	//SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = FALSE)
+	var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE)
+	gen_emissive_blocker.dir = dir
+	gen_emissive_blocker.alpha = alpha
+	gen_emissive_blocker.appearance_flags |= appearance_flags
+	add_overlay(list(gen_emissive_blocker))
 
 ///completely invisible object to see if maptick is still affected by that
 /obj/item/maptick_tester/completely_invis_object
