@@ -143,13 +143,14 @@
 /datum/component/maptick_moving_tester/RegisterWithParent()
 	. = ..()
 	if(istype(parent, /mob/living/carbon))
-		START_PROCESSING(SSfastprocess, src)
+		//START_PROCESSING(SSfastprocess, src)
+		automove()
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
 	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
 
-/datum/component/maptick_moving_tester/process()
+/datum/component/maptick_moving_tester/proc/automove()
 	var/mob/living/carbon/parent_as_carbon = parent
 	if(going_north)
 		if (parent_as_carbon.y < 230)
@@ -161,6 +162,7 @@
 			parent_as_carbon.Move(get_step(get_turf(parent_as_carbon),SOUTH))
 		else
 			going_north = TRUE
+	addtimer(CALLBACK(src, .proc/automove), 1)
 
 ///50 random animal overlays added to each turf
 /turf/open/floor/maptick_tester/turf_overlay
