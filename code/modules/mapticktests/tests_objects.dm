@@ -93,7 +93,6 @@
 /obj/item/maptick_tester/emissive_blocker/overlay
 
 /obj/item/maptick_tester/emissive_blocker/overlay/update_emissive_block()
-	. = ..()
 	var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE)
 	gen_emissive_blocker.dir = dir
 	gen_emissive_blocker.alpha = alpha
