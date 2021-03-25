@@ -183,7 +183,7 @@
 /turf/open/floor/maptick_tester/turf_vis_contents/Initialize(mapload)
 	. = ..()
 	for (var/i in 1 to 50)
-		SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = FALSE)
+		SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = TRUE)
 
 ///one single vis_overlay
 /turf/open/floor/maptick_tester/turf_single_viscont
