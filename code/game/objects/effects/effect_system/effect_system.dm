@@ -61,7 +61,7 @@ would spawn and follow the beaker, even if it is carried or thrown.
 /datum/effect_system/proc/generate_effect()
 	if(holder)
 		location = get_turf(holder)
-	var/obj/effect/E = new effect_type(location)
+	var/obj/effect/effect = new effect_type(location)
 	total_effects++
 	var/direction
 	if(cardinals)
@@ -69,10 +69,13 @@ would spawn and follow the beaker, even if it is carried or thrown.
 	else
 		direction = pick(GLOB.alldirs)
 	var/steps_amt = pick(1,2,3)
-	for(var/j in 1 to steps_amt)
-		sleep(5)
-		step(E,direction)
-	if(!QDELETED(src))
+	addtimer(CALLBACK(src, .proc/effect_step, --steps_amt, direction, effect), 5)
+
+/datum/effect_system/proc/effect_step(steps_left, direction, obj/effect/effect_to_move)
+	step(effect_to_move, direction)
+	if(steps_left > 0)
+		addtimer(CALLBACK(src, .proc/effect_step, --steps_left, direction, effect_to_move), 5)
+	else if(!QDELETED(src))
 		addtimer(CALLBACK(src, .proc/decrement_total_effect), 20)
 
 /datum/effect_system/proc/decrement_total_effect()
