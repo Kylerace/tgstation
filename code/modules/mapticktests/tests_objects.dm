@@ -153,7 +153,7 @@
 	var/mob/living/carbon/parent_as_carbon = parent
 	if(going_north)
 		if (parent_as_carbon.y < 230)
-			parent_as_carbon.Move(get_step(get_turf(parent_as_carbon),NORTH))
+			parent_as_carbon.Move(get_step(get_turf(parent_as_carbon),NORTH))//get_step(get_turf(parent_as_carbon),NORTH)
 		else
 			going_north = FALSE
 	else
@@ -171,8 +171,8 @@
 
 /turf/open/floor/maptick_tester/turf_overlay/Initialize(mapload)
 	. = ..()
-	for (var/i in 1 to 50)
-		overlays += getRandomAnimalImage(src)
+	for (var/i in 1 to 20)
+		overlays += image('icons/obj/stack_objects.dmi', src, "sheet-metal", layer, dir)
 
 ///50 set vis_contents per turf, non unique
 /turf/open/floor/maptick_tester/turf_vis_contents
@@ -182,7 +182,7 @@
 
 /turf/open/floor/maptick_tester/turf_vis_contents/Initialize(mapload)
 	. = ..()
-	for (var/i in 1 to 50)
+	for (var/i in 1 to 20)
 		SSvis_overlays.add_vis_overlay(src, 'icons/obj/stack_objects.dmi', "sheet-metal", layer, plane, dir, unique = TRUE)
 
 ///one single vis_overlay
@@ -234,5 +234,37 @@
 	for(var/i = 0, i < 10, i++)
 		var/decal_type = decals_to_add[i + 1]
 		new decal_type(src)
+
+///i think this is completely unusable
+/atom/maptick_atom_tester
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+	density = FALSE
+	plane = GAME_PLANE
+	layer = OBJ_LAYER
+
+/atom/movable/maptick_movable_tester
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+	density = FALSE
+	plane = GAME_PLANE
+	layer = OBJ_LAYER
+
+///gives itself a random layer between 1 and 20
+/obj/item/maptick_tester/random_layer
+	layer = OBJ_LAYER
+
+/obj/item/maptick_tester/random_layer/Initialize()
+	. = ..()
+	layer = rand(1,20)
+
+///gives itself a random plane between 1000 and 1000+number_of_planes
+/obj/item/maptick_tester/random_plane
+	plane = GAME_PLANE
+	var/number_of_planes = 20
+
+/obj/item/maptick_tester/random_plane/Initialize()
+	. = ..()
+	plane = rand(1000, 1000 + number_of_planes)
 
 #endif

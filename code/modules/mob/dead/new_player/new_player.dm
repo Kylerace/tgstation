@@ -25,7 +25,11 @@
 	if(length(GLOB.newplayer_start))
 		forceMove(pick(GLOB.newplayer_start))
 	else
+#ifdef EMPTY_WORLD
+		forceMove(locate(128,128,1))
+#else
 		forceMove(locate(1,1,1))
+#endif
 
 	ComponentInitialize()
 
