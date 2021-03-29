@@ -37,6 +37,25 @@ GLOBAL_VAR(restart_counter)
  */
 /world/New()
 	call("maptick_profiler.dll", "auxtools_init")()
+	spawn()
+		while (TRUE)
+			sleep(0.1) // This might end up skipping ticks! Find a real solution.
+			var/stats = maptick_stats()
+			if (stats)
+				var/total = stats["total"]
+				var/resources = stats["resources"]
+				var/glob = stats["global"]
+				var/image_deletions = stats["image_deletions"]
+				var/screen = stats["screen"]
+				var/stat_panel = stats["stat_panel"]
+				var/contents = stats["contents"]
+				var/bulk = stats["bulk"]
+				var/commands = stats["commands"]
+				var/mystery_1 = stats["mystery_1"]
+				var/mystery_2 = stats["mystery_2"]
+				var/inner_final = stats["inner_final"]
+				var/final_thing = stats["final_thing"]
+				to_chat(world, "MAPTICK</br>TOTAL: [total]<br>RESOURCES: [resources]<br>GLOBAL: [glob]<br>IMAGE DELETIONS: [image_deletions]<br>SCREEN: [screen]<br>STAT PANEL: [stat_panel]<br>CONTENTS: [contents]<br>BULK: [bulk]<br>COMMANDS: [commands]<br>MYSTERY 1: [mystery_1]<br>MYSTERY 2: [mystery_2]<br>INNER FINAL: [inner_final]<br>FINAL THING: [final_thing]")
 
 #ifdef USE_EXTOOLS
 	var/extools = world.GetConfig("env", "EXTOOLS_DLL") || (world.system_type == MS_WINDOWS ? "./byond-extools.dll" : "./libbyond-extools.so")
