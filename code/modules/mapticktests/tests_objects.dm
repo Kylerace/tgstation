@@ -275,4 +275,25 @@
 	. = ..()
 	plane = rand(1000, 1000 + number_of_planes)
 
+/mob/living/carbon/object_vorerer
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/mob/living/carbon/object_vorerer/Initialize()
+	. = ..()
+	for(var/i = 0, i < 100, i++)
+		new /obj/item/maptick_tester/inside_contents_changing(src)
+
+/mob/living/carbon/client_images_spammer
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/mob/living/carbon/client_images_spammer/Login()
+	. = ..()
+	var/client/our_client = client
+	for(var/i = 0, i < 10000, i++)
+		var/image/image_to_add = image(icon, loc, pick(icon_states(icon)),layer, dir, pixel_x = rand(-10,10), pixel_y = rand(-10,10))
+		image_to_add.color = rgb(rand(0,255), rand(0,255), rand(0,255))
+		our_client.images += image_to_add
+
 #endif
