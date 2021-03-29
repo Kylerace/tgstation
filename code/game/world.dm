@@ -36,7 +36,7 @@ GLOBAL_VAR(restart_counter)
  * All atoms in both compiled and uncompiled maps are initialized()
  */
 /world/New()
-	call("maptick_profiler.dll", "auxtools_init")()
+	call("maptick_profiler.dll", "auxtools_init")()/*
 	spawn()
 		while (TRUE)
 			sleep(0.1) // This might end up skipping ticks! Find a real solution.
@@ -56,6 +56,7 @@ GLOBAL_VAR(restart_counter)
 				var/inner_final = stats["inner_final"]
 				var/final_thing = stats["final_thing"]
 				to_chat(world, "MAPTICK</br>TOTAL: [total]<br>RESOURCES: [resources]<br>GLOBAL: [glob]<br>IMAGE DELETIONS: [image_deletions]<br>SCREEN: [screen]<br>STAT PANEL: [stat_panel]<br>CONTENTS: [contents]<br>BULK: [bulk]<br>COMMANDS: [commands]<br>MYSTERY 1: [mystery_1]<br>MYSTERY 2: [mystery_2]<br>INNER FINAL: [inner_final]<br>FINAL THING: [final_thing]")
+			*/
 
 #ifdef USE_EXTOOLS
 	var/extools = world.GetConfig("env", "EXTOOLS_DLL") || (world.system_type == MS_WINDOWS ? "./byond-extools.dll" : "./libbyond-extools.so")

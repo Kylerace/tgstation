@@ -69,14 +69,19 @@
 	data["time_dilation_average"] = SStime_track.time_dilation_avg
 	var/stats = maptick_stats()
 	if (stats)
-		data["pfr_total"] = (stats["total"] / world.tick_lag) * 100
-		data["pfr_resources"] = (stats["resources"] / world.tick_lag) * 100
-		data["pfr_global"] = (stats["global"] / world.tick_lag) * 100
-		data["pfr_image_deletions"] = (stats["image_deletions"] / world.tick_lag) * 100
-		data["pfr_screen"] = (stats["screen"] / world.tick_lag) * 100
-		data["pfr_stat_panel"] = (stats["stat_panel"] / world.tick_lag) * 100
-		data["pfr_contents"] = (stats["contents"] / world.tick_lag) * 100
-		data["pfr_bulk"] = (stats["bulk"] / world.tick_lag) * 100
+		data["pfr_total"] = stats["total"]
+		data["pfr_resources"] = stats["resources"]
+		data["pfr_global"] = stats["global"]
+		data["pfr_image_deletions"] = stats["image_deletions"]
+		data["pfr_screen"] = stats["screen"]
+		data["pfr_stat_panel"] = stats["stat_panel"]
+		data["pfr_contents"] = stats["contents"]
+		data["pfr_bulk"] = stats["bulk"]
+		data["pfr_commands"] = stats["commands"]
+		data["pfr_mystery_1"] = stats["mystery_1"]
+		data["pfr_mystery_2"] = stats["mystery_2"]
+		data["pfr_inner_final"] = stats["inner_final"]
+		data["pfr_final_thing"] = stats["final_thing"]
 
 	return data
 

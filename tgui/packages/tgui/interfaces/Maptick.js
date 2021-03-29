@@ -84,7 +84,12 @@ const Status = (props, context) => {
     pfr_screen,
     pfr_stat_panel,
     pfr_contents,
-    pfr_bulk
+    pfr_bulk,
+    pfr_commands,
+    pfr_mystery_1,
+    pfr_mystery_2,
+    pfr_inner_final,
+    pfr_final_thing,
   } = data;
   return (
     <Flex title="Current Maptick Stats" direction="column">
@@ -141,8 +146,23 @@ const Status = (props, context) => {
           <LabeledList.Item label="Profiler Bulk">
             {pfr_bulk}
           </LabeledList.Item>
+          <LabeledList.Item label="Profiler Commands">
+            {pfr_commands}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Mystery_1">
+            {pfr_mystery_1}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Mystery_2">
+            {pfr_mystery_2}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Inner Final">
+            {pfr_inner_final}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Final Thing">
+            {pfr_final_thing}
+          </LabeledList.Item>
           <LabeledList.Item label="Profiler Total - Everything Else">
-            {pfr_total - (pfr_resources + pfr_global + pfr_image_deletions + pfr_screen + pfr_stat_panel + pfr_contents + pfr_bulk)}
+            {pfr_total - (pfr_resources + pfr_global + pfr_image_deletions + pfr_screen + pfr_stat_panel + pfr_contents + pfr_bulk + pfr_commands + pfr_mystery_1 + pfr_mystery_2 + pfr_inner_final + pfr_final_thing)}
           </LabeledList.Item>
         </LabeledList>
       </Flex.Item>
