@@ -66,6 +66,7 @@ SUBSYSTEM_DEF(mapping)
 	preloadTemplates()
 	return ..()
 #endif
+#ifndef EMPTY_WORLD
 	if(config.defaulted)
 		var/old_config = config
 		config = global.config.defaultmap
@@ -135,6 +136,7 @@ SUBSYSTEM_DEF(mapping)
 	generate_station_area_list()
 	initialize_reserved_level(transit.z_value)
 	return ..()
+#endif
 
 /datum/controller/subsystem/mapping/proc/wipe_reservations(wipe_safety_delay = 100)
 	if(clearing_reserved_turfs || !initialized) //in either case this is just not needed.

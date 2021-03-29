@@ -76,7 +76,15 @@ const Status = (props, context) => {
     time_elapsed,
     standard_deviation,
     cpu,
-    time_dilation_average
+    time_dilation_average,
+    pfr_total,
+    pfr_resources,
+    pfr_global,
+    pfr_image_deletions,
+    pfr_screen,
+    pfr_stat_panel,
+    pfr_contents,
+    pfr_bulk
   } = data;
   return (
     <Flex title="Current Maptick Stats" direction="column">
@@ -108,6 +116,33 @@ const Status = (props, context) => {
           </LabeledList.Item>
           <LabeledList.Item label="Maptick Percentage of CPU">
             {(current_maptick_exact / cpu) * 100 + '%'}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Total">
+            {pfr_total}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Resources">
+            {pfr_resources}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Global">
+            {pfr_global}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Image Deletions">
+            {pfr_image_deletions}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Screen">
+            {pfr_screen}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Stat Panel">
+            {pfr_stat_panel}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Contents">
+            {pfr_contents}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Bulk">
+            {pfr_bulk}
+          </LabeledList.Item>
+          <LabeledList.Item label="Profiler Total - Everything Else">
+            {pfr_total - (pfr_resources + pfr_global + pfr_image_deletions + pfr_screen + pfr_stat_panel + pfr_contents + pfr_bulk)}
           </LabeledList.Item>
         </LabeledList>
       </Flex.Item>

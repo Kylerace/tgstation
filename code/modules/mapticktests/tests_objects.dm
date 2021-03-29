@@ -275,4 +275,21 @@
 	. = ..()
 	plane = rand(1000, 1000 + number_of_planes)
 
+/obj/item/maptick_tester/image_deleter
+	var/list/images_to_delete = list()
+	var/delete_this_cycle = TRUE
+
+/obj/item/maptick_tester/image_deleter/Initialize()
+	START_PROCESSING(SSfastprocess, src)
+
+/obj/item/maptick_tester/image_deleter/process()
+	if(delete_this_cycle)
+		for(var/image/image_to_delete in images_to_delete)
+			images_to_delete -= image_to_delete
+			qdel(image_to_delete)
+	else
+		images_to_delete += image('icons/obj/stack_objects.dmi', loc, icon_states('icons/obj/stack_objects.dmi')[rand(1, icon_states('icons/obj/stack_objects.dmi').len)], ABOVE_OBJ_LAYER, dir)
+	delete_this_cycle = !delete_this_cycle
+
+
 #endif

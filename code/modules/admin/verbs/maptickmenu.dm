@@ -20,6 +20,7 @@
 
 	var/include_movement = TRUE
 	var/test_intensity = TEST_INTENSITY_MEDIUM
+	var/list/profiler_stats = list()
 
 /datum/maptick_menu/ui_state(mob/user)
 	return GLOB.admin_state
@@ -66,6 +67,16 @@
 	data["test intensity"] = test_intensity
 	data["cpu"] = world.cpu
 	data["time_dilation_average"] = SStime_track.time_dilation_avg
+	var/stats = maptick_stats()
+	if (stats)
+		data["pfr_total"] = (stats["total"] / world.tick_lag) * 100
+		data["pfr_resources"] = (stats["resources"] / world.tick_lag) * 100
+		data["pfr_global"] = (stats["global"] / world.tick_lag) * 100
+		data["pfr_image_deletions"] = (stats["image_deletions"] / world.tick_lag) * 100
+		data["pfr_screen"] = (stats["screen"] / world.tick_lag) * 100
+		data["pfr_stat_panel"] = (stats["stat_panel"] / world.tick_lag) * 100
+		data["pfr_contents"] = (stats["contents"] / world.tick_lag) * 100
+		data["pfr_bulk"] = (stats["bulk"] / world.tick_lag) * 100
 
 	return data
 

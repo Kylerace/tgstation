@@ -182,7 +182,7 @@
 	..()
 	var/obj/item/card/id/outfit_id = equipped.wear_id
 	if(outfit_id)
-		outfit_id.assignment = scale_assignment
+		//outfit_id.assignment = scale_assignment
 		outfit_id.update_label()
 
 /datum/outfit/pirate/silverscale/captain
