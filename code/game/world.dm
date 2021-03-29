@@ -2,6 +2,13 @@
 
 GLOBAL_VAR(restart_counter)
 
+// Returns null if a tick has not occured since the last call
+// Otherwise, returns:
+//     list(total = f32, resources = f32, global = f32, image_deletions = f32, screen = f32, stat_panel = f32, contents = f32, bulk = f32)
+// Each entry can be null if it didn't happen!
+/proc/maptick_stats()
+	CRASH()
+
 /**
  * World creation
  *
@@ -29,6 +36,22 @@ GLOBAL_VAR(restart_counter)
  * All atoms in both compiled and uncompiled maps are initialized()
  */
 /world/New()
+	call("maptick_profiler.dll", "auxtools_init")()
+	spawn()
+		while (TRUE)
+			sleep(0.1) // This might end up skipping ticks! Find a real solution.
+			var/stats = maptick_stats()
+			if (stats)
+				var/total = stats["total"]
+				var/resources = stats["resources"]
+				var/glob = stats["global"]
+				var/image_deletions = stats["image_deletions"]
+				var/screen = stats["screen"]
+				var/stat_panel = stats["stat_panel"]
+				var/contents = stats["contents"]
+				var/bulk = stats["bulk"]
+				to_chat(world, "MAPTICK</br>TOTAL: [total]<br>RESOURCES: [resources]<br>GLOBAL: [glob]<br>IMAGE DELETIONS: [image_deletions]<br>SCREEN: [screen]<br>STAT PANEL: [stat_panel]<br>CONTENTS: [contents]<br>BULK: [bulk]")
+
 #ifdef USE_EXTOOLS
 	var/extools = world.GetConfig("env", "EXTOOLS_DLL") || (world.system_type == MS_WINDOWS ? "./byond-extools.dll" : "./libbyond-extools.so")
 	if (fexists(extools))

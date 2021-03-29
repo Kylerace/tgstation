@@ -30,5 +30,4 @@ GLOBAL_PROTECT(poll_options)
 
 GLOBAL_VAR_INIT(internal_tick_usage, 0.2 * world.tick_lag)
 
-///number of atoms in world
-GLOBAL_VAR_INIT(total_atom_count, 0)
+GLOBAL_VAR_INIT(glowshrooms, 0)

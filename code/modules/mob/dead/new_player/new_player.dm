@@ -322,7 +322,16 @@
 	SSjob.AssignRole(src, rank, 1)
 
 	var/mob/living/character = create_character(TRUE) //creates the human and transfers vars and mind
-	var/equip = SSjob.EquipRank(character, rank, TRUE)
+
+	var/is_captain = FALSE
+	// If we don't have an assigned cap yet, check if this person qualifies for some from of captaincy.
+	if(!SSjob.assigned_captain && ishuman(character) && SSjob.chain_of_command[rank] && !is_banned_from(ckey, list("Captain")))
+		is_captain = TRUE
+	// If we already have a captain, are they a "Captain" rank and are we allowing multiple of them to be assigned?
+	else if(SSjob.always_promote_captain_job && (rank == "Captain"))
+		is_captain = TRUE
+
+	var/equip = SSjob.EquipRank(character, rank, TRUE, is_captain)
 	if(isliving(equip)) //Borgs get borged in the equip, so we need to make sure we handle the new mob.
 		character = equip
 
@@ -350,17 +359,10 @@
 		else
 			AnnounceArrival(humanc, rank)
 		AddEmploymentContract(humanc)
-		if(GLOB.highlander)
-			to_chat(humanc, "<span class='userdanger'><i>THERE CAN BE ONLY ONE!!!</i></span>")
-			humanc.make_scottish()
 
 		humanc.increment_scar_slot()
 		humanc.load_persistent_scars()
 
-		if(GLOB.summon_guns_triggered)
-			give_guns(humanc)
-		if(GLOB.summon_magic_triggered)
-			give_magic(humanc)
 		if(GLOB.curse_of_madness_triggered)
 			give_madness(humanc, GLOB.curse_of_madness_triggered)
 

@@ -1267,6 +1267,8 @@
 	reagent_state = SOLID
 	color = "#FFBE00"
 	overdose_threshold = 10
+	inverse_chem_val = 0.1 //Shouldn't happen - but this is so looking up the chem will point to the failed type
+	inverse_chem = /datum/reagent/impurity/probital_failed
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
 /datum/reagent/medicine/metafactor/overdose_start(mob/living/carbon/M)
