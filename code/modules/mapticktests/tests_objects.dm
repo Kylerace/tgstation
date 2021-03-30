@@ -296,4 +296,12 @@
 		image_to_add.color = rgb(rand(0,255), rand(0,255), rand(0,255))
 		our_client.images += image_to_add
 
+/obj/item/maptick_tester/filter_tester
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "sheet-metal"
+
+/obj/item/maptick_tester/filter_tester/Initialize()
+	. = ..()
+	filters += filter(type = "outline", size = 1, color = rgb(255,0,0))
+
 #endif
