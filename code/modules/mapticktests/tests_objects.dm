@@ -302,6 +302,7 @@
 
 /obj/item/maptick_tester/filter_tester/Initialize()
 	. = ..()
-	filters += filter(type = "outline", size = 1, color = rgb(255,0,0))
+	var/icon/icon_to_use = new('icons/obj/stack_objects.dmi', "sheet-metal")
+	filters += filter(type = "layer", icon = icon_to_use, flags = FILTER_OVERLAY, color = rgb(255,0,0))
 
 #endif
