@@ -95,6 +95,8 @@
 	else
 		///we dont want people with only one hand to have the same visible_message as people with two hands
 		var/hand_string = "hands"
+		var/starting_health = user.health
+		var/starting_time = REALTIMEOFDAY
 
 		if(iscarbon(user))
 			var/mob/living/carbon/user_as_carbon = user
@@ -113,11 +115,19 @@
 		//burn arms in the do_after callback so that its applied continuosly instead of at the start and/or end
 		var/datum/callback/burning_callback = CALLBACK(src, .proc/burn_arms, user)
 
+		var/ending_health
+
 		if(do_after(user, TOOLLESS_OPEN_DURATION_SOLO, src, extra_checks = burning_callback))
 			user.visible_message("<span class='notice'>[user] opens \the [src] with their [hand_string].</span>", \
 				"<span class='notice'>You pry open \the [src] with your [hand_string]!</span>")
 
 			open()
+
+			ending_health = user.health
+			log_game("[user.ckey] has successfully opened a firelock with their bare [hand_string], starting at [starting_health] health and ending at [ending_health] health")
+		else
+			var/survival_time = (REALTIMEOFDAY - starting_time) / 10 //to seconds
+			log_game("[user.ckey] has died trying to open a firelock with their bare [hand_string]. starting at [starting_health] health and surviving for [survival_time]")
 
 /obj/machinery/door/firedoor/attack_paw(mob/living/user, list/modifiers)
 	. = ..()
