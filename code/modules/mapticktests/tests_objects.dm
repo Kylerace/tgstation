@@ -291,5 +291,34 @@
 		images_to_delete += image('icons/obj/stack_objects.dmi', loc, icon_states('icons/obj/stack_objects.dmi')[rand(1, icon_states('icons/obj/stack_objects.dmi').len)], ABOVE_OBJ_LAYER, dir)
 	delete_this_cycle = !delete_this_cycle
 
+/mob/living/carbon/human/species/skeleton/object_vorer
+
+/mob/living/carbon/human/species/skeleton/object_vorer/Initialize()
+	. = ..()
+	for(var/i in 1 to 19950)
+		var/obj/item/maptick_tester/to_spawn = new(src)
+
+	START_PROCESSING(SSfluids, src)
+
+/mob/living/carbon/human/species/skeleton/client_images_spammer/process()
+	for(var/atom/movable/aties as anything in contents)
+		aties.alpha = rand(0,255)
+
+/mob/living/carbon/human/species/skeleton/objects_in_screen
+
+/mob/living/carbon/human/species/skeleton/objects_in_screen/Login()
+	. = ..()
+
+	for(var/i in 1 to 19950)
+		var/obj/item/maptick_tester/to_spawn = new()
+		client.screen += to_spawn
+
+/mob/living/carbon/human/species/skeleton/client_images_spammer
+
+/mob/living/carbon/human/species/skeleton/client_images_spammer/Login()
+	. = ..()
+	for(var/i in 1 to 19950)
+		var/image/immies = image('icons/obj/stack_objects.dmi', null, icon_states('icons/obj/stack_objects.dmi')[rand(1, icon_states('icons/obj/stack_objects.dmi').len)], ABOVE_OBJ_LAYER, dir)
+		client.images += immies
 
 #endif
