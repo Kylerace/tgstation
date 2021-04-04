@@ -55,13 +55,6 @@
 /obj/item/maptick_tester/vis_contents_list_change_spam/Initialize()
 	. = ..()
 
-	START_PROCESSING(SSfluids, src)
-
-/obj/item/maptick_tester/vis_contents_list_change_spam/process()
-	if (length(managed_overlays))
-		SSvis_overlays.remove_vis_overlay(src, list(managed_overlays))
-	else
-		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
 
 //generic items but with an invisible overlay
 /obj/item/maptick_tester/invisible_overlay
@@ -91,13 +84,6 @@
 
 ///like the emissive_blocker object but has an overlay to block emissives instead of vis_contents
 /obj/item/maptick_tester/emissive_blocker/overlay
-
-/obj/item/maptick_tester/emissive_blocker/overlay/update_emissive_block()
-	var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE)
-	gen_emissive_blocker.dir = dir
-	gen_emissive_blocker.alpha = alpha
-	gen_emissive_blocker.appearance_flags |= appearance_flags
-	add_overlay(list(gen_emissive_blocker))
 
 ///completely invisible object to see if maptick is still affected by that
 /obj/item/maptick_tester/completely_invis_object
@@ -208,19 +194,6 @@
 
 /obj/item/maptick_tester/inside_contents_changing/Initialize(mapload)
 	. = ..()
-	START_PROCESSING(SSprocessing, src)
-
-/obj/item/maptick_tester/inside_contents_changing/process()
-	name = pick("lkajdsj", "aksjdhakjshd", "alijsdlkajs")
-	if(prob(10))
-		SSvis_overlays.add_vis_overlay(src, icon, icon_state, EMISSIVE_BLOCKER_LAYER, EMISSIVE_BLOCKER_PLANE, dir)
-	else if (prob(20))
-		overlays += getRandomAnimalImage(src)
-	else
-		if (managed_overlays.len)
-			for(var/obj/effect/overlay/vis/vs as anything in managed_overlays)
-				SSvis_overlays.remove_vis_overlay(src, list(vs))
-		overlays.Cut()
 
 ///to test if changing contents inside mobs affect maptick, these have 100 objects each and they dont seem to matter at all
 /mob/maptick_tester/changing_object_vorerer
