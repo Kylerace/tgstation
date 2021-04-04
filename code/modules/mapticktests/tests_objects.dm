@@ -253,6 +253,7 @@
 	var/delete_this_cycle = TRUE
 
 /obj/item/maptick_tester/image_deleter/Initialize()
+	. = ..()
 	START_PROCESSING(SSfastprocess, src)
 
 /obj/item/maptick_tester/image_deleter/process()
@@ -293,5 +294,12 @@
 	for(var/i in 1 to 19950)
 		var/image/immies = image('icons/obj/stack_objects.dmi', null, icon_states('icons/obj/stack_objects.dmi')[rand(1, icon_states('icons/obj/stack_objects.dmi').len)], ABOVE_OBJ_LAYER, dir)
 		client.images += immies
+
+/obj/item/maptick_tester/emissive_tester
+
+/obj/item/maptick_tester/emissive_tester/Initialize()
+	. = ..()
+	overlays += mutable_appearance('icons/obj/stationobjs.dmi', "recharger-full", alpha = src.alpha)
+	overlays += emissive_appearance('icons/obj/stationobjs.dmi', "recharger-full", alpha = src.alpha)
 
 #endif
