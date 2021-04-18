@@ -141,35 +141,26 @@
 
 /datum/component/maptick_moving_tester/RegisterWithParent()
 	. = ..()
-	if(istype(parent, /mob/living/carbon))
-		START_PROCESSING(SSfields, src)
-		//automove()
+	//START_PROCESSING(SSfields, src)
+	automove()
 
 /datum/component/maptick_moving_tester/UnregisterFromParent()
 	. = ..()
 	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
 
-/datum/component/maptick_moving_tester/process()
-	var/mob/living/carbon/parent_as_carbon = parent
-	//var/add_delay = parent_as_carbon.cached_multiplicative_slowdown
-	//if(old_move_delay + (add_delay*MOVEMENT_DELAY_BUFFER_DELTA) + MOVEMENT_DELAY_BUFFER > world.time)
-	//	parent_as_carbon.move_delay = old_move_delay
-	//else
-	//	parent_as_carbon.move_delay = world.time
-	parent_as_carbon.client.move_delay = world.time + world.tick_lag
+/datum/component/maptick_moving_tester/proc/automove()//TODOKYLER: make this a datum/ai thing so movement is the same as normal tg running
+	var/mob/parent_as_mob = parent
 	if(going_north)
-		if (parent_as_carbon.y < 230)
-			//parent_as_carbon.client.Move(get_step(get_turf(parent_as_carbon),NORTH))//get_step(get_turf(parent_as_carbon),NORTH)
-			parent_as_carbon.client.keyDown("w")
+		if (parent_as_mob.y < 230)
+			parent_as_mob.Move(get_step(get_turf(parent_as_mob),NORTH))//get_step(get_turf(parent_as_carbon),NORTH)
 		else
 			going_north = FALSE
 	else
-		if (parent_as_carbon.y > 25)
-			//parent_as_carbon.client.Move(get_step(get_turf(parent_as_carbon),SOUTH))
-			parent_as_carbon.client.keyDown("s")
+		if (parent_as_mob.y > 25)
+			parent_as_mob.Move(get_step(get_turf(parent_as_mob),SOUTH))
 		else
 			going_north = TRUE
-	//addtimer(CALLBACK(src, .proc/automove), 1)
+	addtimer(CALLBACK(src, .proc/automove), 1)
 
 ///50 random animal overlays added to each turf
 /turf/open/floor/maptick_tester/turf_overlay
