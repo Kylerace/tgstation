@@ -1,5 +1,5 @@
 /turf/open/floor/iron
-	icon_state = "floor"
+	icon_state = "transparent"
 	floor_tile = /obj/item/stack/tile/iron/base
 
 /turf/open/floor/iron/setup_broken_states()

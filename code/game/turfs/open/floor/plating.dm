@@ -9,7 +9,7 @@
 
 /turf/open/floor/plating
 	name = "plating"
-	icon_state = "plating"
+	icon_state = "transparent"
 	base_icon_state = "plating"
 	intact = FALSE
 	baseturfs = /turf/baseturf_bottom
