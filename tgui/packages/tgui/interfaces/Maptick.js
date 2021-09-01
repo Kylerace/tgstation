@@ -173,6 +173,11 @@ const Initiation = (props, context) => {
           content={"End Maptick Test"}
           onClick={() => act('end test')}
           color={'red'}/>
+          <Button
+          key={"Clear Maptick Test"}
+          content={"Clear Maptick Test"}
+          onClick={() => act('clear test')}
+          color={'red'} />
         </Flex.Item>
       </Flex>
       <Flex my={1} grow={1} direction="row">

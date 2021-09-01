@@ -1,5 +1,14 @@
 #ifdef MAPTICK_TESTING
 
+/mob/proc/clear_test()
+	for(var/turf/turf_to_clear in block(locate(1,1,z), locate(255,255,z)))
+		if(!isspaceturf(turf_to_clear))
+			turf_to_clear.ChangeTurf(/turf/open/space, turf_to_clear.baseturfs)
+
+		for(var/atom/movable/movable_to_clear in turf_to_clear)
+			if(!ismob(movable_to_clear))
+				qdel(movable_to_clear)
+
 ///control item, also is the father of all maptick items so they dont get the emissive blockers by default
 /obj/item/maptick_tester
 	icon = 'icons/obj/stack_objects.dmi'
@@ -84,6 +93,14 @@
 	icon_state = "sheet-metal"
 	status_flags = null
 	blocks_emissive = FALSE //as opposed to EMISSIVE_BLOCK_UNIQUE
+
+/obj/item/maptick_tester/vis_contents_adder
+	var/obj/item/maptick_tester/our_vis_contents
+
+/obj/item/maptick_tester/vis_contents_adder/Initialize()
+	. = ..()
+	our_vis_contents = new
+	vis_contents += our_vis_contents
 
 ///like the maptick_tester object but is set to block emissives like normal items
 /obj/item/maptick_tester/emissive_blocker
