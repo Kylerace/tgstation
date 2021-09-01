@@ -1503,12 +1503,17 @@
 	if(error_landmark)
 		forceMove(locate(128,128,1))
 	else
-		forceMove(locate(128,128,1)) //Even if the landmark is missing, this should put them in the error room.
+		var/mob/living/carbon/human/species/skeleton/new_body = new(locate(128,128,1))
+		new_body.key = client.key
+		client.init_verbs()
+		qdel(src)
+		//forceMove(locate(128,128,1)) //Even if the landmark is missing, this should put them in the error room.
 		//If you're here from seeing this error, I'm sorry. I'm so very sorry. The error landmark should be a sacred object that nobody has any business messing with, and someone did!
 		//Consider seeing a therapist.
-		var/ERROR_ERROR_LANDMARK_ERROR = "ERROR-ERROR: ERROR landmark missing!"
-		log_mapping(ERROR_ERROR_LANDMARK_ERROR)
-		CRASH(ERROR_ERROR_LANDMARK_ERROR)
+		//var/ERROR_ERROR_LANDMARK_ERROR = "ERROR-ERROR: ERROR landmark missing!"
+		//log_mapping(ERROR_ERROR_LANDMARK_ERROR)
+		//CRASH(ERROR_ERROR_LANDMARK_ERROR)
+
 
 /**
  * Changes the inclination angle of a mob, used by humans and others to differentiate between standing up and prone positions.
