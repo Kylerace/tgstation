@@ -78,6 +78,30 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	///used by CHECK_TICK as well so that the procs subsystems call can obey that SS's tick limits
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
 
+	///the value of current_ticklimit just before subsystems are ran. just used so SSstatpanels is accurate.
+	var/starting_ticklimit = 0
+
+	///running average of what tick usage we start MC runs with. used for stat tracking.
+	var/average_starting_tick_usage = 0
+
+	///what percentage of the tick the MC will reserve for itself at minimum should it need it.
+	var/minimum_reserve = MAPTICK_MC_MIN_RESERVE
+
+	///how much world.time has fallen behind REALTIMEOFDAY since the MC last ran, used for lag compensation. same units as TICK_USAGE
+	var/fallbehind = 0
+
+	///our tick_usage when we end the current iteration.
+	var/average_ending_tick_usage = 0
+
+	///running average of tick usage the MC needs to compensate for to not cause overtime. anything that isnt maptick or post mc sleeps
+	///can add to this.
+	var/overtime_correction = TICK_LIMIT_MINIMUM_BUFFER
+
+	///running average of the TICK_USAGE taken by sleeping procs resuming after the MC sleeps but before SendMaps starts that tick.
+	var/post_MC_sleeping_usage = 0
+
+	var/overtime_cooldown = 20
+
 /datum/controller/master/New()
 	if(!config)
 		config = new
@@ -109,7 +133,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			for(var/global_var in global.vars)
 				if (istype(global.vars[global_var], /datum/controller/subsystem))
 					existing_subsystems += global.vars[global_var]
-					
+
 			//Either init a new SS or if an existing one was found use that
 			for(var/I in subsystem_types)
 				var/ss_idx = existing_subsystems.Find(I)
@@ -340,13 +364,47 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	stack_end_detector = new()
 	var/datum/stack_canary/canary = stack_end_detector.prime_canary()
 	canary.use_variable()
-	//the actual loop.
+
+	var/starting_tick_usage = 0
+	var/last_starting_tick_usage = 0
+	///if last iteration we started with 10% of the tick already used, and this iteration we start with 50% of the tick used,
+	///then theres 40% of the tick used that would otherwise contribute to perceived tickdrift even if no ticks were delayed between MC iterations.
+	var/realtime_start_delta = 0
+
+	var/current_realtime = 0
+	var/last_realtime = 0
+
+	var/current_world_time = 0
+	var/last_world_time = 0
+
+	//the actual loop. probably unimportant.
 	while (1)
-		tickdrift = max(0, MC_AVERAGE_FAST(tickdrift, (((REALTIMEOFDAY - init_timeofday) - (world.time - init_time)) / world.tick_lag)))
-		var/starting_tick_usage = TICK_USAGE
+		last_starting_tick_usage = starting_tick_usage
+		starting_tick_usage = TICK_USAGE
+		realtime_start_delta = TICKS2DS((starting_tick_usage - last_starting_tick_usage)/100)
+
+		tickdrift = max(0, MC_AVERAGE_FAST(tickdrift, (((REALTIMEOFDAY - init_timeofday) - (world.time - init_time) - TICKS2DS(starting_tick_usage/100)) / world.tick_lag)))
+
+		//overtime_since_last_iteration = max(100 * (((current_realtime - last_realtime) - (current_world_time - last_world_time) - realtime_start_delta) / (world.tick_lag * ((current_world_time - last_world_time) / world.tick_lag)), 0)
+		if((world.time/world.tick_lag) % overtime_cooldown == 0)
+			last_realtime = current_realtime
+			current_realtime = REALTIMEOFDAY
+
+			last_world_time = current_world_time
+			current_world_time = world.time
+
+			if(current_world_time - last_world_time > 0)
+				fallbehind = 100 * ((current_realtime - last_realtime) - realtime_start_delta) / (current_world_time - last_world_time)
+
+			var/current_compensation = max(fallbehind - 100, 0) || -0.5
+			overtime_correction = max(MC_AVG_FAST_UP_SLOW_DOWN(overtime_correction, current_compensation), TICK_LIMIT_MINIMUM_BUFFER)
+
+			average_starting_tick_usage = MC_AVERAGE_FAST(average_starting_tick_usage, starting_tick_usage)
+
 		if (processing <= 0)
 			current_ticklimit = TICK_LIMIT_RUNNING
-			sleep(10)
+			starting_ticklimit = current_ticklimit
+			end_iteration(10)
 			continue
 
 		//Anti-tick-contention heuristics:
@@ -355,7 +413,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		if (starting_tick_usage > TICK_LIMIT_MC) //if there isn't enough time to bother doing anything this tick, sleep a bit.
 			sleep_delta *= 2
 			current_ticklimit = TICK_LIMIT_RUNNING * 0.5
-			sleep(world.tick_lag * (processing * sleep_delta))
+			starting_ticklimit = current_ticklimit
+			end_iteration(world.tick_lag * (processing * sleep_delta))
 			continue
 
 		//Byond resumed us late. assume it might have to do the same next tick
@@ -404,7 +463,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			else
 				cached_runlevel = null //3 strikes, Lets reset the runlevel lists
 			current_ticklimit = TICK_LIMIT_RUNNING
-			sleep((1 SECONDS) * error_level)
+			starting_ticklimit = current_ticklimit
+			end_iteration((1 SECONDS) * error_level)
 			error_level++
 			continue
 
@@ -421,7 +481,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 					else
 						cached_runlevel = null //3 strikes, Lets also reset the runlevel lists
 					current_ticklimit = TICK_LIMIT_RUNNING
-					sleep((1 SECONDS) * error_level)
+					starting_ticklimit = current_ticklimit
+					end_iteration((1 SECONDS) * error_level)
 					error_level++
 					continue
 				error_level++
@@ -439,12 +500,24 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		current_ticklimit = TICK_LIMIT_RUNNING
 		if (processing * sleep_delta <= world.tick_lag)
 			current_ticklimit -= (TICK_LIMIT_RUNNING * 0.25) //reserve the tail 1/4 of the next tick for the mc if we plan on running next tick
-		sleep(world.tick_lag * (processing * sleep_delta))
+		starting_ticklimit = current_ticklimit
+		end_iteration(world.tick_lag * (processing * sleep_delta))
 
+///end the current MC iteration, updating any relevant variables.
+/datum/controller/master/proc/end_iteration(duration)
+	var/last_ending_tick_usage = TICK_USAGE
+	average_ending_tick_usage = MC_AVERAGE_FAST(average_ending_tick_usage, last_ending_tick_usage)
 
+	var/slept_worldtime = world.time
+	//attempt to measure the tick usage from sleeping procs resuming after the MC went to sleep but before maptick processes
+	//from testing, sleeping for 0 will sleep to the end of the current tick, but not always.
+	spawn(0) //do not convert to add timer
+		if (world.time == slept_worldtime && TICK_USAGE >= last_ending_tick_usage) //make sure we woke up during the same tick
+			post_MC_sleeping_usage = MC_AVERAGE_FAST(post_MC_sleeping_usage, TICK_USAGE - last_ending_tick_usage)
 
+	sleep(duration)
 
-// This is what decides if something should run.
+/// This is what decides if something should run.
 /datum/controller/master/proc/CheckQueue(list/subsystemstocheck)
 	. = 0 //so the mc knows if we runtimed
 
@@ -644,7 +717,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 
 /datum/controller/master/stat_entry(msg)
-	msg = "(TickRate:[Master.processing]) (Iteration:[Master.iteration]) (TickLimit: [round(Master.current_ticklimit, 0.1)])"
+	msg = "(TickRate:[Master.processing]) (Iteration:[Master.iteration]) (TickLimit: [round(Master.starting_ticklimit, 0.1)]) (TD Compensation: [round(Master.overtime_correction, 0.1)])"
 	return msg
 
 

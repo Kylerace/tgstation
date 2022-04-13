@@ -2,15 +2,17 @@
 #define MAPTICK_MC_MIN_RESERVE 70
 #define MAPTICK_LAST_INTERNAL_TICK_USAGE (world.map_cpu)
 
+/// minimum buffer to add to post MC tick usage when calculating the MC's tick allocation. helps prevent small random overtime spikes
+#define TICK_LIMIT_MINIMUM_BUFFER 2
+
 /// Tick limit while running normally
-#define TICK_BYOND_RESERVE 2
-#define TICK_LIMIT_RUNNING (max(100 - TICK_BYOND_RESERVE - MAPTICK_LAST_INTERNAL_TICK_USAGE, MAPTICK_MC_MIN_RESERVE))
+#define TICK_LIMIT_RUNNING (max(100 - MAPTICK_LAST_INTERNAL_TICK_USAGE - Master.post_MC_sleeping_usage - Master.overtime_correction, Master.minimum_reserve))
 /// Tick limit used to resume things in stoplag
 #define TICK_LIMIT_TO_RUN 70
 /// Tick limit for MC while running
 #define TICK_LIMIT_MC 70
 /// Tick limit while initializing
-#define TICK_LIMIT_MC_INIT_DEFAULT (100 - TICK_BYOND_RESERVE)
+#define TICK_LIMIT_MC_INIT_DEFAULT (100 - TICK_LIMIT_MINIMUM_BUFFER)
 
 /// for general usage of tick_usage
 #define TICK_USAGE world.tick_usage
