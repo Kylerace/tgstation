@@ -706,8 +706,9 @@ world
 		((hi3 >= 65 ? hi3-55 : hi3-48)<<4) | (lo3 >= 65 ? lo3-55 : lo3-48),
 		((hi4 >= 65 ? hi4-55 : hi4-48)<<4) | (lo4 >= 65 ? lo4-55 : lo4-48))
 
-
-/proc/get_icon_states(icon)
+///icon needs to be an instantiated /icon object. icon_state and dir are metadata for caching purposes
+///icon_state - the icon_state string of the specified object
+/proc/get_icon_states(icon, icon_state, dir)
 	return icon_states(icon)
 
 /icon/proc/get_icon_states()
@@ -768,7 +769,7 @@ GLOBAL_VAR_INIT(message_get_flat, FALSE)
 	var/curstate = appearance.icon_state || defstate
 	var/curdir = (!appearance.dir || appearance.dir == SOUTH) ? defdir : appearance.dir
 
-	if(GLOB.message_get_flat)
+	if(GLOB.message_get_flat)//TODOKYLER: remove
 		message_admins("[curicon]")
 
 	var/render_icon = curicon
@@ -776,10 +777,9 @@ GLOBAL_VAR_INIT(message_get_flat, FALSE)
 	///We'll use this to get the icon state to display if not null BUT NOT pass it to overlays as the dir we have
 	var/base_icon_dir
 
-	//we need to check if
 	if (render_icon)
 
-		if(curdir == SOUTH)//default dir for icons
+		if(curdir == SOUTH)//default dir for icons, we only need to check if the icon_state exists
 
 			var/list/curstates = get_icon_states(curicon)
 
@@ -790,87 +790,75 @@ GLOBAL_VAR_INIT(message_get_flat, FALSE)
 					render_icon = FALSE
 
 		else
+			///either north OR south
+			var/dir_north_south
+			///either east OR west
+			var/dir_east_west
+
+			///what icon_states exist for the given icon consisting of an icon file, an icon_state, and a dir.
+			///we need to check whether our orthogonal dir(s) exist for the given icon_state, and if not if the icon_state exists,
+			///and if not check the orthogonal dir(s) again but with the "" icon_state
+			var/list/states
+
 			if(curdir & NORTH)
+				dir_north_south = NORTH
 				//99% of the time this works where we care (human sprites). if we get it wrong for each dir then we have to then check
 				//if curstate exists in the icon, which it almost always does, but it adds more time in that case
-				var/list/states = get_icon_states(icon(curicon, curstate, NORTH))
+				states = get_icon_states(icon(curicon, curstate, NORTH))
 
 				if(!length(states)) //there was no purely northern state, check if we're diagonal and try the other state if so
 					states = null
 
-					var/non_north_dirs = curdir ^ NORTH //im just going to assume this is either EAST or WEST
-					if(non_north_dirs)
-						states = get_icon_states(icon(curicon, curstate, non_north_dirs))
-
-				if(!length(states))//we didnt find any of our directions, check if our state even exists
-
-					states = get_icon_states(curicon)
-					if(!(curstate in states))
-						if("" in curstates)
-							curstate = ""
-						else
-							render_icon = FALSE
-							base_icon_dir = SOUTH
-
-					if(render_icon)
-						if(
-							!length(get_icon_states(icon(curicon, curstate, NORTH))) \
-							&& !length(get_icon_states(icon(curicon, curstate, non_north_dirs))) \
-						)
-							base_icon_dir = SOUTH
+					dir_east_west = curdir ^ NORTH //im just going to assume this is either EAST or WEST
+					if(dir_east_west)
+						states = get_icon_states(icon(curicon, curstate, dir_east_west))
 
 			else if(curdir & EAST)
-				//99% of the time this works where we care (human sprites). if we get it wrong for each dir then we have to then check
-				//if curstate exists in the icon, which it almost always does, but it adds more time in that case
-				var/list/states = get_icon_states(icon(curicon, curstate, EAST))
+				dir_east_west = EAST
 
-				if(!length(states)) //there was no purely northern state, check if we're diagonal and try the other state if so
+				states = get_icon_states(icon(curicon, curstate, dir_east_west))
+
+				if(!length(states)) //there was no purely eastern state, check if we're southeast and check south if so
 					states = null
 
-					var/non_east_dirs = curdir & SOUTH
-					if(non_east_dirs)
-						states = get_icon_states(icon(curicon, curstate, non_east_dirs))
+					dir_north_south = curdir & SOUTH
+					if(dir_north_south)
+						states = get_icon_states(icon(curicon, curstate, dir_north_south))
 
-				if(!length(states))//we didnt find any of our directions, check if our state even exists
+			else if(curdir & WEST)
+				dir_east_west = WEST
+				states = get_icon_states(icon(curicon, curstate, dir_east_west))
 
+				if(!length(states)) //there was no purely eastern state, check if we're southeast and check south if so
+					states = null
+
+					dir_north_south = curdir & SOUTH
+					if(dir_north_south)
+						states = get_icon_states(icon(curicon, curstate, dir_north_south))
+
+			//we didnt find any of our directions, check if our icon_state even exists. if it does recheck our dir(s)
+			//we have to recheck with the normal icon because byond is dumb, we cant return all icon_states that have a given dir in an icon file
+			if(!length(states))
+
+				if(curstate != "")
 					states = get_icon_states(curicon)
 					if(!(curstate in states))
-						if("" in curstates)
+						if("" in states)
 							curstate = ""
 						else
 							render_icon = FALSE
 							base_icon_dir = SOUTH
 
-					if(render_icon)
-						if(
-							!length(get_icon_states(icon(curicon, curstate, NORTH))) \
-							&& !length(get_icon_states(icon(curicon, curstate, SOUTH))) \
-						)
-							base_icon_dir = SOUTH
+				else //our icon_state was already "" so we have nothing to fallback to
+					render_icon = FALSE
+					base_icon_dir = SOUTH
 
-			else if(curdir & WEST)
-				if(curdir & SOUTH)
-
-
-			if(!length(get_icon_states(icon(curicon, curstate, curdir))))
-
-
-		var/list/curstates = get_icon_states(curicon)
-		if(!(curstate in curstates))
-			if ("" in curstates)
-				curstate = ""
-			else
-				render_icon = FALSE
-
-
-
-	//Try to remove/optimize this section ASAP, CPU hog.
-	//Determines if there's directionals.
-	if(render_icon && curdir != SOUTH)
-		var/list/dir_states = get_icon_states(icon(curicon, curstate, curdir))
-
-		if(!length(dir_states))//there is no state for this direction for this icon, so it defaults to SOUTH
-			base_icon_dir = SOUTH
+				if(render_icon)
+					if(
+						(!dir_north_south || !length(get_icon_states(icon(curicon, curstate, dir_north_south)))) \
+						&& (!dir_east_west || !length(get_icon_states(icon(curicon, curstate, dir_east_west)))) \
+					)
+						base_icon_dir = SOUTH
 
 	if(!base_icon_dir)
 		base_icon_dir = curdir
@@ -1453,12 +1441,6 @@ GLOBAL_VAR_INIT(message_get_flat, FALSE)
 	var/icon/I = new(icon, icon_state, dir)
 	icon = I
 
-/atom/proc/compare_bad_icons()
-	var/icon/invalid_dir = icon(src.icon, icon_state, DOWN)
-	var/icon/invalid_state = icon(src.icon, "blarg", UP)
-
-	message_admins("the two icons [invalid_dir == ")
-
 /atom/proc/list_dir_states(dir_to_use = NORTH)
 	list_states(icon(src.icon, dir = dir_to_use))
 
@@ -1473,12 +1455,6 @@ GLOBAL_VAR_INIT(message_get_flat, FALSE)
 	message_admins("there are [length(states)] icon_state's for this icon")
 	for(var/state in states)
 		message_admins(state)
-
-/atom/proc/list_dir_states(dir_to_use = NORTH, state_to_use)
-	if(!state_to_use)
-		state_to_use = icon_state
-
-	list_states(icon(src.icon, state_to_use, dir_to_use))
 
 /atom/proc/list_all_states(icon_to_use)
 	if(!icon_to_use)
