@@ -706,6 +706,15 @@ world
 		((hi3 >= 65 ? hi3-55 : hi3-48)<<4) | (lo3 >= 65 ? lo3-55 : lo3-48),
 		((hi4 >= 65 ? hi4-55 : hi4-48)<<4) | (lo4 >= 65 ? lo4-55 : lo4-48))
 
+
+/proc/get_icon_states(icon)
+	return icon_states(icon)
+
+/icon/proc/get_icon_states()
+	return IconStates()
+
+GLOBAL_VAR_INIT(message_get_flat, FALSE)
+
 /// Create a single [/icon] from a given [/atom] or [/image].
 ///
 /// Very low-performance. Should usually only be used for HTML, where BYOND's
@@ -755,6 +764,235 @@ world
 		if(!defblend)
 			defblend = appearance.blend_mode
 
+	var/icon/curicon = appearance.icon || deficon
+	var/curstate = appearance.icon_state || defstate
+	var/curdir = (!appearance.dir || appearance.dir == SOUTH) ? defdir : appearance.dir
+
+	if(GLOB.message_get_flat)
+		message_admins("[curicon]")
+
+	var/render_icon = curicon
+
+	///We'll use this to get the icon state to display if not null BUT NOT pass it to overlays as the dir we have
+	var/base_icon_dir
+
+	//we need to check if
+	if (render_icon)
+
+		if(curdir == SOUTH)//default dir for icons
+
+			var/list/curstates = get_icon_states(curicon)
+
+			if(!(curstate in curstates))
+				if ("" in curstates)
+					curstate = ""
+				else
+					render_icon = FALSE
+
+		else
+			if(curdir & NORTH)
+				//99% of the time this works where we care (human sprites). if we get it wrong for each dir then we have to then check
+				//if curstate exists in the icon, which it almost always does, but it adds more time in that case
+				var/list/states = get_icon_states(icon(curicon, curstate, NORTH))
+
+				if(!length(states)) //there was no purely northern state, check if we're diagonal and try the other state if so
+					states = null
+
+					var/non_north_dirs = curdir ^ NORTH //im just going to assume this is either EAST or WEST
+					if(non_north_dirs)
+						states = get_icon_states(icon(curicon, curstate, non_north_dirs))
+
+				if(!length(states))//we didnt find any of our directions, check if our state even exists
+
+					states = get_icon_states(curicon)
+					if(!(curstate in states))
+						if("" in curstates)
+							curstate = ""
+						else
+							render_icon = FALSE
+							base_icon_dir = SOUTH
+
+					if(render_icon)
+						if(
+							!length(get_icon_states(icon(curicon, curstate, NORTH))) \
+							&& !length(get_icon_states(icon(curicon, curstate, non_north_dirs))) \
+						)
+							base_icon_dir = SOUTH
+
+			else if(curdir & EAST)
+				//99% of the time this works where we care (human sprites). if we get it wrong for each dir then we have to then check
+				//if curstate exists in the icon, which it almost always does, but it adds more time in that case
+				var/list/states = get_icon_states(icon(curicon, curstate, EAST))
+
+				if(!length(states)) //there was no purely northern state, check if we're diagonal and try the other state if so
+					states = null
+
+					var/non_east_dirs = curdir & SOUTH
+					if(non_east_dirs)
+						states = get_icon_states(icon(curicon, curstate, non_east_dirs))
+
+				if(!length(states))//we didnt find any of our directions, check if our state even exists
+
+					states = get_icon_states(curicon)
+					if(!(curstate in states))
+						if("" in curstates)
+							curstate = ""
+						else
+							render_icon = FALSE
+							base_icon_dir = SOUTH
+
+					if(render_icon)
+						if(
+							!length(get_icon_states(icon(curicon, curstate, NORTH))) \
+							&& !length(get_icon_states(icon(curicon, curstate, SOUTH))) \
+						)
+							base_icon_dir = SOUTH
+
+			else if(curdir & WEST)
+				if(curdir & SOUTH)
+
+
+			if(!length(get_icon_states(icon(curicon, curstate, curdir))))
+
+
+		var/list/curstates = get_icon_states(curicon)
+		if(!(curstate in curstates))
+			if ("" in curstates)
+				curstate = ""
+			else
+				render_icon = FALSE
+
+
+
+	//Try to remove/optimize this section ASAP, CPU hog.
+	//Determines if there's directionals.
+	if(render_icon && curdir != SOUTH)
+		var/list/dir_states = get_icon_states(icon(curicon, curstate, curdir))
+
+		if(!length(dir_states))//there is no state for this direction for this icon, so it defaults to SOUTH
+			base_icon_dir = SOUTH
+
+	if(!base_icon_dir)
+		base_icon_dir = curdir
+
+	var/curblend = appearance.blend_mode || defblend
+
+	if(length(appearance.overlays) || length(appearance.underlays))
+		var/icon/flat = icon(flat_template)
+		// Layers will be a sorted list of icons/overlays, based on the order in which they are displayed
+		var/list/layers = list()
+		var/image/copy
+		// Add the atom's icon itself, without pixel_x/y offsets.
+		if(render_icon)
+			copy = image(icon=curicon, icon_state=curstate, layer=appearance.layer, dir=base_icon_dir)
+			copy.color = appearance.color
+			copy.alpha = appearance.alpha
+			copy.blend_mode = curblend
+			layers[copy] = appearance.layer
+
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.underlays, 0)
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.overlays, 1)
+
+		/// Icon of a overlay/underlay being pressed into the template
+		var/icon/add
+
+		var/flatX1 = 1
+		var/flatX2 = flat.Width()
+		var/flatY1 = 1
+		var/flatY2 = flat.Height()
+
+		var/addX1 = 0
+		var/addX2 = 0
+		var/addY1 = 0
+		var/addY2 = 0
+
+		for(var/image/layer_image as anything in layers)
+			if(layer_image.alpha == 0)
+				continue
+
+			if(layer_image == copy) // 'layer_image' is an /image based on the object being flattened.
+				curblend = BLEND_OVERLAY
+				add = icon(layer_image.icon, layer_image.icon_state, base_icon_dir)
+			else // 'I' is an appearance object.
+				var/image/next_appearance = image(layer_image)
+				add = getFlatIcon(next_appearance, curdir, next_appearance.icon, next_appearance.icon_state, curblend, FALSE, no_anim)
+			if(!add)
+				continue
+
+			// Find the new dimensions of the flat icon to fit the added overlay
+			addX1 = min(flatX1, layer_image.pixel_x + 1)
+			addX2 = max(flatX2, layer_image.pixel_x + add.Width())
+			addY1 = min(flatY1, layer_image.pixel_y + 1)
+			addY2 = max(flatY2, layer_image.pixel_y + add.Height())
+
+			if (
+				addX1 != flatX1 \
+				&& addX2 != flatX2 \
+				&& addY1 != flatY1 \
+				&& addY2 != flatY2 \
+			)
+				// Resize the flattened icon so the new icon fits
+				flat.Crop(
+					addX1 - flatX1 + 1,
+					addY1 - flatY1 + 1,
+					addX2 - flatX1 + 1,
+					addY2 - flatY1 + 1
+				)
+
+				flatX1 = addX1
+				flatX2 = addY1
+				flatY1 = addX2
+				flatY2 = addY2
+
+			// Blend the overlay into the flattened icon
+			flat.Blend(add, blendMode2iconMode(curblend), layer_image.pixel_x + 2 - flatX1, layer_image.pixel_y + 2 - flatY1)
+
+		if(appearance.color)
+			if(islist(appearance.color))
+				flat.MapColors(arglist(appearance.color))
+			else
+				flat.Blend(appearance.color, ICON_MULTIPLY)
+
+		if(appearance.alpha < 255)
+			flat.Blend(rgb(255, 255, 255, appearance.alpha), ICON_MULTIPLY)
+
+		if(no_anim)
+			//Clean up repeated frames
+			var/icon/cleaned = new /icon()
+			cleaned.Insert(flat, "", SOUTH, 1, 0)
+			return cleaned
+		else
+			return icon(flat, "", SOUTH)
+	else if (render_icon) // There's no overlays so just draw ourselves.
+		var/icon/final_icon = icon(icon(curicon, curstate, base_icon_dir), "", SOUTH, no_anim ? TRUE : null)
+
+		if (appearance.alpha < 255)
+			final_icon.Blend(rgb(255,255,255, appearance.alpha), ICON_MULTIPLY)
+
+		if (appearance.color)
+			if (islist(appearance.color))
+				final_icon.MapColors(arglist(appearance.color))
+			else
+				final_icon.Blend(appearance.color, ICON_MULTIPLY)
+
+		return final_icon
+
+/proc/getFlatIconOld(image/appearance, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
+	var/static/icon/flat_template = icon('icons/blanks/32x32.dmi', "nothing")
+
+	if(!appearance || appearance.alpha <= 0)
+		return icon(flat_template)
+
+	if(start)
+		if(!defdir)
+			defdir = appearance.dir
+		if(!deficon)
+			deficon = appearance.icon
+		if(!defstate)
+			defstate = appearance.icon_state
+		if(!defblend)
+			defblend = appearance.blend_mode
+
 	var/curicon = appearance.icon || deficon
 	var/curstate = appearance.icon_state || defstate
 	var/curdir = (!appearance.dir || appearance.dir == SOUTH) ? defdir : appearance.dir
@@ -762,7 +1000,7 @@ world
 	var/render_icon = curicon
 
 	if (render_icon)
-		var/curstates = icon_states(curicon)
+		var/curstates = get_icon_states(curicon)
 		if(!(curstate in curstates))
 			if ("" in curstates)
 				curstate = ""
@@ -775,9 +1013,9 @@ world
 	//Determines if there's directionals.
 	if(render_icon && curdir != SOUTH)
 		if (
-			!length(icon_states(icon(curicon, curstate, NORTH))) \
-			&& !length(icon_states(icon(curicon, curstate, EAST))) \
-			&& !length(icon_states(icon(curicon, curstate, WEST))) \
+			!length(get_icon_states(icon(curicon, curstate, NORTH))) \
+			&& !length(get_icon_states(icon(curicon, curstate, EAST))) \
+			&& !length(get_icon_states(icon(curicon, curstate, WEST))) \
 		)
 			base_icon_dir = SOUTH
 
@@ -822,7 +1060,7 @@ world
 				curblend = BLEND_OVERLAY
 				add = icon(layer_image.icon, layer_image.icon_state, base_icon_dir)
 			else // 'I' is an appearance object.
-				add = getFlatIcon(image(layer_image), curdir, curicon, curstate, curblend, FALSE, no_anim)
+				add = getFlatIconOldRecursive(image(layer_image), curdir, curicon, curstate, curblend, FALSE, no_anim)
 			if(!add)
 				continue
 
@@ -884,7 +1122,418 @@ world
 
 		return final_icon
 
+/proc/getFlatIconRecursive(image/appearance, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
+	var/static/icon/flat_template = icon('icons/blanks/32x32.dmi', "nothing")
+
+	if(!appearance || appearance.alpha <= 0)
+		return icon(flat_template)
+
+	if(start)
+		if(!defdir)
+			defdir = appearance.dir
+		if(!deficon)
+			deficon = appearance.icon
+		if(!defstate)
+			defstate = appearance.icon_state
+		if(!defblend)
+			defblend = appearance.blend_mode
+
+	var/curicon = appearance.icon || deficon
+	var/curstate = appearance.icon_state || defstate
+	var/curdir = (!appearance.dir || appearance.dir == SOUTH) ? defdir : appearance.dir
+
+	if(GLOB.message_get_flat)
+		message_admins("[curicon]")
+
+	var/render_icon = curicon
+
+	if (render_icon)
+		var/curstates = get_icon_states(curicon)
+		if(!(curstate in curstates))
+			if ("" in curstates)
+				curstate = ""
+			else
+				render_icon = FALSE
+
+	var/base_icon_dir //We'll use this to get the icon state to display if not null BUT NOT pass it to overlays as the dir we have
+
+	//Try to remove/optimize this section ASAP, CPU hog.
+	//Determines if there's directionals.
+	//Determines if there's directionals.
+	if(render_icon && curdir != SOUTH) //99% sure i can just check the given directional
+		var/list/dir_states = get_icon_states(icon(curicon, curstate, curdir))
+
+		if(!length(dir_states))//the given direction works alone
+			base_icon_dir = SOUTH
+
+	if(!base_icon_dir)
+		base_icon_dir = curdir
+
+	var/curblend = appearance.blend_mode || defblend
+
+	if(appearance.overlays.len || appearance.underlays.len)
+		var/icon/flat = icon(flat_template)
+		// Layers will be a sorted list of icons/overlays, based on the order in which they are displayed
+		var/list/layers = list()
+		var/image/copy
+		// Add the atom's icon itself, without pixel_x/y offsets.
+		if(render_icon)
+			copy = image(icon=curicon, icon_state=curstate, layer=appearance.layer, dir=base_icon_dir)
+			copy.color = appearance.color
+			copy.alpha = appearance.alpha
+			copy.blend_mode = curblend
+			layers[copy] = appearance.layer
+
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.underlays, 0)
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.overlays, 1)
+
+		var/icon/add // Icon of overlay being added
+
+		var/flatX1 = 1
+		var/flatX2 = flat.Width()
+		var/flatY1 = 1
+		var/flatY2 = flat.Height()
+
+		var/addX1 = 0
+		var/addX2 = 0
+		var/addY1 = 0
+		var/addY2 = 0
+
+		for(var/image/layer_image as anything in layers)
+			if(layer_image.alpha == 0)
+				continue
+
+			if(layer_image == copy) // 'layer_image' is an /image based on the object being flattened.
+				curblend = BLEND_OVERLAY
+				add = icon(layer_image.icon, layer_image.icon_state, base_icon_dir)
+			else // 'I' is an appearance object.
+				add = getFlatIconRecursive(image(layer_image), curdir, curicon, curstate, curblend, FALSE, no_anim)
+			if(!add)
+				continue
+
+			// Find the new dimensions of the flat icon to fit the added overlay
+			addX1 = min(flatX1, layer_image.pixel_x + 1)
+			addX2 = max(flatX2, layer_image.pixel_x + add.Width())
+			addY1 = min(flatY1, layer_image.pixel_y + 1)
+			addY2 = max(flatY2, layer_image.pixel_y + add.Height())
+
+			if (
+				addX1 != flatX1 \
+				&& addX2 != flatX2 \
+				&& addY1 != flatY1 \
+				&& addY2 != flatY2 \
+			)
+				// Resize the flattened icon so the new icon fits
+				flat.Crop(
+					addX1 - flatX1 + 1,
+					addY1 - flatY1 + 1,
+					addX2 - flatX1 + 1,
+					addY2 - flatY1 + 1
+				)
+
+				flatX1 = addX1
+				flatX2 = addY1
+				flatY1 = addX2
+				flatY2 = addY2
+
+			// Blend the overlay into the flattened icon
+			flat.Blend(add, blendMode2iconMode(curblend), layer_image.pixel_x + 2 - flatX1, layer_image.pixel_y + 2 - flatY1)
+
+		if(appearance.color)
+			if(islist(appearance.color))
+				flat.MapColors(arglist(appearance.color))
+			else
+				flat.Blend(appearance.color, ICON_MULTIPLY)
+
+		if(appearance.alpha < 255)
+			flat.Blend(rgb(255, 255, 255, appearance.alpha), ICON_MULTIPLY)
+
+		if(no_anim)
+			//Clean up repeated frames
+			var/icon/cleaned = new /icon()
+			cleaned.Insert(flat, "", SOUTH, 1, 0)
+			return cleaned
+		else
+			return icon(flat, "", SOUTH)
+	else if (render_icon) // There's no overlays.
+		var/icon/final_icon = icon(icon(curicon, curstate, base_icon_dir), "", SOUTH, no_anim ? TRUE : null)
+
+		if (appearance.alpha < 255)
+			final_icon.Blend(rgb(255,255,255, appearance.alpha), ICON_MULTIPLY)
+
+		if (appearance.color)
+			if (islist(appearance.color))
+				final_icon.MapColors(arglist(appearance.color))
+			else
+				final_icon.Blend(appearance.color, ICON_MULTIPLY)
+
+		return final_icon
+
+/proc/getFlatIconOldRecursive(image/appearance, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
+	var/static/icon/flat_template = icon('icons/blanks/32x32.dmi', "nothing")
+
+	if(!appearance || appearance.alpha <= 0)
+		return icon(flat_template)
+
+	if(start)
+		if(!defdir)
+			defdir = appearance.dir
+		if(!deficon)
+			deficon = appearance.icon
+		if(!defstate)
+			defstate = appearance.icon_state
+		if(!defblend)
+			defblend = appearance.blend_mode
+
+	var/curicon = appearance.icon || deficon
+	var/curstate = appearance.icon_state || defstate
+	var/curdir = (!appearance.dir || appearance.dir == SOUTH) ? defdir : appearance.dir
+
+	var/render_icon = curicon
+
+	if (render_icon)
+		var/curstates = get_icon_states(curicon)
+		if(!(curstate in curstates))
+			if ("" in curstates)
+				curstate = ""
+			else
+				render_icon = FALSE
+
+	var/base_icon_dir //We'll use this to get the icon state to display if not null BUT NOT pass it to overlays as the dir we have
+
+	//Try to remove/optimize this section ASAP, CPU hog.
+	//Determines if there's directionals.
+	if(render_icon && curdir != SOUTH)
+		if (
+			!length(get_icon_states(icon(curicon, curstate, NORTH))) \
+			&& !length(get_icon_states(icon(curicon, curstate, EAST))) \
+			&& !length(get_icon_states(icon(curicon, curstate, WEST))) \
+		)
+			base_icon_dir = SOUTH
+
+	if(!base_icon_dir)
+		base_icon_dir = curdir
+
+	var/curblend = appearance.blend_mode || defblend
+
+	if(appearance.overlays.len || appearance.underlays.len)
+		var/icon/flat = icon(flat_template)
+		// Layers will be a sorted list of icons/overlays, based on the order in which they are displayed
+		var/list/layers = list()
+		var/image/copy
+		// Add the atom's icon itself, without pixel_x/y offsets.
+		if(render_icon)
+			copy = image(icon=curicon, icon_state=curstate, layer=appearance.layer, dir=base_icon_dir)
+			copy.color = appearance.color
+			copy.alpha = appearance.alpha
+			copy.blend_mode = curblend
+			layers[copy] = appearance.layer
+
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.underlays, 0)
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.overlays, 1)
+
+		var/icon/add // Icon of overlay being added
+
+		var/flatX1 = 1
+		var/flatX2 = flat.Width()
+		var/flatY1 = 1
+		var/flatY2 = flat.Height()
+
+		var/addX1 = 0
+		var/addX2 = 0
+		var/addY1 = 0
+		var/addY2 = 0
+
+		for(var/image/layer_image as anything in layers)
+			if(layer_image.alpha == 0)
+				continue
+
+			if(layer_image == copy) // 'layer_image' is an /image based on the object being flattened.
+				curblend = BLEND_OVERLAY
+				add = icon(layer_image.icon, layer_image.icon_state, base_icon_dir)
+			else // 'I' is an appearance object.
+				add = getFlatIconOldRecursive(image(layer_image), curdir, curicon, curstate, curblend, FALSE, no_anim)
+			if(!add)
+				continue
+
+			// Find the new dimensions of the flat icon to fit the added overlay
+			addX1 = min(flatX1, layer_image.pixel_x + 1)
+			addX2 = max(flatX2, layer_image.pixel_x + add.Width())
+			addY1 = min(flatY1, layer_image.pixel_y + 1)
+			addY2 = max(flatY2, layer_image.pixel_y + add.Height())
+
+			if (
+				addX1 != flatX1 \
+				&& addX2 != flatX2 \
+				&& addY1 != flatY1 \
+				&& addY2 != flatY2 \
+			)
+				// Resize the flattened icon so the new icon fits
+				flat.Crop(
+					addX1 - flatX1 + 1,
+					addY1 - flatY1 + 1,
+					addX2 - flatX1 + 1,
+					addY2 - flatY1 + 1
+				)
+
+				flatX1 = addX1
+				flatX2 = addY1
+				flatY1 = addX2
+				flatY2 = addY2
+
+			// Blend the overlay into the flattened icon
+			flat.Blend(add, blendMode2iconMode(curblend), layer_image.pixel_x + 2 - flatX1, layer_image.pixel_y + 2 - flatY1)
+
+		if(appearance.color)
+			if(islist(appearance.color))
+				flat.MapColors(arglist(appearance.color))
+			else
+				flat.Blend(appearance.color, ICON_MULTIPLY)
+
+		if(appearance.alpha < 255)
+			flat.Blend(rgb(255, 255, 255, appearance.alpha), ICON_MULTIPLY)
+
+		if(no_anim)
+			//Clean up repeated frames
+			var/icon/cleaned = new /icon()
+			cleaned.Insert(flat, "", SOUTH, 1, 0)
+			return cleaned
+		else
+			return icon(flat, "", SOUTH)
+	else if (render_icon) // There's no overlays.
+		var/icon/final_icon = icon(icon(curicon, curstate, base_icon_dir), "", SOUTH, no_anim ? TRUE : null)
+
+		if (appearance.alpha < 255)
+			final_icon.Blend(rgb(255,255,255, appearance.alpha), ICON_MULTIPLY)
+
+		if (appearance.color)
+			if (islist(appearance.color))
+				final_icon.MapColors(arglist(appearance.color))
+			else
+				final_icon.Blend(appearance.color, ICON_MULTIPLY)
+
+		return final_icon
+/*
+//Try to remove/optimize this section ASAP, CPU hog.
+	//Determines if there's directionals.
+	if(render_icon && curdir != SOUTH) //99% sure i can just check the given directional
+		var/dir_icon = icon(curicon, curstate, curdir)
+		var/list/dir_states = icon_states(dir_icon)
+
+		if(length(dir_states))//the given direction works alone
+
+
+		else
+
+			var/log_dir = log(2, curdir)
+
+			if(log_dir == round(log_dir))//only true if its NOT diagonal
+
+			else
+
+		var/north_icon = icon(curicon, curstate, NORTH)
+		var/list/north = icon_states(north_icon)
+
+		var/east_icon = icon(curicon, curstate, EAST)
+		var/list/east = icon_states(east_icon)
+
+		var/west_icon = icon(curicon, curstate, WEST)
+		var/list/west = icon_states(west_icon)
+
+		if (
+			!length(north) \
+			&& !length(east) \
+			&& !length(west) \
+		)
+			base_icon_dir = SOUTH
+*/
 	#undef PROCESS_OVERLAYS_OR_UNDERLAYS
+
+/atom/proc/change_icon(dir)
+	var/icon/I = new(icon, icon_state, dir)
+	icon = I
+
+/atom/proc/compare_bad_icons()
+	var/icon/invalid_dir = icon(src.icon, icon_state, DOWN)
+	var/icon/invalid_state = icon(src.icon, "blarg", UP)
+
+	message_admins("the two icons [invalid_dir == ")
+
+/atom/proc/list_dir_states(dir_to_use = NORTH)
+	list_states(icon(src.icon, dir = dir_to_use))
+
+/atom/proc/list_state_states(state_to_use)
+	list_states(icon(src.icon, state_to_use))
+
+/atom/proc/list_states(icon_to_use)
+	if(!icon_to_use)
+		icon_to_use = icon(src.icon)
+
+	var/list/states = icon_states(icon_to_use)
+	message_admins("there are [length(states)] icon_state's for this icon")
+	for(var/state in states)
+		message_admins(state)
+
+/atom/proc/list_dir_states(dir_to_use = NORTH, state_to_use)
+	if(!state_to_use)
+		state_to_use = icon_state
+
+	list_states(icon(src.icon, state_to_use, dir_to_use))
+
+/atom/proc/list_all_states(icon_to_use)
+	if(!icon_to_use)
+		icon_to_use = icon(src.icon)
+
+	var/list/all_states = icon_states(icon_to_use)
+	message_admins("there are [length(all_states)] outer icon_state's for this icon")
+	for(var/state in all_states)
+		list_states(icon(icon_to_use, state))
+
+/atom
+	var/process_new = TRUE
+	var/datum/processor/our_processor
+
+/atom/proc/benchmark_flat()
+	our_processor = new(src)
+
+/atom/proc/stop_benchmark()
+	QDEL_NULL(our_processor)
+
+/datum/processor
+	var/atom/our_atom
+	var/current_process_new
+
+/datum/processor/New(atom/our_atom)
+	. = ..()
+	src.our_atom = our_atom
+	current_process_new = our_atom.process_new
+	START_PROCESSING(SSfastprocess, src)
+
+/datum/processor/Destroy(force, ...)
+	. = ..()
+	our_atom.our_processor = null
+	our_atom = null
+	STOP_PROCESSING(SSfastprocess, src)
+
+/datum/processor/process(delta_time)
+	if(our_atom.process_new == current_process_new)
+		world.Profile(PROFILE_START)
+		if(current_process_new)
+			getFlatIcon(our_atom)
+		else
+			getFlatIconOld(our_atom)
+
+		world.Profile(PROFILE_STOP)
+
+	else
+		current_process_new = our_atom.process_new
+		world.Profile(PROFILE_RESTART)
+		if(current_process_new)
+			getFlatIcon(our_atom)
+		else
+			getFlatIconOld(our_atom)
+
+		world.Profile(PROFILE_STOP)
 
 /proc/getIconMask(atom/A)//By yours truly. Creates a dynamic mask for a mob/whatever. /N
 	var/icon/alpha_mask = new(A.icon,A.icon_state)//So we want the default icon and icon state of A.
