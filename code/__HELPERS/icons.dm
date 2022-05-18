@@ -706,9 +706,28 @@ world
 		((hi3 >= 65 ? hi3-55 : hi3-48)<<4) | (lo3 >= 65 ? lo3-55 : lo3-48),
 		((hi4 >= 65 ? hi4-55 : hi4-48)<<4) | (lo4 >= 65 ? lo4-55 : lo4-48))
 
+/icon
+	var/icon
+	var/icon_state
+	var/dir
+	var/frame
+	var/moving
+
+/icon/New(icon, icon_state, dir, frame, moving)
+	. = ..()
+	src.icon = icon
+	src.icon_state = icon_state
+	src.dir = dir
+	src.frame = frame
+	src.moving = moving
+
+GLOBAL_LIST_EMPTY(icon_states_by_icon)
+
 ///icon needs to be an instantiated /icon object. icon_state and dir are metadata for caching purposes
 ///icon_state - the icon_state string of the specified object
 /proc/get_icon_states(icon, icon_state, dir)
+	if(GLOB.icon_states_by_icon["[icon]"])//
+
 	return icon_states(icon)
 
 /icon/proc/get_icon_states()
