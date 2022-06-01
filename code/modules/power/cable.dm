@@ -5,6 +5,79 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 #define UNDER_SMES -1
 #define UNDER_TERMINAL 1
 
+/turf
+	var/list/undertiles
+
+///abstract class
+/datum/undertile_manager
+	var/atom/movable/representative
+
+	var/is_nullspaced = FALSE
+	var/turf/associated_loc
+	var/list/neighboring_nodes
+
+	var/del_without_representative = TRUE
+
+/datum/undertile_manager/New(atom/movable/new_representative, turf/associated_loc)
+	if(!new_representative || !associated_loc)
+		qdel(src)
+		return FALSE
+
+	associate_with_representative(new_representative)
+
+	. = ..()
+
+/datum/undertile_manager/Destroy(force, ...)
+	. = ..()
+	unassociate_with_representative()
+	unassociate_with_turf()
+
+
+/datum/undertile_manager/proc/associate_with_representative(atom/movable/new_representative)
+	RegisterSignal(new_representative, COMSIG_PARENT_QDELETING, .proc/unassociate_with_representative)
+
+/datum/undertile_manager/proc/unassociate_with_representative()
+	SIGNAL_HANDLER
+
+	UnregisterSignal(representative, COMSIG_PARENT_QDELETING)
+	re_place_representative()
+	representative = null
+
+
+/datum/undertile_manager/proc/on_cover_changed(datum/source, underfloor_accessibility)
+	SIGNAL_HANDLER
+
+/datum/undertile_manager/proc/nullspace_representative()
+	SIGNAL_HANDLER
+	representative.loc = null
+
+/datum/undertile_manager/proc/re_place_representative()
+	SIGNAL_HANDLER
+	representative.loc = associated_loc
+
+/datum/undertile_manager/proc/associate_with_turf(turf/new_turf)
+	associated_loc = new_turf
+
+	RegisterSignal(new_turf, COMSIG_TURF_COVER, .proc/nullspace_representative)
+
+/datum/undertile_manager/proc/unassociate_with_turf(turf/old_turf)
+	associated_loc = null
+
+/datum/undertile_manager/proc/find_connections()
+
+/datum/undertile_manager/proc/can_connect_with(datum/undertile_manager/potential_connection)
+	return get_dist(potential_connection.associated_loc, associated_loc) <= 1
+
+/datum/undertile_manager/proc/connect(datum/undertile_manager/new_connection)
+
+/datum/undertile_manager/proc/disconnect(datum/undertile_manager/gone)
+
+///update the representative on our changes
+/datum/undertile_manager/proc/on_connection_change(list/newly_disconnected)
+
+/datum/undertile_manager/cable
+
+
 ///////////////////////////////
 //CABLE STRUCTURE
 ///////////////////////////////

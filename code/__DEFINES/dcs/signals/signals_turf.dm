@@ -23,3 +23,6 @@
 
 ///from /datum/element/decal/Detach(): (description, cleanable, directional, mutable_appearance/pic)
 #define COMSIG_TURF_DECAL_DETACHED "turf_decal_detached"
+
+///from base of /turf/proc/levelupdate(). (intact) true to hide and false to unhide
+#define COMSIG_TURF_COVER "turf_cover"
