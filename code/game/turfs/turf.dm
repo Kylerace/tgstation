@@ -443,11 +443,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	return new_baseturfs
 
 /turf/proc/levelupdate()
-	SEND_SIGNAL(src, COMSIG_TURF_COVER, underfloor_accessibility < UNDERFLOOR_VISIBLE)
+	var/list/uncovered_objects = list()//TODOKYLER: make things go into uncovered_objects
+	SEND_SIGNAL(src, COMSIG_TURF_COVER, underfloor_accessibility, uncovered_objects)
 
 	for(var/obj/O in src)
 		if(O.flags_1 & INITIALIZED_1)
-			SEND_SIGNAL(O, COMSIG_OBJ_HIDE, underfloor_accessibility < UNDERFLOOR_VISIBLE)
+			SEND_SIGNAL(O, COMSIG_OBJ_HIDE, underfloor_accessibility, uncovered_objects)
+
+	return uncovered_objects
 
 // override for space turfs, since they should never hide anything
 /turf/open/space/levelupdate()

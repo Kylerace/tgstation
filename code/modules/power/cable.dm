@@ -6,77 +6,218 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 #define UNDER_TERMINAL 1
 
 /turf
-	var/list/undertiles
+	var/list/graph_nodes
 
-///abstract class
-/datum/undertile_manager
+///class to handle the concept of connecting to other nodes in a graph
+/datum/node
+	///what connections this node has to other nodes. by default this assumes bidirectional connections.
+	///if you want a weighted and/or directed graph, youll need to override the class
+	var/list/connected_nodes
+
+/datum/node/New()
+	. = ..()
+
+/datum/node/Destroy(force, ...)
+	. = ..()
+	for(var/datum/node/connected_node in connections)
+		disconnect(connected_node)
+	on_connection_change()
+
+/datum/node/proc/find_connections()
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("called unimplemented stub proc for the base null class! you need to override it!")
+
+///
+/datum/node/proc/can_connect_with(datum/node/potential_connection)
+	return TRUE //TODOKYLER: probably introduce some typechecking support
+
+///create a bidirectional connection between us and another node
+/datum/node/proc/connect(datum/node/new_connection)
+	LAZYOR(connected_nodes, new_connection)
+	LAZYOR(new_connection.connected_nodes, src)
+
+///severs the (by default) bidirectional connection between us and another node
+/datum/node/proc/disconnect(datum/node/gone)
+	LAZYREMOVE(connected_nodes, gone)
+	LAZYREMOVE(gone.connected_nodes, src)
+
+///react to a change in our connected graph list
+/datum/node/proc/on_connection_change(list/newly_connected)
+	SHOULD_CALL_PARENT(FALSE)
+	return
+
+/datum/node/proc/unassociate_with_representative()
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("called unimplemented stub!")
+
+/datum/node/proc/associate_with_representative()
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("called unimplemented stub!")
+
+///finds the nodes/node holders we should be polling for connections
+/datum/node/proc/find_near()
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("called unimplemented stub!")
+
+///a node that represents something on the map and its connections to other similar things on the map
+/datum/node/map
 	var/atom/movable/representative
-
-	var/is_nullspaced = FALSE
 	var/turf/associated_loc
-	var/list/neighboring_nodes
+	var/connected_dirs
 
-	var/del_without_representative = TRUE
-
-/datum/undertile_manager/New(atom/movable/new_representative, turf/associated_loc)
+/datum/node/map/New(atom/movable/new_representative, turf/associated_loc, ...)
 	if(!new_representative || !associated_loc)
 		qdel(src)
 		return FALSE
 
-	associate_with_representative(new_representative)
+	associate_with_representative(new_representative, args.Copy(3))
+	associate_with_turf(associated_loc)
 
 	. = ..()
 
-/datum/undertile_manager/Destroy(force, ...)
+/datum/node/map/Destroy(force, ...)
 	. = ..()
 	unassociate_with_representative()
 	unassociate_with_turf()
 
+/datum/node/map/proc/associate_with_turf(turf/new_turf)
+	associated_loc = new_turf
+	LAZYADD(new_turf.graph_nodes, src)
 
-/datum/undertile_manager/proc/associate_with_representative(atom/movable/new_representative)
+/datum/node/map/proc/unassociate_with_turf(turf/old_turf)
+	associated_loc = null
+	LAZYREMOVE(old_turf.graph_nodes, src)
+
+/datum/node/map/associate_with_representative(atom/movable/new_representative, ...)
 	RegisterSignal(new_representative, COMSIG_PARENT_QDELETING, .proc/unassociate_with_representative)
+	inherit_parameters(arglist(args.Copy(2)))
 
-/datum/undertile_manager/proc/unassociate_with_representative()
+/datum/node/map/unassociate_with_representative()
 	SIGNAL_HANDLER
 
 	UnregisterSignal(representative, COMSIG_PARENT_QDELETING)
-	re_place_representative()
+	if(!QDELETED(representative))
+		re_place_representative()
 	representative = null
 
+/datum/node/map/find_connections()
+	for(var/turf/adjacent_turf in find_near())
 
-/datum/undertile_manager/proc/on_cover_changed(datum/source, underfloor_accessibility)
+		var/list/new_connections = list()
+		for(var/datum/node/other_undertile as anything in adjacent_turf.graph_nodes)
+			if(can_connect_with(other_undertile))
+				connect(other_undertile)
+				new_connections += other_undertile
+
+		on_connection_change(new_connections)
+
+/datum/node/map/can_connect_with(datum/node/map/new_node)
+	return (get_dist(associated_loc, new_node.associated_loc) == 1) && (associated_loc.z == new_node.associated_loc.z)//adjacent
+
+/datum/node/map/find_near()
+	return list(get_step(associated_loc, NORTH),
+		get_step(associated_loc, SOUTH),
+		get_step(associated_loc, EAST),
+		get_step(associated_loc, WEST),
+		)
+
+/datum/node/map/connect(datum/node/map/new_node)
+	. = ..()
+	dirs |= get_dir(associated_loc, new_node.associated_loc)
+
+/datum/node/map/disconnect(datum/node/map/old_node)
+	. = ..()
+	dirs &= get_dir(associated_loc, new_node.associated_loc)
+
+/datum/node/map/on_connection_change()
+	representative.update_appearance()
+
+///take whatever vars we need from our representative when we're first associated with them.
+///define what vars youre inheriting in the arguments for overrides, if you get them wrong they will runtime
+/datum/node/map/proc/inherit_parameters()
+	SHOULD_CALL_PARENT(FALSE)
+	return FALSE //stub
+
+///a mapped node that nullspaces its representative when its turf covers it. made for maptick reasons.
+///a critical design goal of these is that theyre supposed to be used for almost all behavior,
+///the representatives of this datum should by and large do nothing except functionality that deal with its singular existence
+///any system that deals with the concept of "x set of connected things" should explicitely deal with THIS datum
+///that way nothing can confusedly try to make the representative do something in nullspace that breaks the assumptions
+///of the pure and innocent (but clueless) coder who made that functionality. essentially, we need to hide the fact that
+///undertiles managed by this datum have two locs for optimization purposes
+/datum/node/map/undertile_manager
+	var/is_nullspaced = FALSE
+
+	var/del_without_representative = TRUE
+
+	var/add_overlay_when_nullspaced = TRUE
+	var/image/nullspace_overlay
+	///exact copy of
+	var/image/visible_overlay
+
+/datum/node/map/undertile_manager/New(atom/movable/new_representative, turf/associated_loc, ...)
+	. = ..()
+
+/datum/node/map/undertile_manager/Destroy(force, ...)
+	. = ..()
+
+/datum/node/proc/on_cover_changed(datum/source, underfloor_accessibility, list/uncovered_objects)
 	SIGNAL_HANDLER
+	if(is_nullspaced)
+		switch(underfloor_accessibility)
+			if(UNDERFLOOR_HIDDEN)
+				associated_loc.vis_contents -= representative
+				//associated_loc.overlays -= nullspace_overlay
 
-/datum/undertile_manager/proc/nullspace_representative()
+			if(UNDERFLOOR_VISIBLE)
+				associated_loc.vis_contents += representative
+
+			if(UNDERFLOOR_INTERACTABLE)
+				associated_loc.vis_contents -= representative
+				re_place_representative()
+				uncovered_objects += representative
+
+	else
+		switch(underfloor_accessibility)
+			if(UNDERFLOOR_HIDDEN)
+				nullspace_representative()
+
+			if(UNDERFLOOR_VISIBLE)
+				nullspace_representative()
+				associated_loc.vis_contents += representative
+
+/datum/node/map/undertile_manager/proc/nullspace_representative()
 	SIGNAL_HANDLER
-	representative.loc = null
+	representative.abstract_move(null)//should probably just directly do loc = null
+	is_nullspaced = TRUE
 
-/datum/undertile_manager/proc/re_place_representative()
+/datum/node/map/undertile_manager/proc/re_place_representative()
 	SIGNAL_HANDLER
-	representative.loc = associated_loc
+	representative.abstract_move(associated_loc)
+	is_nullspaced = FALSE
 
-/datum/undertile_manager/proc/associate_with_turf(turf/new_turf)
-	associated_loc = new_turf
+/datum/node/map/undertile_manager/associate_with_turf(turf/new_turf)
+	. = ..()
+	RegisterSignal(new_turf, COMSIG_TURF_COVER, .proc/on_cover_changed)
 
-	RegisterSignal(new_turf, COMSIG_TURF_COVER, .proc/nullspace_representative)
+/datum/node/map/undertile_manager/unassociate_with_turf(turf/old_turf)
+	UnregisterSignal(old_turf, COMSIG_TURF_COVER)
+	. = ..()
 
-/datum/undertile_manager/proc/unassociate_with_turf(turf/old_turf)
-	associated_loc = null
+/datum/node/map/undertile_manager/unassociate_with_representative()
+	if(!QDELETED(representative))
+		re_place_representative()
+	. = ..()
 
-/datum/undertile_manager/proc/find_connections()
+/datum/node/map/undertile_manager/associate_with_representative(atom/movable/new_representative, list/additional_args)
+	. = ..()
 
-/datum/undertile_manager/proc/can_connect_with(datum/undertile_manager/potential_connection)
-	return get_dist(potential_connection.associated_loc, associated_loc) <= 1
+/datum/node/map/undertile_manager/cable
+	var/datum/powernet/powernet
+	var/node = FALSE //used for sprites display
+	var/cable_layer = CABLE_LAYER_2 //bitflag
 
-/datum/undertile_manager/proc/connect(datum/undertile_manager/new_connection)
-
-/datum/undertile_manager/proc/disconnect(datum/undertile_manager/gone)
-
-///update the representative on our changes
-/datum/undertile_manager/proc/on_connection_change(list/newly_disconnected)
-
-/datum/undertile_manager/cable
-
+/datum/node/map/undertile_manager/inherit_parameters()
 
 ///////////////////////////////
 //CABLE STRUCTURE
