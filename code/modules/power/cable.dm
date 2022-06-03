@@ -101,15 +101,23 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 	representative = null
 
 /datum/node/map/find_connections()
+	var/list/new_connections = list()
+	var/list/old_connections
 	for(var/turf/adjacent_turf in find_near())
+		for(var/datum/node/other_map_node as anything in adjacent_turf.graph_nodes)
+			if(can_connect_with(other_map_node))
+				new_connections += other_map_node
 
-		var/list/new_connections = list()
-		for(var/datum/node/other_undertile as anything in adjacent_turf.graph_nodes)
-			if(can_connect_with(other_undertile))
-				connect(other_undertile)
-				new_connections += other_undertile
+	old_connections = new_connections - connections
+	for(var/datum/node/old_connection as anything in old_connections)
+		disconnect(old_connection)
 
-		on_connection_change(new_connections)
+	for(var/datum/node/new_connection as anything in new_connections)
+		connect(new_connection)
+
+	on_connection_change()
+	for(var/datum/node/map/changed_node in old_connections + new_connections)
+		changed_node.on_connection_change()
 
 /datum/node/map/can_connect_with(datum/node/map/new_node)
 	return (get_dist(associated_loc, new_node.associated_loc) == 1) && (associated_loc.z == new_node.associated_loc.z)//adjacent
@@ -123,17 +131,20 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 
 /datum/node/map/connect(datum/node/map/new_node)
 	. = ..()
-	dirs |= get_dir(associated_loc, new_node.associated_loc)
+	var/connection_dir = get_dir(associated_loc, new_node.associated_loc)
+	dirs |= connection_dir
+	new_node.dirs |= turn(connection_dir, 180)
 
 /datum/node/map/disconnect(datum/node/map/old_node)
 	. = ..()
-	dirs &= get_dir(associated_loc, new_node.associated_loc)
+	var/old_dir = get_dir(associated_loc, old.associated_loc)
+	dirs &= old_dir
+	old_node.dirs &= turn(old_dir, 180)
 
 /datum/node/map/on_connection_change()
 	representative.update_appearance()
 
 ///take whatever vars we need from our representative when we're first associated with them.
-///define what vars youre inheriting in the arguments for overrides, if you get them wrong they will runtime
 /datum/node/map/proc/inherit_parameters()
 	SHOULD_CALL_PARENT(FALSE)
 	return FALSE //stub
@@ -146,14 +157,20 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 ///of the pure and innocent (but clueless) coder who made that functionality. essentially, we need to hide the fact that
 ///undertiles managed by this datum have two locs for optimization purposes
 /datum/node/map/undertile_manager
-	var/is_nullspaced = FALSE
 
 	var/del_without_representative = TRUE
+
+	var/previous_accessibility
 
 	var/add_overlay_when_nullspaced = TRUE
 	var/image/nullspace_overlay
 	///exact copy of
 	var/image/visible_overlay
+
+	///if our turf has underfloor_accessibility == UNDERFLOOR_VISIBLE, we still arent interactable so we use an overlay
+	///with our representatives exact appearance instead of moving the representative itself if this is TRUE.
+	///if this is FALSE then we unnullspace our representative at this accessibility level
+	var/use_overlay_when_visible = TRUE
 
 /datum/node/map/undertile_manager/New(atom/movable/new_representative, turf/associated_loc, ...)
 	. = ..()
@@ -163,38 +180,58 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 
 /datum/node/proc/on_cover_changed(datum/source, underfloor_accessibility, list/uncovered_objects)
 	SIGNAL_HANDLER
-	if(is_nullspaced)
+
+	if(underfloor_accessibility == previous_accessibility)
+		return
+
+	switch(previous_accessibility)
+		if(UNDERFLOOR_HIDDEN)
+			associated_loc.overlays -= nullspace_overlay
+
+		if(UNDERFLOOR_VISIBLE)
+			associated_loc.overlays -= visible_overlay
+
+	if(representative.loc)
 		switch(underfloor_accessibility)
 			if(UNDERFLOOR_HIDDEN)
-				associated_loc.vis_contents -= representative
-				//associated_loc.overlays -= nullspace_overlay
+				nullspace_representative()
+				associated_loc.overlays |= nullspace_overlay
 
 			if(UNDERFLOOR_VISIBLE)
-				associated_loc.vis_contents += representative
-
-			if(UNDERFLOOR_INTERACTABLE)
-				associated_loc.vis_contents -= representative
-				re_place_representative()
-				uncovered_objects += representative
+				if(use_overlay_when_visible)
+					nullspace_representative()
+					associated_loc.overlays |= visible_overlay
 
 	else
 		switch(underfloor_accessibility)
 			if(UNDERFLOOR_HIDDEN)
-				nullspace_representative()
+				if(use_overlay_when_visible)
+					associated_loc.overlays -= visible_overlay
 
 			if(UNDERFLOOR_VISIBLE)
-				nullspace_representative()
-				associated_loc.vis_contents += representative
+				associated_loc.overlays -= nullspace_overlay
+				if(use_overlay_when_visible)
+					associated_loc.overlays |= visible_overlay
+				else
+					re_place_representative()
+
+			if(UNDERFLOOR_INTERACTABLE)
+				re_place_representative()
+				uncovered_objects += representative
+
+	previous_accessibility = underfloor_accessibility
 
 /datum/node/map/undertile_manager/proc/nullspace_representative()
 	SIGNAL_HANDLER
+	if(!representative.loc)
+		return
 	representative.abstract_move(null)//should probably just directly do loc = null
-	is_nullspaced = TRUE
 
 /datum/node/map/undertile_manager/proc/re_place_representative()
 	SIGNAL_HANDLER
+	if(representative.loc)
+		return
 	representative.abstract_move(associated_loc)
-	is_nullspaced = FALSE
 
 /datum/node/map/undertile_manager/associate_with_turf(turf/new_turf)
 	. = ..()
@@ -209,15 +246,114 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 		re_place_representative()
 	. = ..()
 
+///when the user cant see t-rays an object in their screen has this and its just an invisible icon
+///so it draws over the overlay. but if the user can use t-rays then the object is deleted so there is nothing with a
+///matching render_target and thus the overlays normal rendering works //TODOKYLER: put where it belongs
+#define TRAY_BLOCKER_RENDER_TARGET "T-RAY_RENDER_TARGET"
+
 /datum/node/map/undertile_manager/associate_with_representative(atom/movable/new_representative, list/additional_args)
 	. = ..()
+	nullspace_overlay = image()
+	nullspace_overlay.appearance = new_representative.appearance
+	nullspace_overlay.alpha = ALPHA_UNDERTILE
+	nullspace_overlay.render_source = TRAY_BLOCKER_RENDER_TARGET
+
+	visible_overlay = image()
+	//the visible overlay is an exact copy of the representatives appearance
+	visible_overlay.appearance = new_representative.appearance
+
+	RegisterSignal(new_representative, COMSIG_ATOM_APPEARANCE_UPDATED, .proc/on_representative_update_apperance)
+
+///ensures that the overlays are visually accurate to the representative
+/datum/node/map/undertile_manager/proc/on_representative_update_apperance()
+	SIGNAL_HANDLER
+	switch(previous_accessibility)
+		if(UNDERFLOOR_HIDDEN)
+			associated_loc.overlays -= nullspace_overlay
+
+		if(UNDERFLOOR_VISIBLE)
+			if(use_overlay_when_visible)
+				assocated_loc.overlays -= visible_overlay
+
+	nullspace_overlay.appearance = new_representative.appearance
+	nullspace_overlay.alpha = ALPHA_UNDERTILE
+	nullspace_overlay.render_source = TRAY_BLOCKER_RENDER_TARGET
+
+	visible_overlay.appearance = new_representative.appearance
+
+	switch(previous_accessibility)
+		if(UNDERFLOOR_HIDDEN)
+			associated_loc.overlays += nullspace_overlay
+
+		if(UNDERFLOOR_VISIBLE)
+			if(use_overlay_when_visible)
+				assocated_loc.overlays += visible_overlay
 
 /datum/node/map/undertile_manager/cable
 	var/datum/powernet/powernet
-	var/node = FALSE //used for sprites display
-	var/cable_layer = CABLE_LAYER_2 //bitflag
+
+	/// bitflag, nodes with shared layers can connect. nodes without shared layers cannot connect
+	var/cable_layer = CABLE_LAYER_2
 
 /datum/node/map/undertile_manager/inherit_parameters()
+	src.cable_layer = representative.cable_layer
+
+/datum/node/map/undertile_manager/find_connections(clear_before_updating = FALSE)
+	var/under_thing = NONE
+	if(clear_before_updating)
+		dirs = NONE
+
+	var/list/new_connections = list()
+	var/obj/machinery/power/search_parent
+	for(var/obj/machinery/power/power_machine in associated_loc)
+		if(istype(power_machine, /obj/machinery/power/terminal))
+			under_thing = UNDER_TERMINAL
+			search_parent = power_machine
+			break
+		if(istype(power_machine, /obj/machinery/power/smes))
+			under_thing = UNDER_SMES
+			search_parent = power_machine
+			break
+
+	for(var/turf/near_turf in find_near())
+		var/check_dir = get_dir(associated_loc, near_turf)
+		//don't link from smes to its terminal
+		if(under_thing)
+			switch(under_thing)
+				if(UNDER_SMES)
+					var/obj/machinery/power/terminal/term = locate(/obj/machinery/power/terminal) in near_turf
+					//Why null or equal to the search parent?
+					//during map init it's possible for a placed smes terminal to not have initialized to the smes yet
+					//but the cable underneath it is ready to link.
+					//I don't believe null is even a valid state for a smes terminal while the game is actually running
+					//So in the rare case that this happens, we also shouldn't connect
+					//This might break.
+					if(term && (!term.master || term.master == search_parent))
+						continue
+				if(UNDER_TERMINAL)
+					var/obj/machinery/power/smes/S = locate(/obj/machinery/power/smes) in near_turf
+					if(S && (!S.terminal || S.terminal == search_parent))
+						continue
+
+		for(var/node/map/undertile_manager/cable/other_cable_node in near_turf.graph_nodes)
+			if(can_connect(other_cable_node))
+				new_connections += other_cable_node
+
+		var/list/old_connections = new_connections - connections
+		for(var/datum/node/old_connection as anything in old_connections)
+			disconnect(old_connection)
+
+		for(var/datum/node/new_connection as anything in new_connections)
+			connect(new_connection)
+
+		on_connection_change()
+		for(var/datum/node/map/changed_node in old_connections + new_connections)
+			changed_node.on_connection_change()
+
+
+/datum/node/map/undertile_manager/cable/can_connect_with(datum/node/map/undertile_manager/cable/other_node)
+	return ..() && (cable_layer & other_node.cable_layer)
+
 
 ///////////////////////////////
 //CABLE STRUCTURE
@@ -240,6 +376,11 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 	var/machinery_layer = MACHINERY_LAYER_1 //bitflag
 	var/datum/powernet/powernet
 
+	/// the connection datum that manages nullspacing us while handling logic with where we "should" be.
+	/// in short, its playing pretend that we're still on our turf when it nullspaces us because we're covered up.
+	/// we need a reference to it
+	var/datum/node/map/undertile_manager/cable/manager
+
 /obj/structure/cable/layer1
 	color = "red"
 	cable_layer = CABLE_LAYER_1
@@ -259,8 +400,8 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 
 	GLOB.cable_list += src //add it to the global cable list
 	Connect_cable()
-	AddElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE)
-	RegisterSignal(src, COMSIG_RAT_INTERACT, .proc/on_rat_eat)
+	//AddElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE)
+	//RegisterSignal(src, COMSIG_RAT_INTERACT, .proc/on_rat_eat)
 
 /obj/structure/cable/proc/on_rat_eat(datum/source, mob/living/simple_animal/hostile/regalrat/king)
 	SIGNAL_HANDLER

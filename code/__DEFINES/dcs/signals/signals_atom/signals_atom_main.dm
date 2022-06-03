@@ -25,6 +25,8 @@
 	#define COMSIG_ATOM_NO_UPDATE_DESC UPDATE_DESC
 	/// If returned from [COMSIG_ATOM_UPDATE_APPEARANCE] it prevents the atom from updating its icon.
 	#define COMSIG_ATOM_NO_UPDATE_ICON UPDATE_ICON
+///from base of [/atom/proc/update_appearance] except sent after the appearance was updated
+#define COMSIG_ATOM_APPEARANCE_UPDATED "atom_apperance_updated"
 ///from base of [/atom/proc/update_name]: (updates)
 #define COMSIG_ATOM_UPDATE_NAME "atom_update_name"
 ///from base of [/atom/proc/update_desc]: (updates)
