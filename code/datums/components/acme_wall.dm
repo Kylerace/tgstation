@@ -1,5 +1,5 @@
 /datum/component/acme_wall
-    var/overlay
+	var/overlay
 
 /datum/component/acme_wall/Initialize(image)
 	if(!istype(parent, /turf/closed/wall))
