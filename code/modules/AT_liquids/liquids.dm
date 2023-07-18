@@ -20,7 +20,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	var/datum/liquid_mix/liquids
 
 	var/liquid_archived_cycle = 0
-	var/liquid_current_cyle = 0
+	var/liquid_current_cycle = 0
 
 	var/obj/effect/overlay/liquid/liquid_overlay
 
@@ -62,15 +62,17 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	if(liquid_archived_cycle < fire_count)
 		LIQUID_CYCLE_ARCHIVE(src)
 
-	liquid_current_cyle = fire_count
+	liquid_current_cycle = fire_count
 
 	var/list/adjacent_turfs = atmos_adjacent_turfs
 	var/our_share_coeff = 1/(length(adjacent_turfs) + 1)
 
 	var/datum/liquid_mix/our_liquids = liquids
 
+	var/list/us_all_deltas = list()
+
 	for(var/turf/open/adjacent_turf as anything in adjacent_turfs)
-		if(fire_count <= adjacent_turf.liquid_current_cyle)
+		if(fire_count <= adjacent_turf.liquid_current_cycle)
 			continue
 
 		if(get_dir(src, adjacent_turf) == UP && has_gravity(src))
@@ -82,9 +84,9 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 		LIQUID_CYCLE_ARCHIVE(adjacent_turf)
 
-		var/their_share_coeff = 1/(length(their_liquids) + 1)
+		var/their_share_coeff = 1/(length(adjacent_turf.atmos_adjacent_turfs) + 1)
 
-		var/difference = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff)
+		var/difference = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, us_all_deltas)
 
 
 	our_liquids.react()
@@ -97,7 +99,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	icon_state = "water"
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = FLY_LAYER
-	plane = ABOVE_GAME_PLANE
+	plane = GAME_PLANE
 	appearance_flags = TILE_BOUND
 	vis_flags = NONE
 	var/plane_offset = 0
@@ -172,7 +174,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	//var/list/cached_liquids = liquids
 	liquids[LIQUID_CURRENT] = liquids[LIQUID_NEXT].Copy()
 
-/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff)
+/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas)
 	var/our_volume = volume
 	var/their_volume = sharer.volume
 
@@ -208,13 +210,35 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		else
 			delta *= their_coeff
 
+		us_all_deltas += -delta
+
+		var/old_us = our_liquids[LIQUID_NEXT][liquid_path]
+		var/old_them = their_liquids[LIQUID_NEXT][liquid_path]
+
 		our_liquids[LIQUID_NEXT][liquid_path] -= delta
 		their_liquids[LIQUID_NEXT][liquid_path] += delta
+
+		if(our_liquids[LIQUID_NEXT][liquid_path] < 0)
+			var/i = 1
+		if(their_liquids[LIQUID_NEXT][liquid_path] < 0)
+			var/i = 1
 
 		moved_moles += delta
 		abs_moved_moles += abs(delta)
 
+	if(length(only_in_them) || length(only_in_us))
+		garbage_collect()
+		sharer.garbage_collect()
+
 	return moved_moles
+
+
+
+/datum/liquid_mix/proc/garbage_collect()
+	var/list/cached_liquids = liquids
+	for(var/liquid_path in cached_liquids[LIQUID_NEXT])
+		if(QUANTIZE(cached_liquids[LIQUID_NEXT][liquid_path]) <= 0)
+			cached_liquids[LIQUID_NEXT] -= liquid_path
 
 /datum/liquid_mix/proc/react()
 	return
