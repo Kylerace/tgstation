@@ -33,7 +33,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	liquids.temperature = temperature
 	liquids.temperature_archived = temperature
 
-/turf/proc/assert_liquid(amount = 1000, liquid_type = /datum/liquid/water)
+/turf/proc/assert_liquid(amount = 10000, liquid_type = /datum/liquid/water)
 	if(amount < 0 || !(liquid_type in subtypesof(/datum/liquid)))
 		return
 	var/list/cached_liquid_list = liquids.liquids
@@ -87,13 +87,52 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	if(has_gravity)
 		var/horizontal_neighbors = 0
 
+		var/turf/open/above_turf
+		var/list/adjacent_turfs_to_exclude
+
 		for(var/turf/open/adjacent_turf as anything in atmos_adjacent_turfs)
 			if(our_z == adjacent_turf.z)
 				horizontal_neighbors++
 
+			else
+				adjacent_turfs_to_exclude ||= list()
+
+				if(our_z > adjacent_turf.z)//we are above, carry out the operation since it has priority over their_z > our_z
+					adjacent_turfs_to_exclude += adjacent_turf
+					if(fire_count <= adjacent_turf.liquid_current_cycle)
+						continue
+					LIQUID_CYCLE_ARCHIVE(adjacent_turf)
+
+					our_liquids.uni_flow(adjacent_turf.liquids)
+
+					LIQUID_CYCLE_ARCHIVE(src)
+					SSliquids.add_active_turf(adjacent_turf)
+
+					if(our_liquids.volume_archived == 0)
+						SSliquids.remove_active_turf(src)
+						return
+
+				else //they are above, this has to be done after we dump onto a below turf if it exists, so we set above_turf to it
+					if(adjacent_turf.liquids.volume_archived)
+						above_turf = adjacent_turf
+					adjacent_turfs_to_exclude += adjacent_turf
+
+		if(above_turf && fire_count > above_turf.liquid_current_cycle)
+			LIQUID_CYCLE_ARCHIVE(above_turf)
+			above_turf.liquid_current_cycle = fire_count //pretend that process_liquids() was called on them but they only share with us
+
+			above_turf.liquids.uni_flow(our_liquids)//i think this might work, though it will definitely allow liquids to be in the air for a cycle
+			//we want everything in top_turf_liquids[LIQUID_CURRENT] to be moved to bottom_turf_liquids[LIQUID_NEXT]
+			//if we dont archive after this, our_liquids.flow(horizontal_neighbor_liquids) will use liquids that shouldve gone down or shouldnt
+			//be shareable until next cycle
+
+			LIQUID_CYCLE_ARCHIVE(src)
+			SSliquids.add_active_turf(above_turf)
+
+
 		our_share_coeff = 1/(horizontal_neighbors + 1)
 
-		for(var/turf/open/adjacent_turf as anything in atmos_adjacent_turfs)
+		for(var/turf/open/adjacent_turf as anything in atmos_adjacent_turfs - adjacent_turfs_to_exclude)
 			if(fire_count <= adjacent_turf.liquid_current_cycle)
 				continue
 			LIQUID_CYCLE_ARCHIVE(adjacent_turf)
@@ -102,6 +141,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 			var/datum/liquid_mix/their_liquids = adjacent_turf.liquids
 			var/their_z = adjacent_turf.z
 
+			/*
 			if(our_z != their_z)
 				var/datum/liquid_mix/top_turf_liquids = our_liquids
 				var/datum/liquid_mix/bottom_turf_liquids = their_liquids
@@ -117,6 +157,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 				LIQUID_CYCLE_ARCHIVE(src)
 
 				continue
+				*/
 
 			var/their_horizontal_neighbors = 0
 			for(var/turf/open/their_adjacent_turf as anything in adjacent_turf.atmos_adjacent_turfs)
@@ -209,11 +250,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 			liquids_string += initial(liquid_path.name)[1]
 			overlays += mutable_appearance(initial(liquid_path.icon), initial(liquid_path.icon_state), alpha = 150)
 		if(GLOB.liquids_display_moles == TRUE)
-			maptext = "[round(total_moles, 0.1)]-[liquids_string]"
+			maptext = "[round(total_moles, 0.1)]\n[liquids_string]"
 
 		vis_contents -= liquid_overlay
 		//liquid_image = mutable_appearance('icons/turf/beach.dmi', "water", plane = offset)
-		liquid_overlay = new(null, overlays, 150, GET_TURF_PLANE_OFFSET(src) + 1)
+		liquid_overlay = new(null, overlays, 150, SSmapping.z_level_to_plane_offset[z])
 		vis_contents |= liquid_overlay
 
 	else//remove the liquid image from ourselves if its there
@@ -331,11 +372,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		moved_moles += delta
 		abs_moved_moles += abs(delta)
 
-	if(heat_capacity_self_to_sharer || heat_capacity_sharer_to_self)
-		var/our_new_heat_capacity = our_old_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
-		var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
-
+	var/our_new_heat_capacity = our_old_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
+	var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
+	if(our_new_heat_capacity)
 		temperature = (our_old_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / our_new_heat_capacity
+	if(sharer_new_heat_capacity)
 		sharer.temperature = (sharer_old_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / sharer_new_heat_capacity
 
 	if(length(only_in_them) || length(only_in_us))
@@ -379,6 +420,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		their_liquids[LIQUID_NEXT][new_to_them] = 0
 
 	for(var/datum/liquid/liquid_path as anything in our_liquids[LIQUID_CURRENT])
+		our_liquids[LIQUID_CURRENT][liquid_path] = QUANTIZE(our_liquids[LIQUID_CURRENT][liquid_path])
+
 		var/our_moles = our_liquids[LIQUID_CURRENT][liquid_path]
 		var/their_moles = their_liquids[LIQUID_CURRENT][liquid_path]
 
@@ -412,11 +455,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		moved_moles += delta
 		abs_moved_moles += abs(delta)
 
-	if(heat_capacity_self_to_sharer || heat_capacity_sharer_to_self)
-		var/our_new_heat_capacity = our_old_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
-		var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
-
+	var/our_new_heat_capacity = our_old_heat_capacity - heat_capacity_self_to_sharer// + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
+	var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer// - heat_capacity_sharer_to_self //dont need this since its 0
+	if(our_new_heat_capacity)
 		temperature = (our_old_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / our_new_heat_capacity
+	if(sharer_new_heat_capacity)
 		sharer.temperature = (sharer_old_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / sharer_new_heat_capacity
 
 	garbage_collect()
@@ -428,92 +471,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	for(var/liquid_path in cached_liquids[LIQUID_NEXT])
 		if(QUANTIZE(cached_liquids[LIQUID_NEXT][liquid_path]) <= 0)
 			cached_liquids[LIQUID_NEXT] -= liquid_path
+			cached_liquids[LIQUID_CURRENT] -= liquid_path
 
 /datum/liquid_mix/proc/react()
 	return
-
-/datum/liquid
-	var/name = "AHHH"
-	var/icon
-	var/icon_state
-
-	/// kg / mole
-	var/molar_mass = 0
-	/// kg / m^3
-	var/density = 0
-	/// m^3 / mole = molar_mass * 1/density
-	var/molar_volume = 0
-	///mega pascal seconds
-	var/viscosity = 0
-	///J/(mol * kelvin)
-	var/specific_heat_capacity = 0
-	/// J / m^2
-	var/surface_tension = 0
-
-
-
-/datum/liquid/water
-	name = "water"
-	icon = 'icons/turf/beach.dmi'
-	icon_state = "water"
-	// kg / mole
-	molar_mass = 0.01802
-	// kg / m^3
-	density = 997
-	// m^3 / mole
-	molar_volume = 0.00001807
-	//mega pascal seconds
-	viscosity = 1.0016
-	// J / (mole * kelvin)
-	specific_heat_capacity = 75.385
-	// J / m^2
-	surface_tension = 0.07275
-
-/datum/liquid/lava
-	name = "lava"
-	icon = 'icons/turf/floors/lava.dmi'
-	icon_state = "lava-255"
-
-/datum/liquid/blood
-	name = "blood"
-	icon = 'icons/turf/liquids/blood.dmi'
-	icon_state = "blood"
-
-/datum/liquid_reaction
-	var/name = "AAAAA"
-/datum/liquid_reaction/proc/react()
-	return
-
-SUBSYSTEM_DEF(liquids)
-	name = "Liquids"
-	can_fire = TRUE
-	init_order = INIT_ORDER_LIQUIDS
-	priority = FIRE_PRIORITY_FLUIDS
-	wait = 0.5 SECONDS
-	flags = SS_BACKGROUND|SS_NO_INIT
-	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
-
-	var/list/active_turfs = list()
-	var/list/currentrun
-
-/datum/controller/subsystem/liquids/fire(resumed)
-	var/fire_count = times_fired
-	if (!resumed)
-		src.currentrun = active_turfs.Copy()
-	var/list/currentrun = src.currentrun
-
-	while(currentrun.len)
-		var/turf/open/T = currentrun[currentrun.len]
-		currentrun.len--
-		if (T)
-			T.process_liquids(fire_count)
-		if (MC_TICK_CHECK)
-			return
-
-/datum/controller/subsystem/liquids/proc/add_active_turf(turf/open/new_turf)
-	if(!istype(new_turf))
-		stack_trace("wrong turf type! [new_turf]")
-	active_turfs |= new_turf
-
-/datum/controller/subsystem/liquids/proc/remove_active_turf(turf/old_turf)
-	active_turfs -= old_turf
