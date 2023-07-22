@@ -483,6 +483,10 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	if(!length(cached_gases))
 		return
 
+	//Fuck you
+	if(cached_gases[/datum/gas/hypernoblium] && cached_gases[/datum/gas/hypernoblium][MOLES] >= REACTION_OPPRESSION_THRESHOLD && temperature > 20)
+		return STOP_REACTIONS
+
 	var/list/pre_formation = list()
 	var/list/mid_formation = list()
 	var/list/post_formation = list()
@@ -501,10 +505,6 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 
 	if(!length(reactions))
 		return
-
-	//Fuck you
-	if(cached_gases[/datum/gas/hypernoblium] && cached_gases[/datum/gas/hypernoblium][MOLES] >= REACTION_OPPRESSION_THRESHOLD && temperature > 20)
-		return STOP_REACTIONS
 
 	reaction_results = new
 	//It might be worth looking into updating these after each reaction, but that makes us care more about order of operations, so be careful
