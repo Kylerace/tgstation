@@ -78,3 +78,4 @@
 	icon_state = "gasoline"
 
 	density = 750
+	molar_heat_capacity = 228

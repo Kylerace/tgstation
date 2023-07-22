@@ -124,7 +124,7 @@ GLOBAL_LIST_INIT(liquid_reactions, init_liquid_reactions())
 	//each mole of octane (major component of gasoline) burned with oxygen creates 5472 kJ of thermal energy
 	//molar ratio of oxygen : gasoline in the reaction is 12.5:1
 
-	var/created_energy = consumed_gasoline * 5472000 //joules
+	var/created_energy = consumed_gasoline * 5472 //moles * joules/mole = joules
 
 	var/old_liquid_heat_capacity = 0
 	var/old_gas_heat_capacity = 0
@@ -177,9 +177,9 @@ GLOBAL_LIST_INIT(liquid_reactions, init_liquid_reactions())
 	*/
 
 	if(new_gas_heat_capacity)
-		gas_interface.temperature = (old_gas_heat_capacity * gas_interface.temperature + heat_capacity_liquid_to_gas * liquids.temperature_archived + (1 - created_energy_to_liquid_ratio) * created_energy) / new_gas_heat_capacity
+		gas_interface.temperature = (old_gas_heat_capacity * gas_interface.temperature + heat_capacity_liquid_to_gas * liquids.temperature_archived + (1 - created_energy_to_liquid_ratio) * 5472) / new_gas_heat_capacity
 
 	if(new_liquid_heat_capacity)
-		liquids.temperature = (old_liquid_heat_capacity * liquids.temperature - heat_capacity_liquid_to_gas * liquids.temperature_archived + created_energy_to_liquid_ratio * created_energy) / new_liquid_heat_capacity
+		liquids.temperature = (old_liquid_heat_capacity * liquids.temperature - heat_capacity_liquid_to_gas * liquids.temperature_archived + created_energy_to_liquid_ratio * 5472) / new_liquid_heat_capacity
 
 	SSair.add_to_active(holder)
