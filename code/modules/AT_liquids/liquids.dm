@@ -1,10 +1,7 @@
-///liquids list index containing the list of the moles of every liquid that existed the last SSliquids fire
-#define LIQUID_CURRENT 1
-///liquids list index containing the list of the moles of every liquid that's being processed in the current SSliquids fire, and will become LIQUID_CURRENT at the end
-#define LIQUID_NEXT 2
 
-///CELL_VOLUME = 2500 liters, this is 2.5 m^3
-#define LIQUID_CELL_VOLUME 2.5
+/// Molar accuracy to round to
+#define LIQUID_MOLAR_ACCURACY  0.1
+#define LIQUID_QUANTIZE(variable) (round((variable), (LIQUID_MOLAR_ACCURACY)))
 
 GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
@@ -33,10 +30,16 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	liquids.temperature = temperature
 	liquids.temperature_archived = temperature
 
-/turf/proc/assert_liquid(amount = 10000, liquid_type = /datum/liquid/water)
+/turf/proc/assert_liquid(amount = 10000, datum/liquid/liquid_type = /datum/liquid/water, set_temp = TRUE)
 	if(amount < 0 || !(liquid_type in subtypesof(/datum/liquid)))
 		return
 	var/list/cached_liquid_list = liquids.liquids
+
+	var/minimum_temp = initial(liquid_type.minimum_temperature_to_exist)//we dont want
+	var/maximum_temp = initial(liquid_type.maximum_temperature_to_exist)
+	if(set_temp != TRUE)
+		minimum_temp = -INFINITY//make it temp isnt set to whatever the liquid needs to exist at
+		maximum_temp = INFINITY
 
 	var/total_moles = 0
 	TOTAL_LIQUID_MOLES(cached_liquid_list[LIQUID_NEXT], total_moles)
@@ -45,6 +48,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 		if(amount > 0)
 			cached_liquid_list[LIQUID_NEXT][liquid_type] = amount
+
+			if(minimum_temp > -INFINITY)
+				liquids.temperature = max(liquids.temperature, minimum_temp)
+			else if(maximum_temp < INFINITY)
+				liquids.temperature = min(liquids.temperature, maximum_temp)
 		else
 			cached_liquid_list[LIQUID_NEXT] -= liquid_type
 			TOTAL_LIQUID_MOLES(cached_liquid_list[LIQUID_NEXT], total_moles)
@@ -54,8 +62,12 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	else if(amount > 0)
 		liquids.liquids[LIQUID_CURRENT][liquid_type] = amount
 		liquids.liquids[LIQUID_NEXT][liquid_type] = amount
-		liquids.temperature = temperature
-		liquids.temperature_archived = temperature_archived
+
+		if(minimum_temp > -INFINITY)
+			liquids.temperature = max(liquids.temperature, minimum_temp)
+		else if(maximum_temp < INFINITY)
+			liquids.temperature = min(liquids.temperature, maximum_temp)
+
 		SSliquids.add_active_turf(src)
 
 /turf/proc/set_liquid_temp(new_temp)
@@ -197,7 +209,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 			our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff)
 
-	our_liquids.react()
+	if(SSliquids.allow_reactions)
+		our_liquids.react(src)
 
 	update_liquid_visuals()
 
@@ -295,8 +308,6 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	var/vel_y = 0
 	var/vel_z = 0
 
-/datum/liquid_phases //probably wont do this, for now definitely assume all liquids are perfectly soluable to all other liquids
-
 /datum/liquid_mix/proc/archive()
 	//var/list/cached_liquids = liquids
 	liquids[LIQUID_CURRENT] = liquids[LIQUID_NEXT].Copy()
@@ -336,11 +347,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		var/our_moles = our_liquids[LIQUID_CURRENT][liquid_path]
 		var/their_moles = their_liquids[LIQUID_CURRENT][liquid_path]
 
-		var/delta = QUANTIZE(our_moles - their_moles)//TODOKYLER: need to make this work off of volume
+		var/delta = LIQUID_QUANTIZE(our_moles - their_moles)//TODOKYLER: need to make this work off of volume
 		if(!delta)
 			continue
 
-		var/liquid_capacity = initial(liquid_path.specific_heat_capacity)
+		var/liquid_capacity = initial(liquid_path.molar_heat_capacity)
 
 		our_old_heat_capacity += our_moles * liquid_capacity
 		sharer_old_heat_capacity += their_moles * liquid_capacity
@@ -378,6 +389,9 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		temperature = (our_old_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / our_new_heat_capacity
 	if(sharer_new_heat_capacity)
 		sharer.temperature = (sharer_old_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / sharer_new_heat_capacity
+		if(abs(sharer_old_heat_capacity) > MINIMUM_HEAT_CAPACITY)
+			if(abs(sharer_new_heat_capacity/sharer_old_heat_capacity - 1) < 0.1) // <10% change in sharer heat capacity
+				temperature_share(sharer, LIQUID_HEAT_TRANSFER_COEFFICIENT)
 
 	if(length(only_in_them) || length(only_in_us))
 		garbage_collect()
@@ -420,17 +434,17 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		their_liquids[LIQUID_NEXT][new_to_them] = 0
 
 	for(var/datum/liquid/liquid_path as anything in our_liquids[LIQUID_CURRENT])
-		our_liquids[LIQUID_CURRENT][liquid_path] = QUANTIZE(our_liquids[LIQUID_CURRENT][liquid_path])
+		our_liquids[LIQUID_CURRENT][liquid_path] = LIQUID_QUANTIZE(our_liquids[LIQUID_CURRENT][liquid_path])
 
 		var/our_moles = our_liquids[LIQUID_CURRENT][liquid_path]
 		var/their_moles = their_liquids[LIQUID_CURRENT][liquid_path]
 
-		var/liquid_capacity = initial(liquid_path.specific_heat_capacity)
+		var/liquid_capacity = initial(liquid_path.molar_heat_capacity)
 
 		our_old_heat_capacity += our_moles * liquid_capacity
 		sharer_old_heat_capacity += their_moles * liquid_capacity
 
-		var/delta = QUANTIZE(our_moles * volume_ratio)//this effectively squares the quantization threshold in some cases when moving liquids down
+		var/delta = LIQUID_QUANTIZE(our_moles * volume_ratio)//this effectively squares the quantization threshold in some cases when moving liquids down
 		if(!delta)
 			continue
 
@@ -469,9 +483,49 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 /datum/liquid_mix/proc/garbage_collect()
 	var/list/cached_liquids = liquids
 	for(var/liquid_path in cached_liquids[LIQUID_NEXT])
-		if(QUANTIZE(cached_liquids[LIQUID_NEXT][liquid_path]) <= 0)
+		if(LIQUID_QUANTIZE(cached_liquids[LIQUID_NEXT][liquid_path]) <= 0)
 			cached_liquids[LIQUID_NEXT] -= liquid_path
 			cached_liquids[LIQUID_CURRENT] -= liquid_path
 
-/datum/liquid_mix/proc/react()
-	return
+///Performs temperature sharing calculations (via conduction) between two gas_mixtures assuming only 1 boundary length
+///Returns: new temperature of the sharer
+/datum/liquid_mix/proc/temperature_share(datum/liquid_mix/sharer, conduction_coefficient, sharer_temperature, sharer_heat_capacity)
+	//transfer of thermal energy (via conduction) between self and sharer
+	if(sharer)
+		sharer_temperature = sharer.temperature_archived
+	var/temperature_delta = temperature_archived - sharer_temperature
+	if(abs(temperature_delta) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+		var/self_heat_capacity = 0
+		for(var/datum/liquid/liquid_path as anything in liquids[LIQUID_CURRENT])
+			var/moles = liquids[LIQUID_CURRENT][liquid_path]
+			self_heat_capacity += moles * initial(liquid_path.molar_heat_capacity)
+
+		sharer_heat_capacity = sharer_heat_capacity
+		if(sharer_heat_capacity <= 0)
+			sharer_heat_capacity = 0
+			for(var/datum/liquid/liquid_path as anything in sharer.liquids[LIQUID_CURRENT])
+				var/moles = sharer.liquids[LIQUID_CURRENT][liquid_path]
+				sharer_heat_capacity += moles * initial(liquid_path.molar_heat_capacity)
+
+		if((sharer_heat_capacity > MINIMUM_HEAT_CAPACITY) && (self_heat_capacity > MINIMUM_HEAT_CAPACITY))
+			// coefficient applied first because some turfs have very big heat caps.
+			var/heat = CALCULATE_CONDUCTION_ENERGY(conduction_coefficient * temperature_delta, sharer_heat_capacity, self_heat_capacity)
+
+			temperature = max(temperature - heat/self_heat_capacity, TCMB)
+			sharer_temperature = max(sharer_temperature + heat/sharer_heat_capacity, TCMB)
+			if(sharer)
+				sharer.temperature = sharer_temperature
+	return sharer_temperature
+
+/datum/liquid_mix/proc/react(turf/open/holder)
+	if(!istype(holder))
+		return
+
+	var/temperature = src.temperature
+	var/pressure = 0//TODOKYLER: figure this out
+	var/list/solid_interfaces = list(holder.material_interface)
+	var/datum/gas_mixture/gas_interface = holder.air
+
+	//turf/holder, datum/liquid_mix/liquids, temperature, pressure, list/solid_interfaces, datum/gas_mixture/gas_interface
+	for(var/datum/liquid_reaction/reaction as anything in GLOB.liquid_reactions)
+		reaction.react(holder, src, temperature, pressure, solid_interfaces, gas_interface)

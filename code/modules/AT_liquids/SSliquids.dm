@@ -7,7 +7,11 @@ SUBSYSTEM_DEF(liquids)
 	flags = SS_BACKGROUND|SS_NO_INIT
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
+	var/list/reactions_by_pressure_by_temperature = list()
+	var/allow_reactions = TRUE
+
 	var/list/active_turfs = list()
+	var/list/active_puddles = list()
 	var/list/currentrun
 
 /datum/controller/subsystem/liquids/fire(resumed)
@@ -24,6 +28,16 @@ SUBSYSTEM_DEF(liquids)
 		if (MC_TICK_CHECK)
 			return
 
+	if(!resumed)
+		src.currentrun = active_puddles.Copy()
+	currentrun = src.currentrun
+
+	while(currentrun.len)
+		var/atom/movable/puddle/puddle = currentrun[currentrun.len]
+		currentrun.len--
+		if(puddle)
+			puddle.process()
+
 /datum/controller/subsystem/liquids/proc/add_active_turf(turf/open/new_turf)
 	if(!istype(new_turf))
 		stack_trace("wrong turf type! [new_turf]")
@@ -31,3 +45,9 @@ SUBSYSTEM_DEF(liquids)
 
 /datum/controller/subsystem/liquids/proc/remove_active_turf(turf/old_turf)
 	active_turfs -= old_turf
+
+/datum/controller/subsystem/liquids/proc/add_puddle(atom/movable/puddle)
+	active_puddles |= puddle
+
+/datum/controller/subsystem/liquids/proc/remove_puddle(atom/movable/puddle)
+	active_puddles -= puddle

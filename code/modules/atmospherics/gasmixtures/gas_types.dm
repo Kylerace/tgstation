@@ -48,6 +48,7 @@
 //This is a plot created using the values for gas exports. Each gas has a value that works as it's kind of soft-cap, which limits you from making billions of credits per sale, based on the base_value variable on the gasses themselves. Most of these gasses as a result have a rather low value when sold, like nitrogen and oxygen at 1500 and 600 respectively at their maximum value. The
 /datum/gas
 	var/id = ""
+	///closest to isochoric heat capacity in J / (mol * kelvins)
 	var/specific_heat = 0
 	var/name = ""
 	///icon_state in icons/effects/atmospherics.dmi

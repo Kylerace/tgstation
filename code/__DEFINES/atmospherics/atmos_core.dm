@@ -121,6 +121,7 @@
 //Should not exceed 0.4 else strange heat flow occur
 #define WALL_HEAT_TRANSFER_COEFFICIENT 0.0
 #define OPEN_HEAT_TRANSFER_COEFFICIENT 0.4
+#define LIQUID_HEAT_TRANSFER_COEFFICIENT 0.6
 /// a hack for now
 #define WINDOW_HEAT_TRANSFER_COEFFICIENT 0.1
 /// a hack to help make vacuums "cold", sacrificing realism for gameplay

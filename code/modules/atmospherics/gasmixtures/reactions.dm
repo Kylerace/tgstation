@@ -100,6 +100,7 @@
 		"MAX_TEMP" = WATER_VAPOR_CONDENSATION_POINT,
 	)
 
+/*
 /datum/gas_reaction/water_vapor/react(datum/gas_mixture/air, datum/holder)
 	. = NO_REACTION
 	if(!isturf(holder))
@@ -119,7 +120,58 @@
 		air.gases[/datum/gas/water_vapor][MOLES] -= consumed
 		SET_REACTION_RESULTS(consumed)
 		. = REACTING
+*/
+//TODOKYLER: make this accurate
+/datum/gas_reaction/water_vapor/react(datum/gas_mixture/air, datum/holder)
+	. = NO_REACTION
+	if(!isturf(holder))
+		return
 
+	var/turf/open/location = holder
+	var/consumed = 0
+	var/num_moles = air.gases[/datum/gas/water_vapor][MOLES]
+	switch(air.temperature)
+		if(-INFINITY to WATER_VAPOR_DEPOSITION_POINT)
+			if(location?.freeze_turf())
+				consumed = min(5, num_moles)
+		if(WATER_VAPOR_DEPOSITION_POINT to WATER_VAPOR_CONDENSATION_POINT)
+			location.water_vapor_gas_act()
+			consumed = min(5, num_moles)
+
+			var/datum/liquid_mix/liquids = location.liquids
+
+			var/liquid_old_heat_capacity = 0
+			var/gas_old_heat_capacity = 0
+			for(var/datum/liquid/liquid_path as anything in liquids.liquids[LIQUID_NEXT])
+				var/moles = liquids.liquids[LIQUID_NEXT][liquid_path]
+				liquid_old_heat_capacity += moles * initial(liquid_path.molar_heat_capacity)
+
+			if(liquids.liquids[LIQUID_NEXT][/datum/liquid/water])
+				liquids.liquids[LIQUID_NEXT][/datum/liquid/water] += consumed
+			else
+				liquids.liquids[LIQUID_NEXT][/datum/liquid/water] = consumed
+				SSliquids.add_active_turf(location)
+
+			var/datum/liquid/water/water = /datum/liquid/water
+			var/datum/gas/water_vapor/water_vapor = /datum/gas/water_vapor
+
+			liquids.volume += consumed * initial(water.molar_volume)
+			var/liquid_heat_capacity_added = consumed * initial(water.molar_heat_capacity)
+			var/gas_heat_capacity_removed = consumed * initial(water_vapor.specific_heat)
+
+			var/liquid_new_heat_capacity = liquid_old_heat_capacity + liquid_heat_capacity_added
+			var/gas_new_heat_capacity = gas_old_heat_capacity - gas_heat_capacity_removed
+
+			if(liquid_new_heat_capacity)
+				liquids.temperature = (liquid_old_heat_capacity * liquids.temperature + liquid_heat_capacity_added * air.temperature_archived) / liquid_new_heat_capacity
+
+			if(gas_new_heat_capacity)
+				air.temperature = (gas_old_heat_capacity * air.temperature - gas_heat_capacity_removed * liquids.temperature_archived) / gas_new_heat_capacity
+
+	if(consumed)
+		air.gases[/datum/gas/water_vapor][MOLES] -= consumed
+		SET_REACTION_RESULTS(consumed)
+		. = REACTING
 
 /**
  * Dry Heat Sterilization:
