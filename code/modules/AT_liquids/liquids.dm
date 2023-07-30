@@ -30,6 +30,9 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	liquids.temperature = temperature
 	liquids.temperature_archived = temperature
 
+///holy based
+//turf/proc/cell_react(datum/gas_mixture/gas_interface, datum/liquid_mix/liquid_interface, datum/solid_mix/solid_interface, temperature, pressure)
+
 /turf/proc/assert_liquid(amount = 10000, datum/liquid/liquid_type = /datum/liquid/water, set_temp = TRUE)
 	if(amount < 0 || !(liquid_type in subtypesof(/datum/liquid)))
 		return
@@ -95,6 +98,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	var/list/us_all_deltas = list()
 
 	var/our_z = z
+
+	var/list/differences
 
 	if(has_gravity)
 		var/horizontal_neighbors = 0
@@ -178,7 +183,9 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 			var/their_share_coeff = 1/(their_horizontal_neighbors + 1)
 
-			var/difference = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, us_all_deltas)
+
+			//list(mole net flow (to us - from us), our new chemicals, our removed chemicals, their new chemicals, their removed chemicals)
+			differences = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, us_all_deltas, src, adjacent_turf)
 
 	else
 		//just equalize with neighbors that already have liquids, dont spread to new cells
@@ -207,7 +214,17 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 			var/their_share_coeff = 1/(their_neighbors_with_liquids + 1)
 
-			our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff)
+			differences = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, list(), src, adjacent_turf)
+
+	if(differences)
+		var/list/our_new_chemicals = differences[2]
+		var/list/our_removed_chemicals = differences[3]
+
+		var/list/their_new_chemicals = differences[4]
+		var/list/their_removed_chemicals = differences[5]
+
+		//if(length(our_new_chemicals) || length(our_removed_chemicals) || length(their_new_chemicals) || length(their_removed_chemicals))
+			//for(var/datum/liquid/new_liquid as anything in our_new_chemicals)
 
 	if(SSliquids.allow_reactions)
 		our_liquids.react(src)
@@ -314,7 +331,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	volume_archived = volume
 	temperature_archived = temperature
 
-/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas)
+#define MINIMUM_VOLUME_DELTA_TO_ACTIVATE 0.5
+///cant make turf gas mixes have less volume than this
+#define MINIMUM_AIR_VOLUME 0.01
+
+/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas, turf/us, turf/them)
 	var/our_volume = volume_archived
 	var/their_volume = sharer.volume_archived
 
@@ -323,6 +344,9 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 	var/list/only_in_us = our_liquids[LIQUID_CURRENT] - their_liquids[LIQUID_CURRENT]
 	var/list/only_in_them = their_liquids[LIQUID_CURRENT] - our_liquids[LIQUID_CURRENT]
+
+	var/list/removed_from_us = list()
+	var/list/removed_from_them = list()
 
 	var/temperature_delta = temperature_archived - sharer.temperature_archived
 	var/abs_temperature_delta = abs(temperature_delta)
@@ -336,6 +360,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	var/our_old_heat_capacity = 0
 	var/sharer_old_heat_capacity = 0
 
+	var/total_volume_delta = 0
+
 	for(var/new_to_us in only_in_them)
 		our_liquids[LIQUID_NEXT][new_to_us] = 0
 		our_liquids[LIQUID_CURRENT][new_to_us] = 0
@@ -347,7 +373,19 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		var/our_moles = our_liquids[LIQUID_CURRENT][liquid_path]
 		var/their_moles = their_liquids[LIQUID_CURRENT][liquid_path]
 
-		var/delta = LIQUID_QUANTIZE(our_moles - their_moles)//TODOKYLER: need to make this work off of volume
+		var/molar_difference = (our_moles - their_moles)
+
+		var/spreading_parameter = -1// <0 means partial wetting, > 0 means full wetting (infinitely spreading)
+
+		var/viscosity = initial(liquid_path.viscosity)
+		if(initial(liquid_path.surface_tension) == 0)
+			spreading_parameter = 1//no internal forces to try to minimize surface area
+
+		var/delta = 0
+		if(viscosity > 0)//this isnt at all accurate to how it works
+			delta = LIQUID_QUANTIZE(molar_difference * 1 / clamp(sqrt(viscosity), 1, 100))
+		else
+			delta = round(molar_difference, MOLAR_ACCURACY)//lower molar count
 		if(!delta)
 			continue
 
@@ -372,16 +410,29 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		their_liquids[LIQUID_NEXT][liquid_path] += delta
 
 		var/volume_delta = delta * initial(liquid_path.molar_volume)
+		total_volume_delta += volume_delta
+
 		volume -= volume_delta
 		sharer.volume += volume_delta
 
 		if(our_liquids[LIQUID_NEXT][liquid_path] < 0)
-			var/i = 1
+			removed_from_us += liquid_path
 		if(their_liquids[LIQUID_NEXT][liquid_path] < 0)
-			var/i = 1
+			removed_from_them += liquid_path
 
 		moved_moles += delta
 		abs_moved_moles += abs(delta)
+
+	var/our_old_gas_volume = us.air.volume
+	var/their_old_gas_volume = them.air.volume
+
+	us.air.volume = max(our_old_gas_volume + total_volume_delta * 1000, MINIMUM_AIR_VOLUME)
+	them.air.volume = max(their_old_gas_volume - total_volume_delta * 1000, MINIMUM_AIR_VOLUME)
+
+	if(abs(our_old_gas_volume - us.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !us.excited)
+		SSair.add_to_active(src)
+	if(abs(their_old_gas_volume - them.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !them.excited)
+		SSair.add_to_active(them)
 
 	var/our_new_heat_capacity = our_old_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
 	var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
@@ -397,10 +448,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		garbage_collect()
 		sharer.garbage_collect()
 
-	return moved_moles
+	//list(mole net flow (to us - from us), our new chemicals, our removed chemicals, their new chemicals, their removed chemicals)
+	return list(moved_moles, only_in_them, removed_from_us, only_in_us, removed_from_them)
 
 ///tries to move as many of our moles into the target mix as possible, stopping if their volume exceeds CELL_VOLUME
-/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer)
+/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer)//TODOKYLER: make this diffuse if sharer cant be given all of our contents
 	var/our_volume = volume_archived
 	if(!our_volume)
 		return
@@ -478,7 +530,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 	garbage_collect()
 
-	return moved_moles
+	//list(mole net flow (to us - from us), our old chemicals, our new chemicals, their old chemicals, their new chemicals)
+	//return list(moved_moles, original_us, only_in_them, original_them, only_in_us)
 
 /datum/liquid_mix/proc/garbage_collect()
 	var/list/cached_liquids = liquids
@@ -528,4 +581,4 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 	//turf/holder, datum/liquid_mix/liquids, temperature, pressure, list/solid_interfaces, datum/gas_mixture/gas_interface
 	for(var/datum/liquid_reaction/reaction as anything in GLOB.liquid_reactions)
-		reaction.react(holder, src, temperature, pressure, solid_interfaces, gas_interface)
+		reaction.react(holder, src, temperature, pressure, holder.solids, gas_interface)

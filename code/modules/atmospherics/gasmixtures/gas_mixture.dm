@@ -21,11 +21,13 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 
 /datum/gas_mixture
 	var/list/gases
+	var/list/liquids
 	/// The temperature of the gas mix in kelvin. Should never be lower then TCMB
 	var/temperature = TCMB
 	/// Used, like all archived variables, to ensure turf sharing is consistent inside a tick, no matter
 	/// The order of operations
 	var/tmp/temperature_archived = TCMB
+	var/max_volume = CELL_VOLUME
 	/// Volume in liters (duh)
 	var/volume = CELL_VOLUME
 	/// The last tick this gas mixture shared on. A counter that turfs use to manage activity
@@ -38,9 +40,13 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	/// I am sorry
 	var/pipeline_cycle = -1
 
+	var/reaction_hash = 0
+
 /datum/gas_mixture/New(volume)
 	gases = new
+	liquids = new
 	if(!isnull(volume))
+		max_volume = volume
 		src.volume = volume
 	if(src.volume <= 0)
 		stack_trace("Created a gas mixture with zero volume!")
@@ -367,20 +373,25 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	for(var/id in only_in_cached) //create gases not in the sharing mix
 		ADD_GAS(id, sharer_gases)
 
+	var/our_pressure_coeff = 1 / volume
+	var/their_pressure_coeff = 1 / sharer.volume
+
 	for(var/id in cached_gases) //transfer gases
 		var/gas = cached_gases[id]
 		var/sharergas = sharer_gases[id]
-		var/delta = QUANTIZE(gas[ARCHIVE] - sharergas[ARCHIVE]) //the amount of gas that gets moved between the mixtures
+
+		var/delta = QUANTIZE(our_pressure_coeff * gas[ARCHIVE] - their_pressure_coeff * sharergas[ARCHIVE])
+		//delta = QUANTIZE((gas[ARCHIVE]/sharer.volume - sharergas[ARCHIVE]/volume) * CELL_VOLUME) //the amount of gas that gets moved between the mixtures
 
 		if(!delta)
 			continue
 
-		// If we have more gas then they do, gas is moving from us to them
+		// If we have more gas then they do, ga s is moving from us to them
 		// This means we want to scale it by our coeff. Vis versa for their case
 		if(delta > 0)
-			delta = delta * our_coeff
+			delta = delta * our_coeff / our_pressure_coeff
 		else
-			delta = delta * sharer_coeff
+			delta = delta * sharer_coeff / their_pressure_coeff
 
 		if(abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 			var/gas_heat_capacity = delta * gas[GAS_META][META_GAS_SPECIFIC_HEAT]
@@ -492,6 +503,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	var/list/post_formation = list()
 	var/list/fires = list()
 	var/list/gas_reactions = SSair.gas_reactions
+
 	for(var/gas_id in cached_gases)
 		var/list/reaction_set = gas_reactions[gas_id]
 		if(!reaction_set)
