@@ -331,11 +331,11 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	volume_archived = volume
 	temperature_archived = temperature
 
-#define MINIMUM_VOLUME_DELTA_TO_ACTIVATE 0.5
+#define MINIMUM_VOLUME_DELTA_TO_ACTIVATE 500
 ///cant make turf gas mixes have less volume than this
 #define MINIMUM_AIR_VOLUME 0.01
 
-/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas, turf/us, turf/them)
+/datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas, turf/open/us, turf/open/them)
 	var/our_volume = volume_archived
 	var/their_volume = sharer.volume_archived
 
@@ -452,7 +452,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	return list(moved_moles, only_in_them, removed_from_us, only_in_us, removed_from_them)
 
 ///tries to move as many of our moles into the target mix as possible, stopping if their volume exceeds CELL_VOLUME
-/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer)//TODOKYLER: make this diffuse if sharer cant be given all of our contents
+/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer, turf/open/us, turf/open/them)//TODOKYLER: make this diffuse if sharer cant be given all of our contents
 	var/our_volume = volume_archived
 	if(!our_volume)
 		return
@@ -482,6 +482,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	var/moved_moles = 0
 	var/abs_moved_moles = 0
 
+	var/total_volume_delta = 0
+
 	for(var/new_to_them in only_in_us)
 		their_liquids[LIQUID_NEXT][new_to_them] = 0
 
@@ -509,6 +511,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		heat_capacity_self_to_sharer += delta * liquid_capacity
 
 		var/volume_delta = delta * initial(liquid_path.molar_volume)
+		total_volume_delta += volume_delta
+
 		volume -= volume_delta
 		sharer.volume += volume_delta
 
@@ -520,6 +524,17 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 		moved_moles += delta
 		abs_moved_moles += abs(delta)
+
+	var/our_old_gas_volume = us.air.volume
+	var/their_old_gas_volume = them.air.volume
+
+	us.air.volume = clamp(our_old_gas_volume + total_volume_delta * 1000, MINIMUM_AIR_VOLUME, CELL_VOLUME)
+	them.air.volume = clamp(their_old_gas_volume - total_volume_delta * 1000, MINIMUM_AIR_VOLUME, CELL_VOLUME)
+
+	if(abs(our_old_gas_volume - us.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !us.excited)
+		SSair.add_to_active(src)
+	if(abs(their_old_gas_volume - them.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !them.excited)
+		SSair.add_to_active(them)
 
 	var/our_new_heat_capacity = our_old_heat_capacity - heat_capacity_self_to_sharer// + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
 	var/sharer_new_heat_capacity = sharer_old_heat_capacity + heat_capacity_self_to_sharer// - heat_capacity_sharer_to_self //dont need this since its 0
