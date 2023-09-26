@@ -112,7 +112,9 @@
 		qdel(src)
 		return
 
-	var/visual_delay = controller.visual_delay
+	var/visual_delay
+	if(!controller?.visual_delay)
+		visual_delay = controller.visual_delay
 
 	owner?.processing_move_loop_flags = flags
 	var/result = move() //Result is an enum value. Enums defined in __DEFINES/movement.dm

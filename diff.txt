@@ -1,0 +1,159 @@
+diff --git a/code/__DEFINES/spatial_gridmap.dm b/code/__DEFINES/spatial_gridmap.dm
+index f43fcbc3c6d..97a6f991539 100644
+--- a/code/__DEFINES/spatial_gridmap.dm
++++ b/code/__DEFINES/spatial_gridmap.dm
+@@ -1,12 +1,13 @@
+-///each cell in a spatial_grid is this many turfs in length and width
++/// each cell in a spatial_grid is this many turfs in length and width (with world.max(x or y) being 255, 15 of these fit on each side of a z level)
+ #define SPATIAL_GRID_CELLSIZE 17
+-///Takes a coordinate, and spits out the spatial grid index (x or y) it's inside
++/// Takes a coordinate, and spits out the spatial grid index (x or y) it's inside
+ #define GET_SPATIAL_INDEX(coord) ROUND_UP((coord) / SPATIAL_GRID_CELLSIZE)
+-#define GRID_INDEX_TO_COORDS(index) (index * SPATIAL_GRID_CELLSIZE)
++/// changes the cell_(x or y) vars on /datum/spatial_grid_cell to the x or y coordinate on the map for the LOWER LEFT CORNER of the grid cell.
++/// index is from 1 to SPATIAL_GRID_CELLS_PER_SIDE
++#define GRID_INDEX_TO_COORDS(index) ((((index) - 1) * SPATIAL_GRID_CELLSIZE) + 1)
++/// number of grid cells per x or y side of all z levels. pass in world.maxx or world.maxy
+ #define SPATIAL_GRID_CELLS_PER_SIDE(world_bounds) GET_SPATIAL_INDEX(world_bounds)
+ 
+-#define SPATIAL_GRID_CHANNELS 2
+-
+ //grid contents channels
+ 
+ ///everything that is hearing sensitive is stored in this channel
+diff --git a/code/controllers/subsystem/spatial_gridmap.dm b/code/controllers/subsystem/spatial_gridmap.dm
+index bad152d9a5e..34e57097e60 100644
+--- a/code/controllers/subsystem/spatial_gridmap.dm
++++ b/code/controllers/subsystem/spatial_gridmap.dm
+@@ -435,18 +435,18 @@ SUBSYSTEM_DEF(spatial_grid)
+ 	for(var/type in spatial_grid_categories[old_target.spatial_grid_key])
+ 		switch(type)
+ 			if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+-				var/list/old_target_contents = old_target.important_recursive_contents //cache for sanic speeds (lists are references anyways)
+-				GRID_CELL_REMOVE(intersecting_cell.client_contents, old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
+-				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS), old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
++				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
++				GRID_CELL_REMOVE(intersecting_cell.client_contents, old_target_contents)
++				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
+ 
+ 			if(SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+-				var/list/old_target_contents = old_target.important_recursive_contents //cache for sanic speeds (lists are references anyways)
+-				GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
+-				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(SPATIAL_GRID_CONTENTS_TYPE_HEARING), old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
++				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
++				GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents)
++				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
+ 
+ 			if(SPATIAL_GRID_CONTENTS_TYPE_ATMOS)
+ 				GRID_CELL_REMOVE(intersecting_cell.atmos_contents, old_target)
+-				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(SPATIAL_GRID_CONTENTS_TYPE_ATMOS), old_target)
++				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target)
+ 
+ 	return TRUE
+ 
+@@ -467,14 +467,14 @@ SUBSYSTEM_DEF(spatial_grid)
+ 
+ 	switch(exclusive_type)
+ 		if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+-			var/list/old_target_contents = old_target.important_recursive_contents //cache for sanic speeds (lists are references anyways)
+-			GRID_CELL_REMOVE(intersecting_cell.client_contents, old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
+-			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
++			var/list/old_target_contents = old_target.important_recursive_contents?[exclusive_type] || old_target //cache for sanic speeds (lists are references anyways)
++			GRID_CELL_REMOVE(intersecting_cell.client_contents, old_target_contents)
++			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents)
+ 
+ 		if(SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+-			var/list/old_target_contents = old_target.important_recursive_contents
+-			GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
+-			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
++			var/list/old_target_contents = old_target.important_recursive_contents?[exclusive_type] || old_target
++			GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents)
++			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents)
+ 
+ 		if(SPATIAL_GRID_CONTENTS_TYPE_ATMOS)
+ 			GRID_CELL_REMOVE(intersecting_cell.atmos_contents, old_target)
+diff --git a/code/game/atoms_movable.dm b/code/game/atoms_movable.dm
+index 0c1a7758c33..fd9b86e46fd 100644
+--- a/code/game/atoms_movable.dm
++++ b/code/game/atoms_movable.dm
+@@ -201,7 +201,7 @@
+ 	if(spatial_grid_key)
+ 		SSspatial_grid.force_remove_from_grid(src)
+ 
+-	LAZYCLEARLIST(client_mobs_in_contents)
++	LAZYNULL(client_mobs_in_contents)
+ 
+ 	. = ..()
+ 
+@@ -213,7 +213,7 @@
+ 	//This absolutely must be after moveToNullspace()
+ 	//We rely on Entered and Exited to manage this list, and the copy of this list that is on any /atom/movable "Containers"
+ 	//If we clear this before the nullspace move, a ref to this object will be hung in any of its movable containers
+-	LAZYCLEARLIST(important_recursive_contents)
++	LAZYNULL(important_recursive_contents)
+ 
+ 
+ 	vis_locs = null //clears this atom out of all viscontents
+@@ -750,7 +750,6 @@
+ 					pulling.move_from_pull(src, target_turf, glide_size)
+ 			check_pulling()
+ 
+-
+ 	//glide_size strangely enough can change mid movement animation and update correctly while the animation is playing
+ 	//This means that if you don't override it late like this, it will just be set back by the movement update that's called when you move turfs.
+ 	if(glide_size_override)
+@@ -799,9 +798,9 @@
+ 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, old_loc, movement_dir, forced, old_locs, momentum_change)
+ 
+ 	if(old_loc)
+-		SEND_SIGNAL(old_loc, COMSIG_ATOM_ABSTRACT_EXITED, src, movement_dir)
++		SEND_SIGNAL(old_loc, COMSIG_ATOM_ABSTRACT_EXITED, src)
+ 	if(loc)
+-		SEND_SIGNAL(loc, COMSIG_ATOM_ABSTRACT_ENTERED, src, old_loc, old_locs)
++		SEND_SIGNAL(loc, COMSIG_ATOM_ABSTRACT_ENTERED, src, old_loc)
+ 
+ 	var/turf/old_turf = get_turf(old_loc)
+ 	var/turf/new_turf = get_turf(src)
+diff --git a/code/game/turfs/open/lava.dm b/code/game/turfs/open/lava.dm
+index 5e4bebc6eb5..c105c0160bd 100644
+--- a/code/game/turfs/open/lava.dm
++++ b/code/game/turfs/open/lava.dm
+@@ -128,6 +128,7 @@
+ 	initial_gas_mix = AIRLESS_ATMOS
+ 
+ /turf/open/lava/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
++	. = ..()
+ 	if(burn_stuff(arrived))
+ 		START_PROCESSING(SSobj, src)
+ 
+diff --git a/code/modules/industrial_lift/industrial_lift.dm b/code/modules/industrial_lift/industrial_lift.dm
+index ab884b15f9b..8dbc10072ec 100644
+--- a/code/modules/industrial_lift/industrial_lift.dm
++++ b/code/modules/industrial_lift/industrial_lift.dm
+@@ -482,14 +482,12 @@ GLOBAL_LIST_EMPTY(lifts)
+ 		mover.loc = (mover_new_loc = get_step(mover, movement_direction))
+ 		mover_new_area = mover_new_loc.loc
+ 
+-
+ 		if(mover_old_area != mover_new_area)
+ 			mover_old_area.Exited(mover, movement_direction)
+ 			mover_new_area.Entered(mover, mover_new_area)
+ 
+ 		mover.Moved(mover_old_loc, movement_direction, TRUE, null, FALSE)
+ 
+-
+ 	return TRUE
+ 
+ /**
+diff --git a/code/modules/mob/living/simple_animal/hostile/megafauna/colossus.dm b/code/modules/mob/living/simple_animal/hostile/megafauna/colossus.dm
+index 4830aa995bc..34859aadca4 100644
+--- a/code/modules/mob/living/simple_animal/hostile/megafauna/colossus.dm
++++ b/code/modules/mob/living/simple_animal/hostile/megafauna/colossus.dm
+@@ -598,6 +598,7 @@
+ 	START_PROCESSING(SSobj, src)
+ 
+ /obj/structure/closet/stasis/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
++	. = ..()
+ 	if(isliving(arrived) && holder_animal)
+ 		var/mob/living/L = arrived
+ 		L.notransform = 1

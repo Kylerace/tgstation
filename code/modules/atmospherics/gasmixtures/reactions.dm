@@ -135,7 +135,6 @@
 			if(location?.freeze_turf())
 				consumed = min(5, num_moles)
 		if(WATER_VAPOR_DEPOSITION_POINT to WATER_VAPOR_CONDENSATION_POINT)
-			location.water_vapor_gas_act()
 			consumed = min(5, num_moles)
 
 			var/datum/liquid_mix/liquids = location.liquids
@@ -150,7 +149,7 @@
 				liquids.liquids[LIQUID_NEXT][/datum/liquid/water] += consumed
 			else
 				liquids.liquids[LIQUID_NEXT][/datum/liquid/water] = consumed
-				SSliquids.add_active_turf(location)
+				//SSchemicals.add_active_turf(location)
 
 			var/datum/liquid/water/water = /datum/liquid/water
 			var/datum/gas/water_vapor/water_vapor = /datum/gas/water_vapor

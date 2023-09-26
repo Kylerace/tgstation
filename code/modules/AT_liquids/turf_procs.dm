@@ -16,5 +16,5 @@
 		if(liquid_moles == 0)
 			continue
 		turf_liquids.liquids = list(list(), list())
-		SSliquids.remove_active_turf(turf_to_clear)
+		//SSchemicals.remove_active_turf(turf_to_clear)
 		turf_to_clear.update_liquid_visuals()

@@ -45,6 +45,15 @@
 		GLOB.station_turfs -= src
 	return ..()
 
+
+//TODOKYLER: i hate this
+/*
+/turf/open/floor/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	if(liquids.liquids[LIQUID_CURRENT][/datum/liquid/water] > 0)
+		var/datum/component/slippery/slip = GetComponent(/datum/component/slippery)
+	. = ..()
+*/
+
 /turf/open/floor/ex_act(severity, target)
 	. = ..()
 

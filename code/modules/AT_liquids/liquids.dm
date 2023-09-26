@@ -1,7 +1,5 @@
 
-/// Molar accuracy to round to
-#define LIQUID_MOLAR_ACCURACY  0.1
-#define LIQUID_QUANTIZE(variable) (round((variable), (LIQUID_MOLAR_ACCURACY)))
+
 
 GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
@@ -13,8 +11,10 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 #define LIQUID_CYCLE_ARCHIVE(turf)\
 	turf.liquids.archive();\
-	turf.liquid_archived_cycle = SSliquids.times_fired;\
+	turf.liquid_archived_cycle = SSchemicals.times_fired;\
 	turf.liquids.temperature_archived = turf.liquids.temperature;
+
+
 
 /turf
 	var/datum/liquid_mix/liquids
@@ -60,7 +60,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 			cached_liquid_list[LIQUID_NEXT] -= liquid_type
 			TOTAL_LIQUID_MOLES(cached_liquid_list[LIQUID_NEXT], total_moles)
 			if(total_moles == 0)
-				SSliquids.remove_active_turf(src)
+				var/i = 0
+				//SSchemicals.remove_active_turf(src)
 
 	else if(amount > 0)
 		liquids.liquids[LIQUID_CURRENT][liquid_type] = amount
@@ -71,19 +72,19 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		else if(maximum_temp < INFINITY)
 			liquids.temperature = min(liquids.temperature, maximum_temp)
 
-		SSliquids.add_active_turf(src)
+		//SSchemicals.add_active_turf(src)
 
 /turf/proc/set_liquid_temp(new_temp)
 	liquids.temperature = new_temp
 
-/turf/proc/process_liquids(fire_count)
-	SSliquids.remove_active_turf(src)
+/turf/proc/process_liquids_olds(fire_count)
+	//SSchemicals.remove_active_turf(src)
 
-/turf/open/process_liquids(fire_count)
+/turf/open/process_liquids_olds(fire_count)
 	if(liquid_archived_cycle < fire_count)
 		LIQUID_CYCLE_ARCHIVE(src)
 
-	//this makes it so if process_liquids is called on any of our neighbors in the same atmos cycle after us, they wont share with us
+	//this makes it so if process_liquids_olds is called on any of our neighbors in the same atmos cycle after us, they wont share with us
 	//because we already shared with them
 	liquid_current_cycle = fire_count
 
@@ -120,13 +121,27 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 						continue
 					LIQUID_CYCLE_ARCHIVE(adjacent_turf)
 
-					our_liquids.uni_flow(adjacent_turf.liquids)
+					our_liquids.uni_flow(adjacent_turf.liquids, 1)
+					//var/total_volume_delta = change_list[6]
+
+					/*
+					var/our_old_gas_volume = air.volume
+					var/their_old_gas_volume = adjacent_turf.air.volume
+
+					air.volume = max(our_old_gas_volume + total_volume_delta * 1000, MINIMUM_AIR_VOLUME)
+					adjacent_turf.air.volume = max(their_old_gas_volume - total_volume_delta * 1000, MINIMUM_AIR_VOLUME)
+
+					if(abs(our_old_gas_volume - us.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !us.excited)
+						SSair.add_to_active(src)
+					if(abs(their_old_gas_volume - them.air.volume) > MINIMUM_VOLUME_DELTA_TO_ACTIVATE && !them.excited)
+						SSair.add_to_active(them)
+					*/
 
 					LIQUID_CYCLE_ARCHIVE(src)
-					SSliquids.add_active_turf(adjacent_turf)
+					////SSchemicals.add_active_turf(adjacent_turf)
 
 					if(our_liquids.volume_archived == 0)
-						SSliquids.remove_active_turf(src)
+						////SSchemicals.remove_active_turf(src)
 						return
 
 				else //they are above, this has to be done after we dump onto a below turf if it exists, so we set above_turf to it
@@ -136,15 +151,15 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 		if(above_turf && fire_count > above_turf.liquid_current_cycle)
 			LIQUID_CYCLE_ARCHIVE(above_turf)
-			above_turf.liquid_current_cycle = fire_count //pretend that process_liquids() was called on them but they only share with us
+			above_turf.liquid_current_cycle = fire_count //pretend that process_liquids_olds() was called on them but they only share with us
 
-			above_turf.liquids.uni_flow(our_liquids)//i think this might work, though it will definitely allow liquids to be in the air for a cycle
+			above_turf.liquids.uni_flow(our_liquids, 1)//i think this might work, though it will definitely allow liquids to be in the air for a cycle
 			//we want everything in top_turf_liquids[LIQUID_CURRENT] to be moved to bottom_turf_liquids[LIQUID_NEXT]
 			//if we dont archive after this, our_liquids.flow(horizontal_neighbor_liquids) will use liquids that shouldve gone down or shouldnt
 			//be shareable until next cycle
 
 			LIQUID_CYCLE_ARCHIVE(src)
-			SSliquids.add_active_turf(above_turf)
+			////SSchemicals.add_active_turf(above_turf)
 
 
 		our_share_coeff = 1/(horizontal_neighbors + 1)
@@ -154,7 +169,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 				continue
 			LIQUID_CYCLE_ARCHIVE(adjacent_turf)
 
-			SSliquids.add_active_turf(adjacent_turf)
+			////SSchemicals.add_active_turf(adjacent_turf)
 			var/datum/liquid_mix/their_liquids = adjacent_turf.liquids
 			var/their_z = adjacent_turf.z
 
@@ -188,45 +203,70 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 			differences = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, us_all_deltas, src, adjacent_turf)
 
 	else
+
+		///directions from non liquid turfs to us, our surface tension creates normal vectors in these directions on our surface
+		var/from_non_liquid_to_us = NONE
+		///directions from us to other liquid turfs
+		var/from_us_to_liquid = NONE
+
 		//just equalize with neighbors that already have liquids, dont spread to new cells
 		var/neighbors_with_liquids = 0
 		for(var/turf/open/adjacent_turf as anything in atmos_adjacent_turfs)
 			if(adjacent_turf.liquids.volume > 0)
 				neighbors_with_liquids++
+				from_us_to_liquid |= get_dir(src, adjacent_turf)
+			else
+				from_non_liquid_to_us |= get_dir(adjacent_turf, src)
+
+
 
 		our_share_coeff = 1/(neighbors_with_liquids + 1)
+
+		var/list/sharable_neighbors = list()//liquid neighbors our edges point to, whose edges DONT point to us
 
 		for(var/turf/open/adjacent_turf as anything in atmos_adjacent_turfs)
 			if(fire_count <= adjacent_turf.liquid_current_cycle)
 				continue
-			LIQUID_CYCLE_ARCHIVE(adjacent_turf)
+			//LIQUID_CYCLE_ARCHIVE(adjacent_turf)
 
 			var/datum/liquid_mix/their_liquids = adjacent_turf.liquids
 			if(their_liquids.volume <= 0)
 				continue
 
-			SSliquids.add_active_turf(adjacent_turf)
+			////SSchemicals.add_active_turf(adjacent_turf)
+
+			var/from_non_liquid_to_them = NONE
+			///directions from us to other liquid turfs
+			var/from_them_to_liquid = NONE
 
 			var/their_neighbors_with_liquids = 0
 			for(var/turf/open/their_adjacent_turf as anything in adjacent_turf.atmos_adjacent_turfs)
 				if(their_adjacent_turf.liquids.volume > 0)
 					their_neighbors_with_liquids++
+					from_them_to_liquid |= get_dir(adjacent_turf, their_adjacent_turf)
+				else
+					from_non_liquid_to_them |= get_dir(their_adjacent_turf, adjacent_turf)
 
 			var/their_share_coeff = 1/(their_neighbors_with_liquids + 1)
 
-			differences = our_liquids.flow(their_liquids, our_share_coeff, their_share_coeff, list(), src, adjacent_turf)
+			if(our_share_coeff < their_share_coeff)
+				their_liquids.uni_flow(our_liquids, 1)
+			else if(our_share_coeff > their_share_coeff)
+				our_liquids.uni_flow(their_liquids, 1)
+			else
+				our_liquids.flow(their_liquids, our_share_coeff/5, their_share_coeff/5, list(), src, adjacent_turf)
 
-	if(differences)
-		var/list/our_new_chemicals = differences[2]
-		var/list/our_removed_chemicals = differences[3]
+	//if(differences)
+		//var/list/our_new_chemicals = differences[2]
+		//var/list/our_removed_chemicals = differences[3]
 
-		var/list/their_new_chemicals = differences[4]
-		var/list/their_removed_chemicals = differences[5]
+		//var/list/their_new_chemicals = differences[4]
+		//var/list/their_removed_chemicals = differences[5]
 
 		//if(length(our_new_chemicals) || length(our_removed_chemicals) || length(their_new_chemicals) || length(their_removed_chemicals))
 			//for(var/datum/liquid/new_liquid as anything in our_new_chemicals)
 
-	if(SSliquids.allow_reactions)
+	if(SSchemicals.allow_reactions)
 		our_liquids.react(src)
 
 	update_liquid_visuals()
@@ -331,9 +371,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	volume_archived = volume
 	temperature_archived = temperature
 
-#define MINIMUM_VOLUME_DELTA_TO_ACTIVATE 500
-///cant make turf gas mixes have less volume than this
-#define MINIMUM_AIR_VOLUME 0.01
+
 
 /datum/liquid_mix/proc/flow(datum/liquid_mix/sharer, our_coeff, their_coeff, list/us_all_deltas, turf/open/us, turf/open/them)
 	var/our_volume = volume_archived
@@ -381,11 +419,8 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		if(initial(liquid_path.surface_tension) == 0)
 			spreading_parameter = 1//no internal forces to try to minimize surface area
 
-		var/delta = 0
-		if(viscosity > 0)//this isnt at all accurate to how it works
-			delta = LIQUID_QUANTIZE(molar_difference * 1 / clamp(sqrt(viscosity), 1, 100))
-		else
-			delta = round(molar_difference, MOLAR_ACCURACY)//lower molar count
+		var/delta = LIQUID_QUANTIZE(molar_difference * 1 / clamp(sqrt(viscosity), 1, 100))
+
 		if(!delta)
 			continue
 
@@ -452,7 +487,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	return list(moved_moles, only_in_them, removed_from_us, only_in_us, removed_from_them)
 
 ///tries to move as many of our moles into the target mix as possible, stopping if their volume exceeds CELL_VOLUME
-/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer, turf/open/us, turf/open/them)//TODOKYLER: make this diffuse if sharer cant be given all of our contents
+/datum/liquid_mix/proc/uni_flow(datum/liquid_mix/sharer, share_coeff, turf/open/us, turf/open/them)//TODOKYLER: make this diffuse if sharer cant be given all of our contents
 	var/our_volume = volume_archived
 	if(!our_volume)
 		return
@@ -498,7 +533,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 		our_old_heat_capacity += our_moles * liquid_capacity
 		sharer_old_heat_capacity += their_moles * liquid_capacity
 
-		var/delta = LIQUID_QUANTIZE(our_moles * volume_ratio)//this effectively squares the quantization threshold in some cases when moving liquids down
+		var/delta = LIQUID_QUANTIZE(our_moles * volume_ratio * share_coeff)//this effectively squares the quantization threshold in some cases when moving liquids down
 		if(!delta)
 			continue
 
@@ -546,7 +581,7 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 	garbage_collect()
 
 	//list(mole net flow (to us - from us), our old chemicals, our new chemicals, their old chemicals, their new chemicals)
-	//return list(moved_moles, original_us, only_in_them, original_them, only_in_us)
+	//return list(moved_moles, original_us, only_in_them, original_them, only_in_us, total_volume_delta)
 
 /datum/liquid_mix/proc/garbage_collect()
 	var/list/cached_liquids = liquids
@@ -596,4 +631,4 @@ GLOBAL_VAR_INIT(liquids_display_moles, TRUE)
 
 	//turf/holder, datum/liquid_mix/liquids, temperature, pressure, list/solid_interfaces, datum/gas_mixture/gas_interface
 	for(var/datum/liquid_reaction/reaction as anything in GLOB.liquid_reactions)
-		reaction.react(holder, src, temperature, pressure, holder.solids, gas_interface)
+		reaction.react(holder, src, temperature, pressure, list(), gas_interface)

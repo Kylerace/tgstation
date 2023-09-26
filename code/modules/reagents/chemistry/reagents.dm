@@ -1,5 +1,9 @@
 GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 
+/atom/New(loc, ...)
+	reagents = new()
+	. = ..()
+
 /proc/build_name2reagent()
 	. = list()
 	for (var/t in subtypesof(/datum/reagent))
@@ -106,9 +110,12 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 	/// When ordered in a restaurant, what custom order do we create?
 	var/restaurant_order = /datum/custom_order/reagent/drink
 
+	var/melting_point = -INFINITY
+	var/freezing_point = -INFINITY
+	var/condensation_point = -INFINITY
+
 /datum/reagent/New()
 	SHOULD_CALL_PARENT(TRUE)
-	. = ..()
 
 	if(material)
 		material = GET_MATERIAL_REF(material)

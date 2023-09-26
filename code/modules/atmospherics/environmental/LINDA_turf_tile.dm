@@ -54,9 +54,13 @@
 	var/max_share = 0
 	#endif
 
+GLOBAL_VAR_INIT(turf_gas_mixtures, 0)
+GLOBAL_VAR_INIT(turf_gas_mixture_paths, 0)
+
 /turf/open/Initialize(mapload)
 	if(!blocks_air)
 		air = create_gas_mixture()
+		GLOB.turf_gas_mixtures++
 		if(planetary_atmos)
 			if(!SSair.planetary[initial_gas_mix])
 				var/datum/gas_mixture/immutable/planetary/mix = new
@@ -70,6 +74,7 @@
 	// Adds the adjacent turfs to the current atmos processing
 	for(var/near_turf in atmos_adjacent_turfs)
 		SSair.add_to_active(near_turf)
+	GLOB.turf_gas_mixtures--
 	return ..()
 
 /////////////////GAS MIXTURE PROCS///////////////////

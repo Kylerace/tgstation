@@ -237,7 +237,7 @@
 	air.temperature += temp
 	air_update_turf(FALSE, FALSE)
 
-/turf/open/proc/freeze_turf()
+/turf/open/proc/freeze_turf(permanent)
 	for(var/obj/I in contents)
 		if(!HAS_TRAIT(I, TRAIT_FROZEN) && !(I.resistance_flags & FREEZE_PROOF))
 			I.AddElement(/datum/element/frozen)
@@ -245,7 +245,8 @@
 	for(var/mob/living/L in contents)
 		if(L.bodytemperature <= 50)
 			L.apply_status_effect(/datum/status_effect/freon)
-	MakeSlippery(TURF_WET_PERMAFROST, 50)
+
+	MakeSlippery(TURF_WET_PERMAFROST, 50, permanent = permanent)
 	return TRUE
 
 /turf/open/proc/water_vapor_gas_act()

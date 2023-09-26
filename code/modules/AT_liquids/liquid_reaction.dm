@@ -33,11 +33,11 @@ GLOBAL_LIST_INIT(liquid_reactions, init_liquid_reactions())
 	return
 
 
-/datum/liquid_reaction/water_boiling
-	name = "boiling"
+/datum/liquid_reaction/water
+	name = "water"
 
 //TODOKYLER: make this accurate, with pressure
-/datum/liquid_reaction/water_boiling/react(turf/holder, datum/liquid_mix/liquids, temperature, pressure, list/solid_interfaces, datum/gas_mixture/gas_interface)
+/datum/liquid_reaction/water/react(turf/open/holder, datum/liquid_mix/liquids, temperature, pressure, datum/solid_mix/solid_interface, datum/gas_mixture/gas_interface)
 	. = NO_REACTION
 	if(!isturf(holder))
 		return
@@ -45,14 +45,42 @@ GLOBAL_LIST_INIT(liquid_reactions, init_liquid_reactions())
 	var/list/cached_liquids = liquids.liquids
 	var/num_moles = cached_liquids[LIQUID_NEXT][/datum/liquid/water]
 
-	if(temperature < 375.15 || num_moles <= 0)
+	if(num_moles <= 0)
 		return
-	. = REACTING
-
-	var/consumed = min(num_moles, 5)
 
 	var/datum/liquid/water/water = /datum/liquid/water
 	var/datum/gas/water_vapor/water_vapor = /datum/gas/water_vapor
+
+	. = REACTING
+
+	var/consumed = 0
+
+	if(temperature < 375.15)
+		if(temperature < T0C)//liquid -> solid phase change
+			holder.freeze_turf()
+			consumed = min(num_moles, 5)
+
+			if(solid_interface.solids[SOLID_NEXT][/datum/solid/ice])
+				solid_interface.solids[SOLID_NEXT][/datum/solid/ice] += consumed
+			else
+				solid_interface.solids[SOLID_NEXT][/datum/solid/ice] = consumed
+				//SSsolids.add_active_turf(holder)
+
+			cached_liquids[LIQUID_NEXT][/datum/liquid/water] -= consumed
+
+		else if(solid_interface.solids[SOLID_NEXT][/datum/solid/ice] > 0)//solid -> liquid
+			consumed = min(solid_interface.solids[SOLID_NEXT][/datum/solid/ice], 5)
+			solid_interface.solids[SOLID_NEXT][/datum/solid/ice] -= consumed
+
+			cached_liquids[LIQUID_NEXT][/datum/liquid/water] += consumed
+
+		if(cached_liquids[LIQUID_NEXT][/datum/liquid/water] > 1)//turf is still slippery
+			holder.water_vapor_gas_act()//TODOKYLER: THIS SUCKS
+		return consumed
+
+	//past here is liquid -> gas phase change
+
+	consumed = min(num_moles, 5)
 
 	var/list/gases = gas_interface.gases
 	var/old_vapor_moles = gases[/datum/gas/water_vapor]?[MOLES]
@@ -123,8 +151,6 @@ GLOBAL_LIST_INIT(liquid_reactions, init_liquid_reactions())
 
 	//each mole of octane (major component of gasoline) burned with oxygen creates 5472 kJ of thermal energy
 	//molar ratio of oxygen : gasoline in the reaction is 12.5:1
-
-	var/created_energy = consumed_gasoline * 5472 //moles * joules/mole = joules
 
 	var/old_liquid_heat_capacity = 0
 	var/old_gas_heat_capacity = 0

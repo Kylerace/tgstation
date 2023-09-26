@@ -21,13 +21,13 @@
 	var/hydrostatic_pressure = 0
 	var/laplace_pressure = 0
 
-/atom/movable/puddle
+/datum/puddle
 
 	var/list/liquids = list(list(), list())
 	var/list/turf/turfs = list()
 
-/atom/movable/puddle/process(seconds_per_tick)
+/datum/puddle/process(seconds_per_tick)
 
 
-/atom/movable/puddle/proc/get_expansion_border()
+/datum/puddle/proc/get_expansion_border()
 
