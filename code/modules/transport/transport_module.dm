@@ -501,7 +501,7 @@
 	changed_gliders.Cut()
 
 	for(var/atom/movable/mover as anything in movers)
-		if(QDELETED(mover))
+		if(QDELETED(mover) || mover.loc == null)
 			movers -= mover
 			continue
 
