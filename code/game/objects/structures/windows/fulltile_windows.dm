@@ -1,10 +1,7 @@
-// wallening todo: ensure windows have buildable sprites
-// also make this less crap
 /obj/structure/window/fulltile
 	icon = 'icons/obj/smooth_structures/windows/normal_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_normal_frill.dmi'
 	max_integrity = 50
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
@@ -21,7 +18,6 @@
 	icon = 'icons/obj/smooth_structures/windows/plasma_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_plasma_frill.dmi'
 	max_integrity = 300
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
@@ -37,7 +33,6 @@
 	icon = 'icons/obj/smooth_structures/windows/plasma_reinforced_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_reinforced_plasma_frill.dmi'
 	state = RWINDOW_SECURE
 	max_integrity = 1000
 	fulltile = TRUE
@@ -55,7 +50,6 @@
 	icon = 'icons/obj/smooth_structures/windows/reinforced_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_reinforced_frill.dmi'
 	max_integrity = 150
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
@@ -82,7 +76,6 @@
 	icon = 'icons/obj/smooth_structures/windows/tinted_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_tinted_frill.dmi'
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
 	smoothing_flags = SMOOTH_BITMASK
@@ -92,7 +85,6 @@
 
 /obj/structure/window/reinforced/fulltile/ice
 	icon = 'icons/obj/smooth_structures/windows/frosted_window.dmi'
-	frill_icon = 'icons/effects/frills/windows/window_frosted_frill.dmi'
 	max_integrity = 150
 	glass_amount = 2
 
@@ -103,7 +95,6 @@
 	icon = 'icons/obj/smooth_structures/windows/titanium_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_titanium_frill.dmi'
 	max_integrity = 150
 	wtype = "shuttle"
 	reinf = TRUE
@@ -149,7 +140,6 @@
 	icon = 'icons/obj/smooth_structures/windows/plastitanium_window.dmi'
 	icon_state = "0-lower"
 	pixel_y = WINDOW_OFF_FRAME_Y_OFFSET
-	frill_icon = 'icons/effects/frills/windows/window_plastitanium_frill.dmi'
 	max_integrity = 1200
 	wtype = "shuttle"
 	fulltile = TRUE
@@ -254,7 +244,6 @@
 	update_appearance()
 
 
-// Wallening todo: should this be here?
 /obj/structure/window/bronze
 	name = "brass window"
 	desc = "A paper-thin pane of translucent yet reinforced brass. Nevermind, this is just weak bronze!"

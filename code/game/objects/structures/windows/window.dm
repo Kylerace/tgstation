@@ -5,7 +5,7 @@
 	icon_state = "window"
 	density = TRUE
 	layer = ABOVE_OBJ_LAYER //Just above doors
-	// Wallening todo: why was can_be_unanchored removed from here?
+	can_be_unanchored = TRUE
 	pressure_resistance = 4*ONE_ATMOSPHERE
 	anchored = TRUE //initially is 0 for tile smoothing
 	flags_1 = ON_BORDER_1
@@ -63,7 +63,7 @@
 	air_update_turf(TRUE, TRUE)
 
 	if(fulltile)
-		setDir()
+		setDir(direct)
 		obj_flags &= ~BLOCKS_CONSTRUCTION_DIR
 		obj_flags &= ~IGNORE_DENSITY
 		update_icon_state()
@@ -657,7 +657,6 @@
 
 MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/spawner)
 
-#warn shatter frames
 /obj/structure/window/proc/temporary_shatter(time_to_go = 1 SECONDS, time_to_return = 4 SECONDS, take_grill = TRUE)
 	if(dramatically_disappearing)
 		return
@@ -677,14 +676,14 @@ MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/spawner)
 	addtimer(VARSET_CALLBACK(src, atom_integrity, atom_integrity), time_to_go + time_to_return) //set the health back (icon is updated on move)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom/movable, forceMove), loc), time_to_go + time_to_return) //we back boys
 	addtimer(VARSET_CALLBACK(src, dramatically_disappearing, FALSE), time_to_go + time_to_return) //also set the var back
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_appearance)), time_to_go + time_to_return)
 
-	var/obj/structure/grille/grill = take_grill ? (locate(/obj/structure/grille) in loc) : null
-	if(grill)
-		grill.temporary_shatter(time_to_go, time_to_return)
+	var/obj/structure/window_frame/frame = take_grill ? (locate(/obj/structure/window_frame) in loc) : null
+	if(frame)
+		frame.temporary_shatter(time_to_go, time_to_return)
 
 /obj/structure/window/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	. = ..()
+
 	if(loc)
 		update_nearby_icons()
 
@@ -694,6 +693,17 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/window/spawner, 0)
 	anchored = FALSE
 
 MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/unanchored/spawner)
+
+/obj/structure/window/half
+	can_atmos_pass = ATMOS_PASS_YES
+	icon = 'icons/obj/smooth_structures/windows/half_thindow.dmi'
+
+MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/half)
+
+/obj/structure/window/half/unanchored
+	anchored = FALSE
+
+MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/half/unanchored)
 
 /obj/structure/window/reinforced
 	name = "reinforced window"
@@ -827,6 +837,18 @@ MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/reinforced/spawner)
 	state = WINDOW_OUT_OF_FRAME
 
 MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/reinforced/unanchored/spawner)
+
+/obj/structure/window/reinforced/half
+	can_atmos_pass = ATMOS_PASS_YES
+	icon = 'icons/obj/smooth_structures/windows/reinforced_half_thindow.dmi'
+
+MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/reinforced/half)
+
+/obj/structure/window/reinforced/half/unanchored
+	anchored = FALSE
+	state = WINDOW_OUT_OF_FRAME
+
+MAPPING_DIRECTIONAL_HELPERS_EMPTY(/obj/structure/window/reinforced/half/unanchored)
 
 // You can't rust glass! So only reinforced glass can be impacted.
 /obj/structure/window/reinforced/rust_heretic_act()
