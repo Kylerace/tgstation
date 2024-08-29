@@ -167,7 +167,7 @@ Difficulty: Hard
 				target.apply_damage(20, BRUTE, wound_bonus=CANT_WOUND)
 				shake_camera(target, 2, 1)
 			all_turfs -= stomp_turf
-		sleep(delay)
+		_sleep(delay)
 
 /// Larger but slower ground stomp
 /mob/living/simple_animal/hostile/megafauna/wendigo/proc/heavy_stomp()

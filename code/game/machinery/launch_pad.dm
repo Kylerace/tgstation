@@ -187,7 +187,7 @@
 		spark_system.set_up(5, TRUE, target)
 		spark_system.start()
 
-	sleep(teleport_speed)
+	_sleep(teleport_speed)
 
 	//Set the indicator icon back to normal
 	indicator_icon = "launchpad_target"

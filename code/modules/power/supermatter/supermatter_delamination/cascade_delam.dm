@@ -59,9 +59,9 @@
 	effect_cascade_demoralize()
 	priority_announce("A Type-C resonance shift event has occurred in your sector. Scans indicate local oscillation flux affecting spatial and gravitational substructure. \
 		Multiple resonance hotspots have formed. Please standby.", "Nanotrasen Star Observation Association", ANNOUNCER_SPANOMALIES)
-	sleep(2 SECONDS)
+	_sleep(2 SECONDS)
 	effect_strand_shuttle()
-	sleep(5 SECONDS)
+	_sleep(5 SECONDS)
 	var/obj/cascade_portal/rift = effect_evac_rift_start()
 	RegisterSignal(rift, COMSIG_QDELETING, PROC_REF(end_round_holder))
 	SSsupermatter_cascade.can_fire = TRUE

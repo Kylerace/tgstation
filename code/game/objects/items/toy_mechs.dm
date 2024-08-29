@@ -120,7 +120,7 @@
 				return FALSE
 
 	//if all that is good, then we can sleep peacefully
-	sleep(delay)
+	_sleep(delay)
 	return TRUE
 
 //all credit to skasi for toy mech fun ideas
@@ -219,7 +219,7 @@
 	user.visible_message(span_suicide("[user] begins a fight [user.p_they()] can't win with [src]! It looks like [user.p_theyre()] trying to commit suicide!"))
 
 	in_combat = TRUE
-	sleep(1.5 SECONDS)
+	_sleep(1.5 SECONDS)
 	for(var/i in 1 to 4)
 		switch(i)
 			if(1, 3)
@@ -241,7 +241,7 @@
 			in_combat = FALSE
 			return SHAME
 
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 	user.adjustBruteLoss(450)
 
 	in_combat = FALSE
@@ -298,7 +298,7 @@
 	timer = world.time + cooldown*cooldown_multiplier
 	attacker.timer = world.time + attacker.cooldown*attacker.cooldown_multiplier
 
-	sleep(1 SECONDS)
+	_sleep(1 SECONDS)
 	//--THE BATTLE BEGINS--
 	while(combat_health > 0 && attacker.combat_health > 0 && battle_length < MAX_BATTLE_LENGTH)
 		if(!combat_sleep(0.5 SECONDS, attacker, attacker_controller, opponent)) //combat_sleep checks everything we need to have checked for combat to continue
@@ -389,7 +389,7 @@
 										span_notice("You don't know what to do next."))
 
 		battle_length++
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 
 	/// Lines chosen for the winning mech
 	var/list/winlines = list("YOU'RE NOTHING BUT SCRAP!", "I'LL YIELD TO NONE!", "GLORY IS MINE!", "AN EASY FIGHT.", "YOU SHOULD HAVE NEVER FACED ME.", "ROCKED AND SOCKED.")

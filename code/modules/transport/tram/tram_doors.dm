@@ -44,10 +44,10 @@
 
 	if(forced >= BYPASS_DOOR_CHECKS)
 		playsound(src, 'sound/machines/airlockforced.ogg', vol = 40, vary = FALSE)
-		sleep(TRAM_DOOR_CYCLE_TIME)
+		_sleep(TRAM_DOOR_CYCLE_TIME)
 	else
 		playsound(src, doorOpen, vol = 40, vary = FALSE)
-		sleep(TRAM_DOOR_WARNING_TIME)
+		_sleep(TRAM_DOOR_WARNING_TIME)
 
 	set_density(FALSE)
 	if(!isnull(filler))
@@ -55,7 +55,7 @@
 	update_freelook_sight()
 	flags_1 &= ~PREVENT_CLICK_UNDER_1
 	air_update_turf(TRUE, FALSE)
-	sleep(TRAM_DOOR_CYCLE_TIME)
+	_sleep(TRAM_DOOR_CYCLE_TIME)
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, TRUE)
 	operating = FALSE
@@ -95,7 +95,7 @@
 	operating = TRUE
 	layer = CLOSED_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_CLOSING, 1)
-	sleep(TRAM_DOOR_WARNING_TIME)
+	_sleep(TRAM_DOOR_WARNING_TIME)
 	if(!hungry_door)
 		for(var/turf/checked_turf in locs)
 			for(var/atom/movable/blocker in checked_turf)
@@ -107,7 +107,7 @@
 					operating = FALSE
 					return FALSE
 	SEND_SIGNAL(src, COMSIG_AIRLOCK_CLOSE)
-	sleep(TRAM_DOOR_CRUSH_TIME)
+	_sleep(TRAM_DOOR_CRUSH_TIME)
 	set_density(TRUE)
 	if(!isnull(filler))
 		filler.set_density(TRUE)
@@ -116,7 +116,7 @@
 	air_update_turf(TRUE, TRUE)
 	crush()
 	crushing_in_progress = FALSE
-	sleep(TRAM_DOOR_CYCLE_TIME)
+	_sleep(TRAM_DOOR_CYCLE_TIME)
 	update_icon(ALL, AIRLOCK_CLOSED, 1)
 	operating = FALSE
 	retry_counter = 0

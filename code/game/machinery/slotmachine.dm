@@ -278,7 +278,7 @@
 			playsound(src, 'sound/machines/ding_short.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		reels[reel] = value
 		if(delay)
-			sleep(delay)
+			_sleep(delay)
 
 /// Same as toggle_reel_spin, but without the delay and runs synchronously
 /obj/machinery/computer/slot_machine/proc/toggle_reel_spin_sync(value)
@@ -318,7 +318,7 @@
 				var/obj/item/coin/payout_coin = new cointype(loc)
 				random_step(payout_coin, 2, 50)
 				playsound(src, pick(list('sound/machines/coindrop.ogg', 'sound/machines/coindrop2.ogg')), 50, TRUE)
-				sleep(REEL_DEACTIVATE_DELAY)
+				_sleep(REEL_DEACTIVATE_DELAY)
 
 	else if(linelength == 5)
 		visible_message("<b>[src]</b> says, 'Big Winner! You win a thousand credits!'")

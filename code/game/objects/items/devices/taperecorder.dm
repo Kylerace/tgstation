@@ -197,10 +197,10 @@
 			if(max - used < time_left_warning && !time_warned)
 				time_warned = TRUE
 				balloon_alert(usr, "[(max - used) / 10] second\s left")
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 		if(used >= max)
 			balloon_alert(usr, "tape full!")
-			sleep(1 SECONDS) //prevent balloon alerts layering over the top of each other
+			_sleep(1 SECONDS) //prevent balloon alerts layering over the top of each other
 		stop()
 	else
 		balloon_alert(usr, "tape full!")
@@ -254,7 +254,8 @@
 	playsound(src, 'sound/items/taperecorder/taperecorder_play.ogg', 50, FALSE)
 	var/used = mytape.used_capacity //to stop runtimes when you eject the tape
 	var/max = mytape.max_capacity
-	for(var/i = 1, used <= max, sleep(playsleepseconds))
+	for(var/i = 1, used <= max, )
+		_sleep(playsleepseconds)
 		if(!mytape)
 			break
 		if(playing == FALSE)
@@ -266,11 +267,11 @@
 		say("[mytape.storedinfo[i]]", sanitize=FALSE)//We want to display this properly, don't double encode
 		if(mytape.storedinfo.len < i + 1)
 			playsleepseconds = 1
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 		else
 			playsleepseconds = mytape.timestamp[i + 1] - mytape.timestamp[i]
 		if(playsleepseconds > 14 SECONDS)
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 			say("Skipping [playsleepseconds/10] seconds of silence.")
 			playsleepseconds = 1 SECONDS
 		i++

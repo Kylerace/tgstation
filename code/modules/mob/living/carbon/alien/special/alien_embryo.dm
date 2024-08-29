@@ -124,7 +124,7 @@
 	new_xeno.add_traits(list(TRAIT_HANDS_BLOCKED, TRAIT_IMMOBILIZED, TRAIT_NO_TRANSFORM), type) //so we don't move during the bursting animation
 	new_xeno.SetInvisibility(INVISIBILITY_MAXIMUM, id=type)
 
-	sleep(0.6 SECONDS)
+	_sleep(0.6 SECONDS)
 
 	if(QDELETED(src) || QDELETED(owner))
 		qdel(new_xeno)

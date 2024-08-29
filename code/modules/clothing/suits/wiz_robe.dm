@@ -223,7 +223,7 @@
 	var/mob/living/M = new /mob/living/basic/stickman/lesser(get_turf(usr))
 	M.faction += list("[REF(usr)]")
 	robe_charge = FALSE
-	sleep(3 SECONDS)
+	_sleep(3 SECONDS)
 	robe_charge = TRUE
 	to_chat(usr, span_notice("The robe hums, its internal magic supply restored."))
 

@@ -174,7 +174,7 @@
 	// into the hole they go
 	for(var/mob/mob_spawned in mobs_spawned)
 		the_hole.drop(mob_spawned)
-		sleep(0.2 SECONDS) // we have to WAIT because the drop() proc sleeps.
+		_sleep(0.2 SECONDS) // we have to WAIT because the drop() proc sleeps.
 
 	// our 'fisherman' where we expect the item to be moved to after fishing it up
 	var/mob/living/carbon/human/consistent/a_fisherman = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)

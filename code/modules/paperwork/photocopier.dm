@@ -341,7 +341,7 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 			break
 
 		playsound(src, 'sound/machines/printer.ogg', 50, vary = FALSE)
-		sleep(4 SECONDS)
+		_sleep(4 SECONDS)
 
 		// reveal our copied item
 		copied_obj.forceMove(drop_location())

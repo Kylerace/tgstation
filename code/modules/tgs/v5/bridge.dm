@@ -65,7 +65,7 @@
 	if(detached)
 		// Wait up to one minute
 		for(var/i in 1 to 600)
-			sleep(world.tick_lag)
+			_sleep(world.tick_lag)
 			if(!detached && (!require_channels || length(chat_channels)))
 				break
 

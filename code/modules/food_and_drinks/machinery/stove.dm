@@ -116,7 +116,7 @@
 	LAZYREMOVE(added_ingredients, gone)
 
 /**
- * Adds items to a soup pot without invoking any procs that call sleep() when using in a component.
+ * Adds items to a soup pot without invoking any procs that call _sleep() when using in a component.
  *
  * Args:
  * * transfer_from: The container that's being used to add items to the soup pot. Must not be null.

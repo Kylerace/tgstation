@@ -21,6 +21,8 @@ GLOBAL_REAL(Master, /datum/controller/master)
 
 	/// world.time of last fire, for tracking lag outside of the mc
 	var/last_run
+	/// world.time of the fire before last_run
+	var/run_before_last
 
 	/// List of subsystems to process().
 	var/list/subsystems
@@ -78,6 +80,87 @@ GLOBAL_REAL(Master, /datum/controller/master)
 
 	/// Whether the Overview UI will update as fast as possible for viewers.
 	var/overview_fast_update = FALSE
+
+	var/average_ticks_skipped = 0
+
+	///running average of how much each tick is already used when the MC is resumed to run by byond.
+	///this exists because sleeping procs are scheduled to resume by byond which we cant control, so procs that sleep can resume before the MC
+	var/average_starting_tick_usage = 0
+
+	///number of stoplag() processes are sleeping, used for stat tracking
+	var/stoplag_threads = 0
+
+	var/active_sleeps = 0
+
+	var/average_sleeps_per_tick = 0
+
+	///running average of tick usage Master last used when it ended
+	var/average_MC_tick_usage = 0
+
+	///running average of how much time was spent resuming other sleeping procs after the mc went back to sleep.
+	///this exists because sleeping procs are scheduled to resume by byond which we cant control, so procs that sleep can resume after the MC
+	var/average_sleeping_tick_usage = 0
+
+	///running average of how much overtime (in percents of a tick) was spent was spent resuming other sleeping procs after the mc went back to sleep.
+	///this exists because sleeping procs are scheduled to resume by byond which we cant control, so procs that sleep can resume after the MC
+	var/average_sleeping_overtime_usage = 0
+
+	///verbs and procs called from client commands usually execute after SendMaps has executed which means they can delay the end of the tick.
+	///the last of these important verbs/procs to execute sets this var to the current tick_usage when it stops, thus telling master how much that delayed the tick.
+	var/last_post_maptick_tick_usage = 0
+
+	///running average of how much of the tick post maptick client procs and verbs cost
+	var/average_post_maptick_tick_usage = 0
+
+	/// Tick usage when the mc last went to sleep
+	var/last_ending_tick_usage = 0
+
+	///
+	var/tick_limit = TICK_LIMIT_MC_INITIAL
+
+	var/min_reserve = MAPTICK_MC_MIN_RESERVE_INITIAL
+
+	/// the procs that resumed each tick for the last 30 ticks. the oldest tick is kicked out and the newest inserted in every tick.
+	/// TODOKYLER: figure out time limit and data to hold
+	var/list/resuming_procs = list()
+
+	var/list/last_resumer = null
+
+	var/list/metadata_last_tick
+
+	var/list/metadata_this_tick = list()
+
+/world/Tick()
+	var/ending_tick_usage = TICK_USAGE
+	var/list/last_resumer = Master.last_resumer
+	if(last_resumer)
+		last_resumer[SLEEPING_PROC_WAKE_DURATION] = ending_tick_usage - last_resumer[SLEEPING_PROC_WAKEUP_TICK_USAGE]
+
+	if(length(Master.resuming_procs) > MC_SLEEPING_PROCS_TICKS_TO_KEEP)
+		Master.resuming_procs.Cut(1, 1 + length(Master.resuming_procs) - MC_SLEEPING_PROCS_TICKS_TO_KEEP)
+
+	var/post_mc_usage = ending_tick_usage - Master.last_ending_tick_usage
+	Master.average_sleeping_tick_usage = MC_AVERAGE_FAST(Master.average_sleeping_tick_usage, post_mc_usage)
+	Master.average_sleeping_overtime_usage = MC_AVERAGE_FAST(Master.average_sleeping_overtime_usage, max(0, ending_tick_usage - 100))
+
+	Master.last_resumer = null
+
+	var/list/current_tick_metadata = Master.metadata_this_tick
+	if(current_tick_metadata)
+		current_tick_metadata[MC_METADATA_POST_MC_USAGE] = post_mc_usage
+
+	//we dont have access to end of tick info - this is the last guaranteed spot to update information
+	//on the previous tick. so this is why we look for Master's previous run and set maptick, and post maptick usage
+	// here but for the previous tick - because only now do we have information from the previous tick
+	if(Master.run_before_last != world.time - world.tick_lag)
+		return //only useful if we can give a 1 tick change
+
+	var/list/last_metadata = Master.metadata_last_tick
+	if(!last_metadata)
+		return
+	last_metadata[MC_METADATA_POST_MAPTICK_USAGE] = Master.last_post_maptick_tick_usage
+	last_metadata[MC_METADATA_MAPTICK] = world.map_cpu
+
 
 /datum/controller/master/New()
 	if(!config)
@@ -175,6 +258,53 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 	data["world_time"] = world.time
 	data["map_cpu"] = world.map_cpu
 	data["fast_update"] = overview_fast_update
+
+	data["active_sleeps"] = active_sleeps
+
+	data["pre_mc_usage"] = average_starting_tick_usage
+	data["mc_usage"] = average_MC_tick_usage
+	data["post_mc_usage"] = average_sleeping_tick_usage
+	data["post_maptick_usage"] = average_post_maptick_tick_usage
+	//data["tick_layouts"] = resuming_procs //dont use an assoc list?
+
+	///list( list("time" = world time of tick, "procs" = list(a proc that resumed that tick (list of data), another proc, ...)), other ticks... )
+	var/list/unrolled_layouts = list()
+	for(var/tick_world_time in resuming_procs)
+		if(tick_world_time == world.time)
+			continue
+			//dont want to send in-progress ticks to the ui because itll
+			//keep it as local state without checking for a more complete version later
+
+		var/list/procs_in_tick = list()
+		///list of procs resuming in a tick
+		var/list/tick_layout = list(
+			"world_time" = tick_world_time,
+			"resuming_procs" = procs_in_tick
+		)
+
+		for(var/list/resuming_proc as anything in resuming_procs[tick_world_time])
+			/*
+			var/list/metadata = resuming_proc[SLEEPING_PROC_METADATA]
+			if(!isnull(metadata))
+				var/list/meta = list()
+				switch(metadata[METADATA_IDENTIFIER])
+					if(METADATA_IDENTIFIER_MC)
+			*/ //TODOKYLER: figure out if i want to manually do this (i dont think i do)
+			procs_in_tick += list(list(
+				"file" = resuming_proc[SLEEPING_PROC_FILE],
+				"proc" = resuming_proc[SLEEPING_PROC_PROC],
+				"line" = resuming_proc[SLEEPING_PROC_LINE],
+				"sleep_world_time" = resuming_proc[SLEEPING_PROC_SLEEP_WORLDTIME],
+				"sleep_duration" = resuming_proc[SLEEPING_PROC_SLEEP_DURATION],
+				"tick_usage_before_sleep" = resuming_proc[SLEEPING_PROC_TICK_USAGE_BEFORE_SLEEP],
+				"wakeup_worldtime" = resuming_proc[SLEEPING_PROC_WAKEUP_WORLDTIME],
+				"wake_duration" = resuming_proc[SLEEPING_PROC_WAKE_DURATION],
+				"wakeup_tick_usage" = resuming_proc[SLEEPING_PROC_WAKEUP_TICK_USAGE],
+				"metadata" = resuming_proc[SLEEPING_PROC_METADATA]
+			))//the ui has to destructure metadata itself
+
+		unrolled_layouts += list(tick_layout)
+	data["ticks"] = unrolled_layouts
 
 	return data
 
@@ -283,7 +413,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 	set waitfor = 0
 
 	if(delay)
-		sleep(delay)
+		_sleep(delay)
 
 	if(init_sss)
 		init_subtypes(/datum/controller/subsystem, subsystems)
@@ -347,7 +477,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 
 	if(sleep_offline_after_initializations)
 		world.sleep_offline = TRUE
-	sleep(1 TICKS)
+	_sleep(1 TICKS)
 
 	if(sleep_offline_after_initializations && CONFIG_GET(flag/resume_after_initializations))
 		world.sleep_offline = FALSE
@@ -441,7 +571,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 /datum/controller/master/proc/StartProcessing(delay)
 	set waitfor = 0
 	if(delay)
-		sleep(delay)
+		_sleep(delay)
 	testing("Master starting processing")
 	var/started_stage
 	var/rtn = -2
@@ -525,9 +655,15 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 	canary.use_variable()
 	//the actual loop.
 	while (1)
+		var/starting_tick_usage = TICK_USAGE
 		var/newdrift = ((REALTIMEOFDAY - init_timeofday) - (world.time - init_time)) / world.tick_lag
 		tickdrift = max(0, MC_AVERAGE_FAST(tickdrift, newdrift))
-		var/starting_tick_usage = TICK_USAGE
+
+		metadata_last_tick = metadata_this_tick
+		metadata_this_tick = MC_METADATA_CREATE_LIST(starting_tick_usage, current_ticklimit, skip_ticks, sleep_delta, current_runlevel)
+		//list(METADATA_IDENTIFIER_MC, starting_tick_usage, -1, MC_METADATA_GOTO_SLEEP_REASON_UNSET, current_ticklimit, skip_ticks, sleep_delta, current_runlevel, list(), -1, -1, -1)
+
+		average_starting_tick_usage = MC_AVERAGE_FAST(average_starting_tick_usage, starting_tick_usage)
 
 		if(newdrift - olddrift >= CONFIG_GET(number/drift_dump_threshold))
 			AttemptProfileDump(CONFIG_GET(number/drift_profile_delay))
@@ -537,7 +673,13 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 			return MC_LOOP_RTN_NEWSTAGES
 		if (processing <= 0)
 			current_ticklimit = TICK_LIMIT_RUNNING
-			sleep(1 SECONDS)
+
+			average_ticks_skipped = MC_AVG_FAST_UP_SLOW_DOWN(average_ticks_skipped, max(DS2TICKS(10) - 1, 0))
+			last_ending_tick_usage = TICK_USAGE
+
+			metadata_this_tick[MC_METADATA_ENDING_TICK_USAGE] = last_ending_tick_usage
+			sleep_metadata(1 SECONDS, metadata_this_tick)
+
 			continue
 
 		//Anti-tick-contention heuristics:
@@ -547,7 +689,12 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 			if (starting_tick_usage > TICK_LIMIT_MC) //if there isn't enough time to bother doing anything this tick, sleep a bit.
 				sleep_delta *= 2
 				current_ticklimit = TICK_LIMIT_RUNNING * 0.5
-				sleep(world.tick_lag * (processing * sleep_delta))
+				average_ticks_skipped = MC_AVG_FAST_UP_SLOW_DOWN(average_ticks_skipped, max(DS2TICKS(10) - 1, 0))
+				last_ending_tick_usage = TICK_USAGE
+
+				metadata_this_tick[MC_METADATA_GOTO_SLEEP_REASON] = MC_METADATA_GOTO_SLEEP_REASON_TICK_CONTENTION
+				metadata_this_tick[MC_METADATA_ENDING_TICK_USAGE] = last_ending_tick_usage
+				sleep_metadata(world.tick_lag * (processing * sleep_delta), metadata_this_tick)
 				continue
 
 			//Byond resumed us late. assume it might have to do the same next tick
@@ -600,9 +747,17 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 			else
 				cached_runlevel = null //3 strikes, Lets reset the runlevel lists
 			current_ticklimit = TICK_LIMIT_RUNNING
-			sleep((1 SECONDS) * error_level)
+
+			average_ticks_skipped = MC_AVG_FAST_UP_SLOW_DOWN(average_ticks_skipped, max((processing * sleep_delta) - 1, 0))
+			last_ending_tick_usage = TICK_USAGE
+
+			metadata_this_tick[MC_METADATA_ENDING_TICK_USAGE] = last_ending_tick_usage
+			metadata_this_tick[MC_METADATA_GOTO_SLEEP_REASON] = MC_METADATA_GOTO_SLEEP_REASON_CHECKQUEUE_ERROR
+			sleep_metadata((1 SECONDS) * error_level, metadata_this_tick)
 			error_level++
 			continue
+
+		metadata_this_tick[MC_METADATA_TICK_LIMIT] = current_ticklimit
 
 		if (queue_head)
 			if (RunQueue() <= 0) //error running queue
@@ -617,7 +772,14 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 					else
 						cached_runlevel = null //3 strikes, Lets also reset the runlevel lists
 					current_ticklimit = TICK_LIMIT_RUNNING
-					sleep((1 SECONDS) * error_level)
+
+					average_ticks_skipped = MC_AVG_FAST_UP_SLOW_DOWN(average_ticks_skipped, max((processing * sleep_delta) - 1, 0))
+					last_ending_tick_usage = TICK_USAGE
+
+					metadata_this_tick[MC_METADATA_ENDING_TICK_USAGE] = last_ending_tick_usage
+					metadata_this_tick[MC_METADATA_GOTO_SLEEP_REASON] = MC_METADATA_GOTO_SLEEP_REASON_RUNQUEUE_ERROR
+
+					sleep_metadata((1 SECONDS) * error_level, metadata_this_tick)
 					error_level++
 					continue
 				error_level++
@@ -628,6 +790,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 			queue_priority_count_bg = 0
 
 		iteration++
+		run_before_last = last_run
 		last_run = world.time
 		if (skip_ticks)
 			skip_ticks--
@@ -654,9 +817,24 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 				current_ticklimit -= (TICK_LIMIT_RUNNING * 0.25) //reserve the tail 1/4 of the next tick for the mc if we plan on running next tick
 
 		check_and_perform_fast_update()
-		sleep(world.tick_lag * (processing * sleep_delta))
 
-// This is what decides if something should run.
+		average_ticks_skipped = MC_AVG_FAST_UP_SLOW_DOWN(average_ticks_skipped, max((processing * sleep_delta) - 1, 0))
+
+		average_MC_tick_usage = MC_AVERAGE_FAST(average_MC_tick_usage, max(last_ending_tick_usage - starting_tick_usage, 0))
+
+		average_post_maptick_tick_usage = MC_AVERAGE_FAST(average_post_maptick_tick_usage, max(last_post_maptick_tick_usage - (last_ending_tick_usage + MAPTICK_LAST_INTERNAL_TICK_USAGE), 0))
+
+		if(metadata_last_tick && run_before_last == world.time - world.tick_lag)
+			metadata_last_tick[MC_METADATA_POST_MAPTICK_USAGE] = last_post_maptick_tick_usage
+
+		last_post_maptick_tick_usage = 0 //any client procs/verbs that execute later in this tick updates this number
+
+		last_ending_tick_usage = TICK_USAGE
+
+		metadata_this_tick[MC_METADATA_ENDING_TICK_USAGE] = last_ending_tick_usage
+		sleep_metadata(world.tick_lag * (processing * sleep_delta), metadata_this_tick)
+
+/// This is what decides if something should run.
 /datum/controller/master/proc/CheckQueue(list/subsystemstocheck)
 	. = 0 //so the mc knows if we runtimed
 
@@ -689,7 +867,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 
 
 /// RunQueue - Run thru the queue of subsystems to run, running them while balancing out their allocated tick precentage
-/// Returns 0 if runtimed, a negitive number for logic errors, and a positive number if the operation completed without errors
+/// Returns 0 if runtimed, a negative number for logic errors, and a positive number if the operation completed without errors
 /datum/controller/master/proc/RunQueue()
 	. = 0
 	var/datum/controller/subsystem/queue_node
@@ -701,7 +879,7 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 	var/tick_precentage
 	var/tick_remaining
 	var/ran = TRUE //this is right
-	var/bg_calc //have we swtiched current_tick_budget to background mode yet?
+	var/bg_calc //!have we switched current_tick_budget to background mode yet?
 	var/tick_usage
 
 	//keep running while we have stuff to run and we haven't gone over a tick
@@ -755,6 +933,9 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 			queue_node_paused = (queue_node.state == SS_PAUSED || queue_node.state == SS_PAUSING)
 			last_type_processed = queue_node
 
+			var/list/subsystem_metadata = MC_METADATA_CREATE_SUBSYSTEM_LIST(queue_node.name, tick_precentage, queue_node_priority, queue_node_flags, queue_node.state)
+			//list(queue_node.name, 0, tick_precentage, 0, queue_node_priority, queue_node_flags, queue_node.state, NONE)
+
 			queue_node.state = SS_RUNNING
 
 			if(queue_node.profiler_focused)
@@ -776,6 +957,12 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 				tick_usage = 0
 			queue_node.tick_overrun = max(0, MC_AVG_FAST_UP_SLOW_DOWN(queue_node.tick_overrun, tick_usage-tick_precentage))
 			queue_node.state = state
+
+			subsystem_metadata[MC_METADATA_SUBSYSTEM_END_STATE] = queue_node.state
+			subsystem_metadata[MC_METADATA_SUBSYSTEM_TICK_USAGE] = tick_usage
+			subsystem_metadata[MC_METADATA_SUBSYSTEM_OVERTIME] = tick_usage - tick_precentage
+
+			metadata_this_tick[MC_METADATA_SUBSYSTEMS] += list(subsystem_metadata)
 
 			if (state == SS_PAUSED)
 				queue_node.paused_ticks++
@@ -862,8 +1049,20 @@ ADMIN_VERB(cmd_controller_view_ui, R_SERVER|R_DEBUG, "Controller Overview", "Vie
 
 
 /datum/controller/master/stat_entry(msg)
-	msg = "(TickRate:[Master.processing]) (Iteration:[Master.iteration]) (TickLimit: [round(Master.current_ticklimit, 0.1)])"
+	msg = "(Ticks Per MC Iteration:[Master.processing]) (Iteration:[Master.iteration]) (Max Tick Limit: [round(Master.current_ticklimit, 0.1)])\
+	(Sleeping Overtime: [round(Master.average_sleeping_overtime_usage, 0.1)]) \
+	(stoplag Threads: [stoplag_threads]) (Ticks Skipped [round(average_ticks_skipped, 0.1)])"
 	return msg
+
+///returns stats on how recent ticks have been divvied up between the MC, pre MC sleeping procs, post MC sleeping procs, maptick, and post maptick client verbs and procs
+/datum/controller/master/proc/return_tick_divisions()
+	var/message = "(Pre MC: [round(Master.average_starting_tick_usage, 0.1)]%)"//accurate
+	message += " (MC: [round(Master.average_MC_tick_usage, 0.1)]%)"//accurate
+	message += " (Post MC: [round(Master.average_sleeping_tick_usage, 0.1)]%)"//accurate
+	message += " (Maptick: [round(MAPTICK_LAST_INTERNAL_TICK_USAGE,0.1)]%)"//accurate
+	message += " (Post Maptick: [round(Master.average_post_maptick_tick_usage, 0.1)]%)"//not very accurate since we need to use an average to derive this and not all verbs covered
+
+	return message
 
 
 /datum/controller/master/StartLoadingMap()

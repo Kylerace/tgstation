@@ -133,7 +133,7 @@
 			playsound(src, pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE)
 			if(carbon_occupant)
 				carbon_occupant.flash_act(5)
-			sleep(0.2 SECONDS)
+			_sleep(0.2 SECONDS)
 		if(carbon_occupant)
 			carbon_occupant.emote("scream")
 		finish_taking_pictures()

@@ -625,10 +625,10 @@ ADMIN_VERB(secrets, R_NONE, "Secrets", "Abuse harder than you ever have before w
 	set waitfor = FALSE
 	if (playlightning)
 		sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
-		sleep(8 SECONDS)
+		_sleep(8 SECONDS)
 	priority_announce(replacetext(announcement, "%STATION%", station_name()))
 	if (playlightning)
-		sleep(2 SECONDS)
+		_sleep(2 SECONDS)
 		sound_to_playing_players('sound/magic/lightningbolt.ogg')
 
 /// Spawns a portal storm that spawns in sentient/non sentient mobs
@@ -680,7 +680,7 @@ ADMIN_VERB(secrets, R_NONE, "Secrets", "Abuse harder than you ever have before w
 /datum/everyone_is_an_antag_controller/proc/make_antag(datum/source, mob/living/player)
 	if(player.stat == DEAD || !player.mind)
 		return
-	sleep(1)
+	_sleep(1)
 	if(ishuman(player))
 		switch(chosen_antag)
 			if(ROLE_TRAITOR)

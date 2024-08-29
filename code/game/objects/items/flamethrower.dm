@@ -220,7 +220,7 @@
 			igniter.ignite_turf(src,T)
 		else
 			default_ignite(T)
-		sleep(0.1 SECONDS)
+		_sleep(0.1 SECONDS)
 		previousturf = T
 	operating = FALSE
 

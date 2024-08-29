@@ -288,7 +288,7 @@ GLOBAL_LIST_INIT(achievements_unlocked, list())
 	//stop collecting feedback during grifftime
 	SSblackbox.Seal()
 
-	sleep(5 SECONDS)
+	_sleep(5 SECONDS)
 	ready_for_reboot = TRUE
 	standard_reboot()
 

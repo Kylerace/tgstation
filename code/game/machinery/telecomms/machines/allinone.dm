@@ -42,7 +42,7 @@
 	signal.data["compression"] = 0
 	signal.mark_done()
 	if(signal.data["slow"] > 0)
-		sleep(signal.data["slow"]) // simulate the network lag if necessary
+		_sleep(signal.data["slow"]) // simulate the network lag if necessary
 	signal.broadcast()
 
 /obj/machinery/telecomms/allinone/attackby(obj/item/attacking_item, mob/user, params)

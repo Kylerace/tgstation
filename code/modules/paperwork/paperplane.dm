@@ -55,7 +55,7 @@
 	user.adjust_eye_blur(12 SECONDS)
 	if(eyes)
 		eyes.apply_organ_damage(rand(6,8))
-	sleep(1 SECONDS)
+	_sleep(1 SECONDS)
 	return BRUTELOSS
 
 /obj/item/paperplane/update_overlays()

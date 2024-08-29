@@ -559,7 +559,7 @@
 		addtimer(CALLBACK(thing, TYPE_PROC_REF(/obj/item/bodypart/, dismember)), timer)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), user, 'sound/weapons/bladeslice.ogg', 70), timer)
 		timer += 1 SECONDS
-	sleep(timer)
+	_sleep(timer)
 	return BRUTELOSS
 
 /obj/item/bonesetter

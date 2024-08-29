@@ -303,7 +303,7 @@
 	set_anchored(TRUE)
 	balloon_alert_to_viewers("charging...")
 	playsound(src, 'sound/magic/disable_tech.ogg', 50, TRUE)
-	sleep(use_time)
+	_sleep(use_time)
 	icon_state = initial(icon_state)
 	active = FALSE
 	set_anchored(FALSE)

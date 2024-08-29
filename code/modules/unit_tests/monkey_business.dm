@@ -24,4 +24,4 @@
 		else
 			new /datum/ai_controller/monkey(monkey)
 		monkey.ai_controller.set_blackboard_key(BB_MONKEY_TARGET_MONKEYS, TRUE)
-	sleep(monkey_timer)
+	_sleep(monkey_timer)

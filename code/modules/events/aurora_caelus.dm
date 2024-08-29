@@ -84,7 +84,7 @@
 		var/walked_range = LERP(start_range, end_range, i/5)
 		var/walked_power = LERP(start_power, end_power, i/5)
 		set_starlight(walked_color, walked_range, walked_power)
-		sleep(8 SECONDS)
+		_sleep(8 SECONDS)
 	set_starlight(end_color, end_range, end_power)
 
 /datum/round_event/aurora_caelus/proc/fade_kitchen(fade_in = FALSE)
@@ -110,7 +110,7 @@
 		for(var/area/station/service/kitchen/affected_area in GLOB.areas)
 			for(var/turf/open/kitchen_floor in affected_area.get_turfs_from_all_zlevels())
 				kitchen_floor.set_light(walked_range, walked_power, walked_color)
-		sleep(8 SECONDS)
+		_sleep(8 SECONDS)
 	for(var/area/station/service/kitchen/affected_area in GLOB.areas)
 		for(var/turf/open/kitchen_floor in affected_area.get_turfs_from_all_zlevels())
 			kitchen_floor.set_light(end_range, end_power, end_color)

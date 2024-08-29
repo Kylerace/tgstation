@@ -53,13 +53,13 @@
 	if(stat == DEAD || !get_bodypart(BODY_ZONE_HEAD) || istype(get_bodypart(BODY_ZONE_HEAD), /obj/item/bodypart/head/psyker))
 		return
 	to_chat(src, span_userdanger("You feel unwell..."))
-	sleep(5 SECONDS)
+	_sleep(5 SECONDS)
 	if(stat == DEAD || !get_bodypart(BODY_ZONE_HEAD))
 		return
 	to_chat(src, span_userdanger("You feel your skin ripping off!"))
 	emote("scream")
 	apply_damage(30, BRUTE, BODY_ZONE_HEAD)
-	sleep(5 SECONDS)
+	_sleep(5 SECONDS)
 	if(!psykerize())
 		to_chat(src, span_warning("The transformation subsides..."))
 		return

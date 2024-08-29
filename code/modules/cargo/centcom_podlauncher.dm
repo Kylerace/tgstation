@@ -626,7 +626,7 @@ ADMIN_VERB(centcom_podlauncher, R_ADMIN, "Config/Launch Supplypod", "Configure a
 						launch(landingzone) //launch the pod at the adjacent turf
 					else
 						launch(target) //If we couldn't locate an adjacent turf, just launch at the normal target
-					sleep(rand()*2) //looks cooler than them all appearing at once. Gives the impression of burst fire.
+					_sleep(rand()*2) //looks cooler than them all appearing at once. Gives the impression of burst fire.
 	else if (picking_dropoff_turf)
 		//Clicking on UI elements shouldn't pick a dropoff turf
 		if(istype(target,/atom/movable/screen))

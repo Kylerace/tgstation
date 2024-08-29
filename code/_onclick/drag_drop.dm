@@ -95,7 +95,7 @@
 		selected_target[2] = params
 		while(selected_target[1])
 			Click(selected_target[1], location, control, selected_target[2])
-			sleep(delay)
+			_sleep(delay)
 
 /client/MouseUp(object, location, control, params)
 	if(SEND_SIGNAL(src, COMSIG_CLIENT_MOUSEUP, object, location, control, params) & COMPONENT_CLIENT_MOUSEUP_INTERCEPT)

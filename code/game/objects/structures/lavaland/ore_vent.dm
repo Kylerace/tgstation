@@ -223,7 +223,7 @@
 				rock.gets_drilled(user, FALSE)
 				if(prob(50))
 					new /obj/effect/decal/cleanable/rubble(rock)
-		sleep(0.6 SECONDS)
+		_sleep(0.6 SECONDS)
 	return TRUE
 
 /**

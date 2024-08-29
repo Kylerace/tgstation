@@ -453,7 +453,7 @@ GLOBAL_LIST_INIT(skin_tone_names, list(
 			return
 		AM.setDir(i)
 		callperrotate?.Invoke()
-		sleep(0.1 SECONDS)
+		_sleep(0.1 SECONDS)
 	if(set_original_dir)
 		AM.setDir(originaldir)
 

@@ -186,7 +186,7 @@
 	playsound(loc, 'sound/effects/spray.ogg', 10, TRUE, -3)
 	if (!QDELETED(H))
 		H.emote("spin")
-		sleep(2 SECONDS)
+		_sleep(2 SECONDS)
 		for(var/obj/item/W in H)
 			H.dropItemToGround(W)
 			if(prob(50))
@@ -195,7 +195,7 @@
 		for(var/obj/item/bodypart/part as anything in H.bodyparts)
 			part.adjustBleedStacks(5)
 		H.gib_animation()
-		sleep(0.3 SECONDS)
+		_sleep(0.3 SECONDS)
 		H.adjustBruteLoss(1000) //to make the body super-bloody
 		// if we use gib() then the body gets deleted
 		H.spawn_gibs()

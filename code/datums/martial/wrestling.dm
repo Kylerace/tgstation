@@ -198,7 +198,7 @@ If you make a derivative work from this code, you must include this notification
 		else
 			return
 
-		sleep(delay)
+		_sleep(delay)
 
 	if (attacker && defender)
 		// These are necessary because of the sleep call.
@@ -229,7 +229,7 @@ If you make a derivative work from this code, you must include this notification
 	set waitfor = FALSE
 	if (defender)
 		animate(defender, transform = matrix(180, MATRIX_ROTATE), time = 1, loop = 0)
-	sleep(1.5 SECONDS)
+	_sleep(1.5 SECONDS)
 	if (defender)
 		animate(defender, transform = null, time = 1, loop = 0)
 
@@ -290,7 +290,7 @@ If you make a derivative work from this code, you must include this notification
 				defender.pixel_y = defender.base_pixel_y
 			return
 
-		sleep(0.1 SECONDS)
+		_sleep(0.1 SECONDS)
 
 	if (attacker && defender)
 		attacker.pixel_x = attacker.base_pixel_x
@@ -413,7 +413,7 @@ If you make a derivative work from this code, you must include this notification
 						span_danger("You climb onto [surface]!"))
 		attacker.pixel_y = attacker.base_pixel_y + 10
 		falling = 1
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 
 	if (attacker && defender)
 		// These are necessary because of the sleep call.
@@ -435,7 +435,7 @@ If you make a derivative work from this code, you must include this notification
 
 		if(attacker)
 			animate(attacker, transform = matrix(90, MATRIX_ROTATE), time = 1, loop = 0)
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 		if(attacker)
 			animate(attacker, transform = null, time = 1, loop = 0)
 

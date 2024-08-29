@@ -111,7 +111,7 @@
 /// This bobs the mob in the hoop direction for the dunk animation
 /obj/structure/hoop/proc/dunk_animation(mob/living/baller, dunk_pixel_y, dunk_pixel_x)
 	animate(baller, pixel_x = dunk_pixel_x, pixel_y = dunk_pixel_y, time = 5, easing = BOUNCE_EASING|EASE_IN|EASE_OUT)
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 	animate(baller, pixel_x = 0, pixel_y = 0, time = 3)
 
 /obj/structure/hoop/attack_hand(mob/living/baller, list/modifiers)

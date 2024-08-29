@@ -182,7 +182,7 @@
 	for(var/category in DETSCAN_DEFAULT_ORDER())
 		if(!LAZYLEN(det_data[category]))
 			continue  // no data found, move to next category
-		sleep(3 SECONDS)
+		_sleep(3 SECONDS)
 		add_log(span_info("<B>[category]:</B>"))
 		for(var/line in det_data[category])
 			add_log(line)

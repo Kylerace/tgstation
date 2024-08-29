@@ -184,7 +184,7 @@
 			new /obj/effect/temp_visual/hierophant/blast/visual(turf_near_source, user, TRUE)
 		for(var/mob/living/mob_to_teleport in range(1, source))
 			INVOKE_ASYNC(src, PROC_REF(teleport_mob), source, mob_to_teleport, destination, user)
-		sleep(0.6 SECONDS) //at this point the blasts detonate
+		_sleep(0.6 SECONDS) //at this point the blasts detonate
 		if(beacon)
 			beacon.icon_state = "hierophant_tele_off"
 	else
@@ -201,19 +201,19 @@
 	if(!turf_to_teleport_to || turf_to_teleport_to.is_blocked_turf(TRUE))
 		return
 	animate(teleporting, alpha = 0, time = 2, easing = EASE_OUT) //fade out
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	if(!teleporting)
 		return
 	teleporting.visible_message(span_hierophant_warning("[teleporting] fades out!"))
-	sleep(0.2 SECONDS)
+	_sleep(0.2 SECONDS)
 	if(!teleporting)
 		return
 	var/success = do_teleport(teleporting, turf_to_teleport_to, no_effects = TRUE, channel = TELEPORT_CHANNEL_MAGIC)
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	if(!teleporting)
 		return
 	animate(teleporting, alpha = 255, time = 2, easing = EASE_IN) //fade IN
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	if(!teleporting)
 		return
 	teleporting.visible_message(span_hierophant_warning("[teleporting] fades in!"))

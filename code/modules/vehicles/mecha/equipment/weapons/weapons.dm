@@ -69,7 +69,7 @@
 
 		log_combat(source, target, "fired [projectile_obj] at", src, "from [chassis] at [get_area_name(src, TRUE)]")
 
-		sleep(max(0, projectile_delay))
+		_sleep(max(0, projectile_delay))
 
 		if(kickback)
 			chassis.newtonian_move(newtonian_target)
@@ -378,7 +378,7 @@
 	projectiles--
 	proj_init(O, source)
 	O.throw_at(target, missile_range, missile_speed, source, FALSE, diagonals_first = diags_first)
-	sleep(max(0, projectile_delay))
+	_sleep(max(0, projectile_delay))
 	if(kickback)
 		chassis.newtonian_move(newtonian_target)
 	return TRUE

@@ -221,7 +221,7 @@
 /obj/machinery/jukebox/disco/proc/hierofunk()
 	for(var/i in 1 to 10)
 		spawn_atom_to_turf(/obj/effect/temp_visual/hierophant/telegraph/edge, src, 1, FALSE)
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 
 #define DISCO_INFENO_RANGE (rand(85, 115)*0.01)
 
@@ -242,7 +242,7 @@
 			if(25)
 				S.pixel_y = 7
 				S.forceMove(get_turf(src))
-		sleep(0.7 SECONDS)
+		_sleep(0.7 SECONDS)
 	for(var/s in sparkles)
 		var/obj/effect/overlay/sparkles/reveal = s
 		reveal.alpha = 255
@@ -314,7 +314,7 @@
 					glow.even_cycle = !glow.even_cycle
 		if(prob(2))  // Unique effects for the dance floor that show up randomly to mix things up
 			INVOKE_ASYNC(src, PROC_REF(hierofunk))
-		sleep(music_player.selection.song_beat)
+		_sleep(music_player.selection.song_beat)
 		if(QDELETED(src))
 			return
 

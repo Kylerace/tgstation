@@ -349,7 +349,7 @@
 	else
 		attack_self(user)
 
-	sleep(0.3 SECONDS)
+	_sleep(0.3 SECONDS)
 	if (QDELETED(human_user))
 		return
 	if(!QDELETED(our_brain))

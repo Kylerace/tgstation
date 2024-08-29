@@ -34,7 +34,7 @@
 	#define SHOULD_NOT_OVERRIDE(X) set SpacemanDMM_should_not_override = X
 	/**
 	 * If set, raise a warning if the proc or one of the sub-procs it calls
-	 * uses a blocking call, such as `sleep()` or `input()` without using `set waitfor = 0`
+	 * uses a blocking call, such as `_sleep()` or `input()` without using `set waitfor = 0`
 	 * This cannot be disabled by child overrides.
 	 */
 	#define SHOULD_NOT_SLEEP(X) set SpacemanDMM_should_not_sleep = X

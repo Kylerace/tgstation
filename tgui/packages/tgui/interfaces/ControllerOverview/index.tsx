@@ -1,12 +1,13 @@
 import { useReducer, useState } from 'react';
 
-import { Button, Dropdown, Input, Section, Stack } from '../../components';
+import { Button, Dropdown, Input, Section, Stack, Tabs } from '../../components';
 import { Window } from '../../layouts';
 import { SORTING_TYPES } from './contants';
 import { FilterAction, filterReducer, FilterState } from './filters';
 import { OverviewSection } from './OverviewSection';
 import { SubsystemDialog } from './SubsystemDialog';
 import { SubsystemViews } from './SubsystemViews';
+import { TickViews } from './TickViews';
 import { SortType, SubsystemData } from './types';
 
 export function ControllerOverview(props) {
@@ -33,6 +34,8 @@ export function ControllerContent(props) {
   const { label, inDeciseconds } =
     SORTING_TYPES?.[state.sortType] || SORTING_TYPES[0];
 
+  const [tabUsed, setTabUsed] = useState(0);
+
   function onSelectionHandler(value: string) {
     const updates: Partial<FilterState> = {
       sortType: SORTING_TYPES.findIndex((type) => type.label === value),
@@ -50,7 +53,7 @@ export function ControllerContent(props) {
 
   return (
     <Stack fill vertical>
-      {selected && (
+      {tabUsed === 0 && selected && (
         <SubsystemDialog
           onClose={() => setSelected(undefined)}
           subsystem={selected}
@@ -59,94 +62,119 @@ export function ControllerContent(props) {
       <Stack.Item height="15%">
         <OverviewSection />
       </Stack.Item>
-      <Stack.Item height="12%">
-        <Section fill>
-          <Stack justify="space-between">
-            <Stack.Item grow mb={4}>
-              <Stack fill vertical>
-                <Stack.Item height="50%">
-                  <Input
-                    onInput={(e, value) =>
-                      dispatch({ type: FilterAction.Query, payload: value })
-                    }
-                    placeholder="By name"
-                    value={state.query}
-                    width="85%"
-                  />
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    disabled={!inDeciseconds}
-                    selected={state.smallValues}
-                    tooltip="Hide values under 1"
-                    icon={state.smallValues ? 'eye-slash' : 'eye'}
-                    onClick={() =>
-                      dispatch({
-                        type: FilterAction.SmallValues,
-                        payload: !state.smallValues,
-                      })
-                    }
-                  >
-                    Small
-                  </Button>
-                  <Button
-                    icon={state.inactive ? 'eye-slash' : 'eye'}
-                    tooltip="Hide offline/paused"
-                    selected={state.inactive}
-                    onClick={() =>
-                      dispatch({
-                        type: FilterAction.Inactive,
-                        payload: !state.inactive,
-                      })
-                    }
-                  >
-                    Inactive
-                  </Button>
-                </Stack.Item>
-              </Stack>
-            </Stack.Item>
-            <Stack.Item>
-              <Stack vertical>
-                <Stack.Item>
-                  <Dropdown
-                    options={SORTING_TYPES.map((type) => type.label)}
-                    selected={label}
-                    displayText={label}
-                    onSelected={onSelectionHandler}
-                  />
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    selected={state.ascending}
-                    onClick={() =>
-                      dispatch({
-                        type: FilterAction.Ascending,
-                        payload: !state.ascending,
-                      })
-                    }
-                  >
-                    Ascending
-                  </Button>
-                  <Button
-                    selected={!state.ascending}
-                    onClick={() =>
-                      dispatch({
-                        type: FilterAction.Ascending,
-                        payload: !state.ascending,
-                      })
-                    }
-                  >
-                    Descending
-                  </Button>
-                </Stack.Item>
-              </Stack>
-            </Stack.Item>
-          </Stack>
-        </Section>
+      <Stack.Item>
+        <Tabs>
+          <Tabs.Tab
+            selected={tabUsed === 0}
+            onClick={() => setTabUsed(0)}
+          >
+            Subsystems
+          </Tabs.Tab>
+          <Tabs.Tab
+            selected={tabUsed === 1}
+            onClick={() => setTabUsed(1)}
+          >
+            Ticks
+          </Tabs.Tab>
+        </Tabs>
       </Stack.Item>
-      <Stack.Item grow>
-        <SubsystemViews setSelected={setSelected} filterOpts={state} />
-      </Stack.Item>
+
+      {tabUsed === 1 && (
+        <Stack.Item grow>
+          <TickViews />
+        </Stack.Item>
+      )}
+
+      {tabUsed === 0 && (
+        <Stack.Item height="12%">
+          <Section fill>
+            <Stack justify="space-between">
+              <Stack.Item grow mb={4}>
+                <Stack fill vertical>
+                  <Stack.Item height="50%">
+                    <Input
+                      onInput={(e, value) =>
+                        dispatch({ type: FilterAction.Query, payload: value })
+                      }
+                      placeholder="By name"
+                      value={state.query}
+                      width="85%"
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      disabled={!inDeciseconds}
+                      selected={state.smallValues}
+                      tooltip="Hide values under 1"
+                      icon={state.smallValues ? 'eye-slash' : 'eye'}
+                      onClick={() =>
+                        dispatch({
+                          type: FilterAction.SmallValues,
+                          payload: !state.smallValues,
+                        })
+                      }
+                    >
+                      Small
+                    </Button>
+                    <Button
+                      icon={state.inactive ? 'eye-slash' : 'eye'}
+                      tooltip="Hide offline/paused"
+                      selected={state.inactive}
+                      onClick={() =>
+                        dispatch({
+                          type: FilterAction.Inactive,
+                          payload: !state.inactive,
+                        })
+                      }
+                    >
+                      Inactive
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+              <Stack.Item>
+                <Stack vertical>
+                  <Stack.Item>
+                    <Dropdown
+                      options={SORTING_TYPES.map((type) => type.label)}
+                      selected={label}
+                      displayText={label}
+                      onSelected={onSelectionHandler}
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      selected={state.ascending}
+                      onClick={() =>
+                        dispatch({
+                          type: FilterAction.Ascending,
+                          payload: !state.ascending,
+                        })
+                      }
+                    >
+                      Ascending
+                    </Button>
+                    <Button
+                      selected={!state.ascending}
+                      onClick={() =>
+                        dispatch({
+                          type: FilterAction.Ascending,
+                          payload: !state.ascending,
+                        })
+                      }
+                    >
+                      Descending
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+            </Stack>
+          </Section>
+        <Stack.Item grow>
+          <SubsystemViews setSelected={setSelected} filterOpts={state} />
+        </Stack.Item>
+        </Stack.Item>
+      )}
     </Stack>
   );
 }

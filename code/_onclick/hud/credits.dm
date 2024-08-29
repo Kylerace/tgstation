@@ -19,8 +19,8 @@
 		if(!credits)
 			return
 		_credits += new /atom/movable/screen/credit(null, null, I, src, credits_icon)
-		sleep(CREDIT_SPAWN_SPEED)
-	sleep(CREDIT_ROLL_SPEED - CREDIT_SPAWN_SPEED)
+		_sleep(CREDIT_SPAWN_SPEED)
+	_sleep(CREDIT_ROLL_SPEED - CREDIT_SPAWN_SPEED)
 	remove_verb(src, /client/proc/ClearCredits)
 	qdel(credits_icon)
 

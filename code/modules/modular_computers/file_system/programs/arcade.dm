@@ -38,7 +38,7 @@
 	boss_name = "George Melon"
 
 /datum/computer_file/program/arcade/proc/game_check(mob/user)
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 	user?.mind?.adjust_experience(/datum/skill/gaming, 1)
 	if(boss_hp <= 0)
 		heads_up = "You have crushed [boss_name]! Rejoice!"
@@ -50,7 +50,7 @@
 		ticket_count += 1
 		user?.mind?.adjust_experience(/datum/skill/gaming, 50)
 		usr.won_game()
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 	else if(player_hp <= 0 || player_mp <= 0)
 		heads_up = "You have been defeated... how will the station survive?"
 		playsound(computer.loc, 'sound/arcade/lose.ogg', 50)
@@ -60,7 +60,7 @@
 			computer.update_appearance()
 		user?.mind?.adjust_experience(/datum/skill/gaming, 10)
 		usr.lost_game()
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 
 /datum/computer_file/program/arcade/proc/enemy_check(mob/user)
 	var/boss_attackamt = 0 //Spam protection from boss attacks as well.
@@ -124,7 +124,7 @@
 			heads_up = "You attack for [attackamt] damage."
 			playsound(computer.loc, 'sound/arcade/hit.ogg', 50, TRUE)
 			boss_hp -= attackamt
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 			game_check()
 			enemy_check()
 			return TRUE
@@ -142,7 +142,7 @@
 			playsound(computer.loc, 'sound/arcade/heal.ogg', 50, TRUE)
 			player_hp += healamt
 			player_mp -= healcost
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 			game_check()
 			enemy_check()
 			return TRUE
@@ -154,7 +154,7 @@
 			heads_up = "You regain [rechargeamt] magic power."
 			playsound(computer.loc, 'sound/arcade/mana.ogg', 50, TRUE)
 			player_mp += rechargeamt
-			sleep(1 SECONDS)
+			_sleep(1 SECONDS)
 			game_check()
 			enemy_check()
 			return TRUE

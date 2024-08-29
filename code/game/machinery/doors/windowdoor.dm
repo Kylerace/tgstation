@@ -111,9 +111,9 @@
 		return
 	autoclose = TRUE
 	if(check_access(null))
-		sleep(5 SECONDS)
+		_sleep(5 SECONDS)
 	else //secure doors close faster
-		sleep(2 SECONDS)
+		_sleep(2 SECONDS)
 	if(!density && autoclose) //did someone change state while we slept?
 		close()
 
@@ -217,7 +217,7 @@
 	do_animate("opening")
 	playsound(src, 'sound/machines/windowdoor.ogg', 100, TRUE)
 	icon_state ="[base_state]open"
-	sleep(1 SECONDS)
+	_sleep(1 SECONDS)
 	set_density(FALSE)
 	air_update_turf(TRUE, FALSE)
 	update_freelook_sight()
@@ -264,7 +264,7 @@
 	set_density(TRUE)
 	air_update_turf(TRUE, TRUE)
 	update_freelook_sight()
-	sleep(1 SECONDS)
+	_sleep(1 SECONDS)
 
 	operating = FALSE
 	return TRUE

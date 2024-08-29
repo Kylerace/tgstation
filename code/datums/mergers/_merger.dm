@@ -67,7 +67,7 @@
 #if MERGERS_DEBUG
 	thing.add_atom_colour(debug_color, ADMIN_COLOUR_PRIORITY)
 	if(SSatoms.initialized != INITIALIZATION_INNEW_MAPLOAD)
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 #endif
 
 /datum/merger/proc/HandleMemberDel(atom/source)

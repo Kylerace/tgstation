@@ -1148,7 +1148,7 @@ GLOBAL_LIST_EMPTY(transformation_animation_objects)
 	if(!overlay_image)
 		return
 	add_overlay(overlay_image)
-	sleep(duration)
+	_sleep(duration)
 	cut_overlay(overlay_image)
 
 /// Perform a shake on an atom, resets its position afterwards

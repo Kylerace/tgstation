@@ -500,7 +500,7 @@
 
 	//re-enable clicking the button when the shutter animation finishes
 	//we use sleep here so it can work during game setup, as addtimer would not work until the game would finish setting up
-	sleep(2 * SHUTTER_MOVEMENT_DURATION + SHUTTER_WAIT_DURATION)
+	_sleep(2 * SHUTTER_MOVEMENT_DURATION + SHUTTER_WAIT_DURATION)
 	set_button_status(TRUE)
 
 ///Proc to update the ready blip state upon new player's ready status change

@@ -139,7 +139,7 @@
 
 	playsound(loc, 'sound/items/timer.ogg', 30, FALSE)
 	if(!panic_beep_sound)
-		sleep(delay * 0.25)
+		_sleep(delay * 0.25)
 	if(imp_in && !imp_in.stat && !no_paralyze)
 		imp_in.visible_message(span_warning("[imp_in] doubles over in pain!"))
 		imp_in.Paralyze(14 SECONDS)
@@ -150,7 +150,7 @@
 			//for extra spice
 			var/beep_volume = 35
 			playsound(loc, 'sound/items/timer.ogg', beep_volume, vary = FALSE)
-			sleep(delay * 0.25)
+			_sleep(delay * 0.25)
 			bomb_beeps_until_boom--
 			beep_volume += 5
 		explode()
@@ -159,7 +159,7 @@
 		while(delay > 1) //so we dont accidentally enter an infinite sleep
 			var/beep_volume = 35
 			playsound(loc, 'sound/items/timer.ogg', beep_volume, vary = FALSE)
-			sleep(delay * 0.2)
+			_sleep(delay * 0.2)
 			delay -= delay * 0.2
 			beep_volume += 5
 

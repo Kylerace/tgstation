@@ -376,7 +376,7 @@ Buildable meters
 			C.vomit(vomit_flags = (MOB_VOMIT_BLOOD | MOB_VOMIT_HARM), lost_nutrition = 0, distance = 4)
 			if(prob(20))
 				C.spew_organ()
-			sleep(0.5 SECONDS)
+			_sleep(0.5 SECONDS)
 		C.blood_volume = 0
 	return(OXYLOSS|BRUTELOSS)
 

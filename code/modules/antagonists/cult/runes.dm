@@ -179,7 +179,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 /obj/effect/rune/proc/do_invoke_glow()
 	set waitfor = FALSE
 	animate(src, transform = matrix()*2, alpha = 0, time = 5, flags = ANIMATION_END_NOW) //fade out
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 	animate(src, transform = matrix(), alpha = 255, time = 0, flags = ANIMATION_END_NOW)
 
 /obj/effect/rune/proc/fail_invoke()
@@ -624,7 +624,7 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 			return
 		var/starlight_color = hsv_gradient(i, 1, starting_color, 3, mid_color, 6, mid_color, 9, end_color)
 		set_starlight(starlight_color)
-		sleep(8 SECONDS)
+		_sleep(8 SECONDS)
 
 /// Summon failed, time to work backwards
 /proc/failed_narsie_summon()
@@ -643,7 +643,7 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 			return
 		var/starlight_color = BlendHSV(i / 4, starting_color, end_color)
 		set_starlight(starlight_color)
-		sleep(8 SECONDS)
+		_sleep(8 SECONDS)
 
 /obj/effect/rune/narsie/invoke(list/invokers)
 	if(used)
@@ -677,7 +677,7 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 	var/turf/rune_turf = get_turf(src)
 	for(var/datum/mind/cult_mind as anything in cult_team.members)
 		cult_team.true_cultists += cult_mind
-	sleep(4 SECONDS)
+	_sleep(4 SECONDS)
 	if(src)
 		color = RUNE_COLOR_RED
 
@@ -899,17 +899,17 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 				continue
 			to_chat(target, span_cult_large("Your blood boils in your veins!"))
 	animate(src, color = "#FCB56D", time = 4)
-	sleep(0.4 SECONDS)
+	_sleep(0.4 SECONDS)
 	if(QDELETED(src))
 		return
 	do_area_burn(T, 0.5)
 	animate(src, color = "#FFDF80", time = 5)
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 	if(QDELETED(src))
 		return
 	do_area_burn(T, 1)
 	animate(src, color = "#FFFDF4", time = 6)
-	sleep(0.6 SECONDS)
+	_sleep(0.6 SECONDS)
 	if(QDELETED(src))
 		return
 	do_area_burn(T, 1.5)
@@ -1014,7 +1014,7 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 			if(user.stat != CONSCIOUS || HAS_TRAIT(new_human, TRAIT_CRITICAL_CONDITION))
 				break
 			user.apply_damage(0.1, BRUTE)
-			sleep(0.1 SECONDS)
+			_sleep(0.1 SECONDS)
 
 		qdel(N)
 		ghosts--
@@ -1051,7 +1051,7 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 			if(affecting.health <= 10)
 				to_chat(G, span_cult_italic("Your body can no longer sustain the connection!"))
 				break
-			sleep(0.5 SECONDS)
+			_sleep(0.5 SECONDS)
 		CM.Remove(G)
 		GM.Remove(G)
 		affecting.remove_atom_colour(ADMIN_COLOUR_PRIORITY, RUNE_COLOR_DARKRED)
@@ -1194,14 +1194,14 @@ GLOBAL_VAR_INIT(narsie_summon_count, 0)
 		for(var/image/I in images)
 			I.override = FALSE
 			animate(I, alpha = 0, time = 25, flags = ANIMATION_PARALLEL)
-		sleep(3.5 SECONDS)
+		_sleep(3.5 SECONDS)
 		for(var/image/I in images)
 			animate(I, alpha = 255, time = 25, flags = ANIMATION_PARALLEL)
-		sleep(2.5 SECONDS)
+		_sleep(2.5 SECONDS)
 		for(var/image/I in images)
 			if(I.icon_state != "bloodsparkles")
 				I.override = TRUE
-		sleep(19 SECONDS)
+		_sleep(19 SECONDS)
 
 
 

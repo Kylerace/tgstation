@@ -4,7 +4,7 @@
 	for(var/I in 1 to 5)
 		allocate(/mob/living/carbon/human/consistent, pick(locs))
 
-	sleep(5 SECONDS)
+	_sleep(5 SECONDS)
 
 /// Tests [/mob/living/carbon/human/proc/setup_organless_effects], specifically that they aren't applied when init is done
 /datum/unit_test/human_default_traits

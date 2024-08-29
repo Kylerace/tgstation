@@ -49,7 +49,7 @@
 		if (target_turf.is_blocked_turf(exclude_mobs = TRUE))
 			return
 		burn_turf(target_turf, hit_list, owner)
-		sleep(fire_delay)
+		_sleep(fire_delay)
 
 /// Finally spawn the actual fire, spawns the fire hotspot in case you want to recolour it or something
 /datum/action/cooldown/mob_cooldown/fire_breath/proc/burn_turf(turf/fire_turf, list/hit_list, mob/living/source)

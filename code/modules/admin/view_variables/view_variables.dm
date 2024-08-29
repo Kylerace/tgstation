@@ -112,7 +112,7 @@ ADMIN_VERB_AND_CONTEXT_MENU(debug_variables, R_NONE, "View Variables", "View the
 		for(var/varname in thing.vars)
 			names += varname
 
-	sleep(1 TICKS)
+	_sleep(1 TICKS)
 
 	var/list/variable_html = list()
 	if(islist)

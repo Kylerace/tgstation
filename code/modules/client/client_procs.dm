@@ -146,6 +146,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		return
 	..() //redirect to hsrc.Topic()
 
+	POST_MAPTICK_MAX_TICK_USAGE
+
 ///dumb workaround because byond doesnt seem to recognize the Topic() typepath for /datum/proc/Topic() from the client Topic,
 ///so we cant queue it without this
 /client/proc/_Topic(datum/hsrc, href, list/href_list)
@@ -911,6 +913,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	SEND_SIGNAL(src, COMSIG_CLIENT_CLICK, object, location, control, params, usr)
 
 	..()
+
+	POST_MAPTICK_MAX_TICK_USAGE
 
 /client/proc/add_verbs_from_config()
 	if (interviewee)

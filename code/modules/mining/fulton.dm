@@ -119,7 +119,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	balloon2.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	holder_obj.add_overlay(balloon2)
 
-	sleep(0.4 SECONDS)
+	_sleep(0.4 SECONDS)
 
 	balloon = mutable_appearance('icons/effects/fulton_balloon.dmi', "fulton_balloon")
 	balloon.pixel_y = 10
@@ -133,7 +133,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	animate(pixel_z = -5, time = 1 SECONDS, flags = ANIMATION_RELATIVE)
 	animate(pixel_z = 5, time = 1 SECONDS, flags = ANIMATION_RELATIVE)
 	animate(pixel_z = -5, time = 1 SECONDS, flags = ANIMATION_RELATIVE)
-	sleep(6 SECONDS)
+	_sleep(6 SECONDS)
 
 	playsound(holder_obj.loc, 'sound/items/fultext_launch.ogg', vol = 50, vary = TRUE, extrarange = -3)
 	animate(holder_obj, pixel_z = 1000, time = 3 SECONDS, flags = ANIMATION_RELATIVE)
@@ -144,7 +144,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 		creature.remove_status_effect(/datum/status_effect/drowsiness)
 		creature.SetSleeping(0)
 
-	sleep(3 SECONDS)
+	_sleep(3 SECONDS)
 
 	var/turf/flooring_near_beacon = list()
 	var/turf/beacon_turf = get_turf(beacon)
@@ -160,20 +160,20 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	animate(holder_obj, pixel_z = -990, time = 5 SECONDS, flags = ANIMATION_RELATIVE)
 	animate(pixel_z = 5, time = 1 SECONDS, flags = ANIMATION_RELATIVE)
 	animate(pixel_z = -5, time = 1 SECONDS, flags = ANIMATION_RELATIVE)
-	sleep(7 SECONDS)
+	_sleep(7 SECONDS)
 
 	balloon3 = mutable_appearance('icons/effects/fulton_balloon.dmi', "fulton_retract")
 	balloon3.pixel_y = 10
 	balloon3.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	holder_obj.cut_overlay(balloon)
 	holder_obj.add_overlay(balloon3)
-	sleep(0.4 SECONDS)
+	_sleep(0.4 SECONDS)
 
 	holder_obj.cut_overlay(balloon3)
 	thing.set_anchored(FALSE) // An item has to be unanchored to be extracted in the first place.
 	thing.set_density(initial(thing.density))
 	animate(holder_obj, pixel_z = -10, time = 0.5 SECONDS, flags = ANIMATION_RELATIVE)
-	sleep(0.5 SECONDS)
+	_sleep(0.5 SECONDS)
 
 	thing.forceMove(holder_obj.loc)
 	qdel(holder_obj)

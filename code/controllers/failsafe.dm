@@ -48,7 +48,7 @@ GLOBAL_REAL(Failsafe, /datum/controller/failsafe)
 				message_admins(span_boldannounce("/proc/delete_all_SS_and_recreate_master: Most stuff will be broken but basic stuff like movement and chat should still work."))
 			else if (recovery_result == -1) //Failed to recreate MC
 				defcon--
-			sleep(initial(processing_interval)) //Wait a bit until the next try
+			_sleep(initial(processing_interval)) //Wait a bit until the next try
 
 	if(!QDELETED(src))
 		qdel(src) //when Loop() returns, we delete ourselves and let the mc recreate us
@@ -116,12 +116,12 @@ GLOBAL_REAL(Failsafe, /datum/controller/failsafe)
 					defcon = min(defcon + 1,5)
 					master_iteration = Master.iteration
 			if (defcon <= 1)
-				sleep(processing_interval*2)
+				_sleep(processing_interval*2)
 			else
-				sleep(processing_interval)
+				_sleep(processing_interval)
 		else
 			defcon = 5
-			sleep(initial(processing_interval))
+			_sleep(initial(processing_interval))
 
 //Emergency loop used when Master got deleted or the main loop exited while Defcon == 0
 //Loop is driven externally so runtimes only cancel the current recovery attempt

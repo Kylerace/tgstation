@@ -190,14 +190,14 @@
 /datum/sm_delam/proc/effect_evac_rift_end()
 	priority_announce("[Gibberish("The rift has been destroyed, we can no longer help you.", FALSE, 5)]")
 
-	sleep(25 SECONDS)
+	_sleep(25 SECONDS)
 
 	priority_announce("Reports indicate formation of crystalline seeds following resonance shift event. \
 		Rapid expansion of crystal mass proportional to rising gravitational force. \
 		Matter collapse due to gravitational pull foreseeable.",
 		"Nanotrasen Star Observation Association")
 
-	sleep(25 SECONDS)
+	_sleep(25 SECONDS)
 
 	priority_announce("[Gibberish("All attempts at evacuation have now ceased, and all assets have been retrieved from your sector.\n \
 		To the remaining survivors of [station_name()], farewell.", FALSE, 5)]")
@@ -213,7 +213,7 @@
 		SSshuttle.emergency.setTimer(15 SECONDS)
 		return
 
-	sleep(10 SECONDS)
+	_sleep(10 SECONDS)
 
 	SSticker.news_report = SUPERMATTER_CASCADE
 	SSticker.force_ending = FORCE_END_ROUND

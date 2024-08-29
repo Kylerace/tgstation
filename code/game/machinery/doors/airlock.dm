@@ -748,28 +748,28 @@
 	if(!aiHacking)
 		aiHacking = TRUE
 		to_chat(user, span_warning("Airlock AI control has been blocked. Beginning fault-detection."))
-		sleep(5 SECONDS)
+		_sleep(5 SECONDS)
 
 		if(!check_hacking(user, "Fault confirmed: airlock control wire disabled or cut."))
 			return
-		sleep(2 SECONDS)
+		_sleep(2 SECONDS)
 
 		if(!check_hacking(user, "Attempting to hack into airlock. This may take some time."))
 			return
-		sleep(20 SECONDS)
+		_sleep(20 SECONDS)
 
 		if(!check_hacking(user, "Upload access confirmed. Loading control program into airlock software."))
 			return
-		sleep(17 SECONDS)
+		_sleep(17 SECONDS)
 
 		if(!check_hacking(user,"Transfer complete. Forcing airlock to execute program."))
 			return
-		sleep(5 SECONDS)
+		_sleep(5 SECONDS)
 
 		if(!check_hacking(user, "Receiving control information from airlock."))
 			return
 		aiControlDisabled = AI_WIRE_HACKED //disable blocked control
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 
 		aiHacking = FALSE
 		if(QDELETED(src))
@@ -814,7 +814,7 @@
 
 /obj/machinery/door/airlock/proc/electrified_loop()
 	while (secondsElectrified > MACHINE_NOT_ELECTRIFIED)
-		sleep(1 SECONDS)
+		_sleep(1 SECONDS)
 		if(QDELETED(src))
 			return
 
@@ -1228,18 +1228,18 @@
 	SEND_SIGNAL(src, COMSIG_AIRLOCK_OPEN, forced)
 	operating = TRUE
 	update_icon(ALL, AIRLOCK_OPENING, TRUE)
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	set_opacity(0)
 	if(multi_tile)
 		filler.set_opacity(FALSE)
 	update_freelook_sight()
-	sleep(0.4 SECONDS)
+	_sleep(0.4 SECONDS)
 	set_density(FALSE)
 	if(multi_tile)
 		filler.set_density(FALSE)
 	flags_1 &= ~PREVENT_CLICK_UNDER_1
 	air_update_turf(TRUE, FALSE)
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, TRUE)
 	operating = FALSE
@@ -1308,14 +1308,14 @@
 			filler.density = TRUE
 		flags_1 |= PREVENT_CLICK_UNDER_1
 		air_update_turf(TRUE, TRUE)
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	if(!air_tight)
 		set_density(TRUE)
 		if(multi_tile)
 			filler.density = TRUE
 		flags_1 |= PREVENT_CLICK_UNDER_1
 		air_update_turf(TRUE, TRUE)
-	sleep(0.4 SECONDS)
+	_sleep(0.4 SECONDS)
 	if(dangerous_close)
 		crush()
 	if(visible && !glass)
@@ -1323,7 +1323,7 @@
 		if(multi_tile)
 			filler.set_opacity(TRUE)
 	update_freelook_sight()
-	sleep(0.1 SECONDS)
+	_sleep(0.1 SECONDS)
 	update_icon(ALL, AIRLOCK_CLOSED, 1)
 	operating = FALSE
 	delayed_close_requested = FALSE

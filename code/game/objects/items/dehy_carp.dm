@@ -41,7 +41,7 @@
 		return BRUTELOSS
 	user.Paralyze(3 SECONDS)
 	forceMove(user) //we move it AWAAAYY
-	sleep(2 SECONDS)
+	_sleep(2 SECONDS)
 	if(QDELETED(src))
 		return SHAME
 	if(!QDELETED(user))

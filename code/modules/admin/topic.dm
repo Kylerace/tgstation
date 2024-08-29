@@ -600,7 +600,7 @@
 			L.dropItemToGround(I, TRUE)
 
 		L.Unconscious(100)
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		L.forceMove(pick(GLOB.tdome1))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), L, span_adminnotice("You have been sent to the Thunderdome.")), 5 SECONDS)
 		log_admin("[key_name(usr)] has sent [key_name(L)] to the thunderdome. (Team 1)")
@@ -626,7 +626,7 @@
 			L.dropItemToGround(I, TRUE)
 
 		L.Unconscious(100)
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		L.forceMove(pick(GLOB.tdome2))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), L, span_adminnotice("You have been sent to the Thunderdome.")), 5 SECONDS)
 		log_admin("[key_name(usr)] has sent [key_name(L)] to the thunderdome. (Team 2)")
@@ -649,7 +649,7 @@
 		var/mob/living/L = M
 
 		L.Unconscious(100)
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		L.forceMove(pick(GLOB.tdomeadmin))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), L, span_adminnotice("You have been sent to the Thunderdome.")), 5 SECONDS)
 		log_admin("[key_name(usr)] has sent [key_name(L)] to the thunderdome. (Admin.)")
@@ -680,7 +680,7 @@
 			observer.equip_to_slot_or_del(new /obj/item/clothing/neck/tie/black/tied(observer), ITEM_SLOT_NECK)
 			observer.equip_to_slot_or_del(new /obj/item/clothing/shoes/sneakers/black(observer), ITEM_SLOT_FEET)
 		L.Unconscious(100)
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		L.forceMove(pick(GLOB.tdomeobserve))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), L, span_adminnotice("You have been sent to the Thunderdome.")), 5 SECONDS)
 		log_admin("[key_name(usr)] has sent [key_name(L)] to the thunderdome. (Observer.)")

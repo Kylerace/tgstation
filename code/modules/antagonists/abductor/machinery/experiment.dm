@@ -146,7 +146,7 @@
 		LAZYADD(history, occupant)
 		LAZYADD(abductee_minds, occupant.mind)
 		say("Processing specimen...")
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		switch(text2num(type))
 			if(1)
 				to_chat(occupant, span_warning("You feel violated."))
@@ -154,7 +154,7 @@
 				to_chat(occupant, span_warning("You feel yourself being sliced apart and put back together."))
 			if(3)
 				to_chat(occupant, span_warning("You feel intensely watched."))
-		sleep(0.5 SECONDS)
+		_sleep(0.5 SECONDS)
 		user_abductor.team.abductees += occupant.mind
 		occupant.mind.add_antag_datum(/datum/antagonist/abductee)
 

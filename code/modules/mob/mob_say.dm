@@ -163,6 +163,8 @@
 		displayed_key = null
 	deadchat_broadcast(rendered, source, follow_target = src, speaker_key = displayed_key)
 
+	POST_MAPTICK_MAX_TICK_USAGE
+
 ///Check if this message is an emote
 /mob/proc/check_emote(message, forced)
 	if(message[1] == "*")

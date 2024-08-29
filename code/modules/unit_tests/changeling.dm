@@ -31,7 +31,7 @@
 	add_to_screenshot(ling, victim)
 
 	// Make sure we give it enough time such that the status effect process ticks over and finishes
-	sleep(sting_action.sting_duration + 0.5 SECONDS)
+	_sleep(sting_action.sting_duration + 0.5 SECONDS)
 
 	// Check their name and species reset correctly
 	TEST_ASSERT_EQUAL(victim.name, base_victim_name, "Victim name did not change back after transformation sting expired.")

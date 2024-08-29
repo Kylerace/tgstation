@@ -62,7 +62,7 @@ GLOBAL_VAR_INIT(running_create_and_destroy, FALSE)
 	var/real_start_time = REALTIMEOFDAY
 	var/garbage_queue_processed = FALSE
 
-	sleep(time_needed)
+	_sleep(time_needed)
 	while(!garbage_queue_processed)
 		var/oldest_packet_creation = INFINITY
 		for(var/index in queues_we_care_about)
@@ -89,7 +89,7 @@ GLOBAL_VAR_INIT(running_create_and_destroy, FALSE)
 		//Immediately fire the gc right after
 		SSgarbage.next_fire = 1
 		//Unless you've seriously fucked up, queue processing shouldn't take "that" long. Let her run for a bit, see if anything's changed
-		sleep(20 SECONDS)
+		_sleep(20 SECONDS)
 
 	//Alright, time to see if anything messed up
 	var/list/cache_for_sonic_speed = SSgarbage.items

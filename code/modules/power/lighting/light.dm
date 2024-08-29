@@ -499,7 +499,7 @@
 				break
 			on = !on
 			update(FALSE)
-			sleep(rand(5, 15))
+			_sleep(rand(5, 15))
 		if(has_power())
 			on = (status == LIGHT_OK)
 		else

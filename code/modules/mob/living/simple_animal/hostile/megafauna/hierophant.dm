@@ -391,7 +391,7 @@ Difficulty: Hard
 		var/dist = get_dist(original, T)
 		if(dist > last_dist)
 			last_dist = dist
-			sleep(1 + min(burst_range - last_dist, 12) * spread_speed) //gets faster as it gets further out
+			_sleep(1 + min(burst_range - last_dist, 12) * spread_speed) //gets faster as it gets further out
 		new /obj/effect/temp_visual/hierophant/blast/damaging(T, caster, FALSE)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/burst(turf/original, spread_speed)
@@ -616,7 +616,7 @@ Difficulty: Hard
 				forceMove(T)
 				make_blast() //make a blast, too
 				moving--
-				sleep(speed)
+				_sleep(speed)
 			targetturf = get_turf(target)
 
 /obj/effect/temp_visual/hierophant/chaser/proc/make_blast()
@@ -679,10 +679,10 @@ Difficulty: Hard
 	if(!T)
 		return
 	playsound(T,'sound/magic/blind.ogg', 65, TRUE, -5) //make a sound
-	sleep(0.6 SECONDS) //wait a little
+	_sleep(0.6 SECONDS) //wait a little
 	bursting = TRUE
 	do_damage(T) //do damage and mark us as bursting
-	sleep(0.13 SECONDS) //slightly forgiving; the burst animation is 1.5 deciseconds
+	_sleep(0.13 SECONDS) //slightly forgiving; the burst animation is 1.5 deciseconds
 	bursting = FALSE //we no longer damage crossers
 
 /obj/effect/temp_visual/hierophant/blast/damaging/proc/on_entered(datum/source, atom/movable/AM)

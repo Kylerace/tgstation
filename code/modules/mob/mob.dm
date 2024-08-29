@@ -744,7 +744,7 @@
 
 	ADD_TRAIT(src, TRAIT_SPINNING, SPIN_PROC_TRAIT)
 	while(spintime >= speed)
-		sleep(speed)
+		_sleep(speed)
 		switch(D)
 			if(NORTH)
 				D = EAST

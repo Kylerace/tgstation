@@ -74,7 +74,7 @@
 
 	// Let the sound effect finish playing
 	add_fingerprint(user)
-	sleep(2 SECONDS)
+	_sleep(2 SECONDS)
 	if(!user)
 		return
 	for(var/obj/item/suicide_wrench in user)

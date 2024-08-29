@@ -78,7 +78,7 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	new /atom/movable/screen/splash(null, null, C)
 
 	ADD_TRAIT(src, TRAIT_NO_TRANSFORM, SERVER_HOPPER_TRAIT)
-	sleep(2.9 SECONDS) //let the animation play
+	_sleep(2.9 SECONDS) //let the animation play
 	REMOVE_TRAIT(src, TRAIT_NO_TRANSFORM, SERVER_HOPPER_TRAIT)
 
 	if(!C)

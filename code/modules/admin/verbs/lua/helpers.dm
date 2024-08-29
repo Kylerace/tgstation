@@ -23,7 +23,7 @@
 
 /datum/auxtools_promise/proc/perform()
 	set waitfor = 0
-	sleep() //In case we have to call a super-expensive non-sleeping proc (like getFlatIcon)
+	_sleep(0) //In case we have to call a super-expensive non-sleeping proc (like getFlatIcon)
 	try
 		return_value = callback.Invoke()
 		status = PROMISE_RESOLVED

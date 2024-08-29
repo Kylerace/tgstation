@@ -133,3 +133,107 @@
 }\
 /datum/controller/subsystem/verb_manager/##X/fire() {..() /*just so it shows up on the profiler*/} \
 /datum/controller/subsystem/verb_manager/##X
+
+#define MC_SLEEPING_PROCS_TICKS_TO_KEEP 100
+
+#define SLEEPING_PROC_FILE 1
+#define SLEEPING_PROC_PROC 2
+#define SLEEPING_PROC_LINE 3
+#define SLEEPING_PROC_SLEEP_WORLDTIME 4
+#define SLEEPING_PROC_SLEEP_DURATION 5
+#define SLEEPING_PROC_TICK_USAGE_BEFORE_SLEEP 6
+#define SLEEPING_PROC_WAKEUP_WORLDTIME 7
+#define SLEEPING_PROC_WAKE_DURATION 8
+#define SLEEPING_PROC_WAKEUP_TICK_USAGE 9
+#define SLEEPING_PROC_METADATA 10
+
+/// always the first element of a metadata list
+#define METADATA_IDENTIFIER "ident"
+
+//TODOKYLER: figure out mc error logic
+
+
+///marks this metadata as following the MC metadata format
+#define METADATA_IDENTIFIER_MC "MC_METADATA"
+#define MC_METADATA_STARTING_TICK_USAGE "starting_tick_usage"
+#define MC_METADATA_ENDING_TICK_USAGE "ending_tick_usage"
+#define MC_METADATA_GOTO_SLEEP_REASON "goto_sleep_reason"
+	#define MC_METADATA_GOTO_SLEEP_REASON_UNSET -1
+	#define MC_METADATA_GOTO_SLEEP_REASON_FINISHED 0 //TODOKYLER: fill this out
+	///MC stopped without running because starting tick usage was greater than
+	///the mc's tick limit - other sleeping procs took up most of the tick
+	#define MC_METADATA_GOTO_SLEEP_REASON_TICK_CONTENTION 1
+	#define MC_METADATA_GOTO_SLEEP_REASON_CHECKQUEUE_ERROR 2
+	#define MC_METADATA_GOTO_SLEEP_REASON_RUNQUEUE_ERROR 3
+/// the ticklimit when RunQueue() is called if possible.
+/// if it never gets to RunQueue() this is given the value at the very start of Loop()
+#define MC_METADATA_TICK_LIMIT "tick_limit"
+#define MC_METADATA_SKIP_TICKS "skip_ticks"
+#define MC_METADATA_SLEEP_DELTA "sleep_delta"
+#define MC_METADATA_RUNLEVEL "runlevel"
+#define MC_METADATA_SUBSYSTEMS "subsystems"
+#define MC_METADATA_POST_MC_USAGE "post_mc_usage"
+#define MC_METADATA_MAPTICK "maptick"
+#define MC_METADATA_POST_MAPTICK_USAGE "post_maptick"
+
+///for fields with units of tick usage that are set later than list creation
+#define MC_METADATA_USAGE_UNSET -1
+
+#define MC_METADATA_CREATE_LIST(starting_tick_usage, tick_limit, skip_ticks, sleep_delta, runlevel)\
+	list(\
+		METADATA_IDENTIFIER = METADATA_IDENTIFIER_MC,\
+		MC_METADATA_STARTING_TICK_USAGE = starting_tick_usage,\
+		MC_METADATA_ENDING_TICK_USAGE = MC_METADATA_USAGE_UNSET,\
+		MC_METADATA_GOTO_SLEEP_REASON = MC_METADATA_GOTO_SLEEP_REASON_UNSET,\
+		MC_METADATA_TICK_LIMIT = tick_limit,\
+		MC_METADATA_SKIP_TICKS = skip_ticks,\
+		MC_METADATA_SLEEP_DELTA = sleep_delta,\
+		MC_METADATA_RUNLEVEL = runlevel,\
+		MC_METADATA_SUBSYSTEMS = list(),\
+		MC_METADATA_POST_MC_USAGE = MC_METADATA_USAGE_UNSET,\
+		MC_METADATA_MAPTICK = MC_METADATA_USAGE_UNSET,\
+		MC_METADATA_POST_MAPTICK_USAGE = MC_METADATA_USAGE_UNSET,\
+	)
+
+#define MC_METADATA_SUBSYSTEM_NAME "name"
+#define MC_METADATA_SUBSYSTEM_TICK_USAGE "tick_usage"
+#define MC_METADATA_SUBSYSTEM_SCHEDULED_LIMIT "scheduled_limit"
+#define MC_METADATA_SUBSYSTEM_OVERTIME "overtime"
+#define MC_METADATA_SUBSYSTEM_PRIORITY "priority"
+#define MC_METADATA_SUBSYSTEM_FLAGS "flags"
+#define MC_METADATA_SUBSYSTEM_START_STATE "start_state"
+#define MC_METADATA_SUBSYSTEM_END_STATE "end_state"
+
+#define MC_METADATA_CREATE_SUBSYSTEM_LIST(name, scheduled_limit, priority, flags, start_state)\
+	list(\
+		MC_METADATA_SUBSYSTEM_NAME = name,\
+		MC_METADATA_SUBSYSTEM_TICK_USAGE = 0,\
+		MC_METADATA_SUBSYSTEM_SCHEDULED_LIMIT = scheduled_limit,\
+		MC_METADATA_SUBSYSTEM_OVERTIME = 0,\
+		MC_METADATA_SUBSYSTEM_PRIORITY = priority,\
+		MC_METADATA_SUBSYSTEM_FLAGS = flags,\
+		MC_METADATA_SUBSYSTEM_START_STATE = start_state,\
+		MC_METADATA_SUBSYSTEM_END_STATE = NONE\
+	)
+
+#define _sleep(x) sleep_metadata(x, null)
+
+#define sleep_metadata(x, meta) \
+	do {\
+		var/list/_us = list("[__FILE__]","[__PROC__]","[__LINE__]", world.time, x, TICK_USAGE, 0, 0, 0, meta);\
+		Master.active_sleeps++;\
+		/*Master.last_resumer = _us;*/\
+		sleep(x);\
+		_us[SLEEPING_PROC_WAKEUP_TICK_USAGE] = TICK_USAGE;\
+		if(Master.last_resumer) {\
+			Master.last_resumer[SLEEPING_PROC_WAKE_DURATION] = TICK_USAGE - Master.last_resumer[SLEEPING_PROC_WAKEUP_TICK_USAGE];\
+		}\
+		_us[SLEEPING_PROC_WAKEUP_WORLDTIME] = world.time;\
+		Master.last_resumer = _us;\
+		Master.resuming_procs["[world.time]"] += list(_us);\
+		Master.active_sleeps--;\
+	} while(FALSE);
+
+/// Added to the ends of hot client procs/verbs that execute after maptick so master can estimate their cost
+#define POST_MAPTICK_MAX_TICK_USAGE Master.last_post_maptick_tick_usage = TICK_USAGE;
+

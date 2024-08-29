@@ -513,7 +513,7 @@
 #define DEFIB_REVIVABLE_STATES (DEFIB_FAIL_NO_HEART | DEFIB_FAIL_FAILING_HEART | DEFIB_FAIL_HUSK | DEFIB_FAIL_TISSUE_DAMAGE | DEFIB_FAIL_FAILING_BRAIN | DEFIB_POSSIBLE)
 
 #define SLEEP_CHECK_DEATH(X, A) \
-	sleep(X); \
+	_sleep(X); \
 	if(QDELETED(A)) return; \
 	if(ismob(A)) { \
 		var/mob/sleep_check_death_mob = A; \

@@ -73,7 +73,7 @@
 	user.visible_message(span_suicide("[user] is jumping into [src]! It looks like [user.p_theyre()] trying to commit suicide."))
 	user.dropItemToGround(src, TRUE)
 	user.Stun(100, ignore_canstun = TRUE)
-	sleep(2 SECONDS)
+	_sleep(2 SECONDS)
 	playsound(src, SFX_RUSTLE, 50, TRUE, -5)
 	user.suicide_log()
 	qdel(user)
